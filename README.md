@@ -1,14 +1,16 @@
-# MySite-React
+# **MySite-React**
+
+http://palkhh.xyz/
 
 ---
 
-# Развертка
+## Развертка
 
 ```bash
 docker-compose -f .\docker-compose.prod.yml up --build -d
 ```
 
-## Развертка для разработки
+### Развертка для разработки
 
 ```bash
 docker compose -f .\docker-compose.dev.yml up --build
