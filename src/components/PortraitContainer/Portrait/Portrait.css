@@ -1,0 +1,13 @@
+/* #video-portrait {
+  position: absolute;
+  transition: opacity 0.8s ease-in-out;
+} */
+
+.portrait {
+  position: relative;
+  width: 100%;
+  height: auto;
+  cursor: none;
+  opacity: 1;
+  border-radius: 7.5px;
+}

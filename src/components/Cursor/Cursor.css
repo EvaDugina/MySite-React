@@ -1,0 +1,8 @@
+.cursor {
+  position: fixed;
+  width: 1.9rem;
+  height: 1.9rem;
+  pointer-events: "none";
+  will-change: transform; /* Для оптимизации анимации */
+  transform: translate(-16.67%, -4.76%);
+}

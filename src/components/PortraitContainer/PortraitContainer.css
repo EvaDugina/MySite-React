@@ -1,0 +1,69 @@
+#PortraitContainer {
+  position: relative;
+  height: auto;
+  margin: 0;
+  display: block;
+  align-self: center;
+}
+
+#BtnNeprikosnovenna {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 75%;
+  left: 50%;
+  font-size: var(--font-size-xsm);
+}
+
+/* @media (min-width: 768px) {
+  #BtnNeprikosnovenna {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (min-width: 1600px) {
+  #BtnNeprikosnovenna {
+    font-size: var(--font-size-xsm);
+  }
+} */
+
+/* CLASSES */
+
+.portrait-container-default {
+  width: 50%;
+}
+
+@media (min-width: 768px) {
+  .portrait-container-default {
+    width: 40%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .portrait-container-default {
+    width: 30%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .portrait-container-default {
+    width: 30%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .portrait-container-default {
+    width: 25%;
+  }
+}
+
+@media (min-width: 1600px) {
+  .portrait-container-default {
+    width: 25%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .portrait-container-default {
+    width: 20%;
+  }
+}

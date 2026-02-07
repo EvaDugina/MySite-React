@@ -1,0 +1,22 @@
+#root {
+  /* Оптимизирующее - улучшает сглаживание шрифтов */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Оптимизирующее - улучшает читаемость текста */
+  text-rendering: optimizeLegibility;
+
+  /* Оптимизирующее - запрещает синтез жирного/курсива */
+  font-synthesis: none;
+}
+
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+  margin: 0;
+  padding: 0;
+}

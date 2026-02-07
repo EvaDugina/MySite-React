@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 1. Копируем только файлы зависимостей (это самый важный слой!)
+COPY package.json package-lock.json ./
+
+# 2. Устанавливаем зависимости (кэшируется если не менялись package*.json)
+RUN npm install
+
+# 3. Копируем остальные файлы
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host"]
