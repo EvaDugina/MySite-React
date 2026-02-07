@@ -4,20 +4,19 @@ services:
   react-app:
     build:
       context: .
-      dockerfile: Dockerfile.react
+      dockerfile: Dockerfile.prod
     container_name: mysite-react-app
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     networks:
       - app-network
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.prod # Используем тот же Dockerfile
     container_name: mysite-react-nginx
     ports:
-      - "8080:80" # Из вне:8080 → в контейнере:80
-    volumes:
-      - ./for-docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - "3000:80"
+    # Больше не нужно монтировать конфиг, он уже в образе
     depends_on:
       - react-app
     networks:

@@ -1,11 +1,9 @@
-version: "3.8"
-
 services:
   react-app:
-    container_name: mysite-react-app
     build:
       context: .
-      dockerfile: Dockerfile.react
+      dockerfile: Dockerfile.dev.react
+    container_name: mysite-react-app
     ports:
       - "3000:5173" # Локально:3000 → в контейнере:5173
     volumes:
