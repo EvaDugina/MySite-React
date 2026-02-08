@@ -1,21 +1,38 @@
 import React from "react";
+import "./WhenYouSoBeautifullyDied.css";
 
 import Cursor, {
   CursorType,
-  StaticData,
+  CursorConfig,
   CursorSettings,
-  ZoneConfig,
+  CursorZoneConfig,
 } from "./components/cursor/Cursor";
-import PortraitContainer, {
-  PortraitContainerType,
-} from "./components/portraitContainer/PortraitContainer";
+import Portrait, { PortraitType } from "./components/portrait/Portrait";
+import Flash, { FlashType } from "./components/Flash/Flash";
 import Background from "./components/background/Background";
 
-function WhenYouSoBeautifullyDied({ type = PortraitContainerType.DEFAULT }) {
+function WhenYouSoBeautifullyDied() {
   return (
     <>
-      <Cursor settings={cursorSettings} />
-      <PortraitContainer type={PortraitContainerType.DEFAULT} />
+      <Cursor
+        cursorSettings={cursorSettings}
+        cursorZoneConfig={cursorZoneConfig}
+      />
+
+      <div id="PortraitContainer" className="portrait-container-default">
+        <div id="CursorsContainer" className="d-none"></div>
+
+        <button id="BtnNeprikosnovenna" className="not-allowed z-6">
+          неприкосновенна
+        </button>
+
+        <Flash flashType={FlashType.BEHIND} />
+        <Flash flashType={FlashType.FRONT} />
+        <Flash />
+
+        <Portrait portraitType={PortraitType.VIDEO} />
+      </div>
+
       <Background />
     </>
   );
@@ -33,7 +50,7 @@ const cursorSettings = new CursorSettings({
   stiffness: 0.4, // Жесткость пружины (скорость реакции)
   damping: 0.1, // Затухание (плавность остановки)
   mass: 0.1, // Масса объекта
-  maxSpeed: 0.5, // Максимальная скорость
+  maxSpeed: 50, // Максимальная скорость
 });
 
 const Zone = {
@@ -42,27 +59,27 @@ const Zone = {
   BUTTON: 3,
 };
 
-const settings = new ZoneConfig({
+const cursorZoneConfig = new CursorZoneConfig({
   Zone: Zone,
-  ZONES_SETTINGS: {
+  Data: {
     [Zone.BACK]: {
       element: null,
-      imgCursor: StaticData[CursorType.POINTER].src,
-      imgCursorClicked: StaticData[CursorType.POINTER].src,
+      imgCursor: CursorConfig[CursorType.POINTER].src,
+      imgCursorClicked: CursorConfig[CursorType.POINTER].src,
       handleOn: null,
       handleOff: null,
     },
     [Zone.PORTRAIT]: {
       element: null,
-      imgCursor: StaticData[CursorType.POINTER].src,
-      imgCursorClicked: StaticData[CursorType.POINTER_CLICKED].src,
+      imgCursor: CursorConfig[CursorType.POINTER].src,
+      imgCursorClicked: CursorConfig[CursorType.POINTER_CLICKED].src,
       handleOn: null,
       handleOff: null,
     },
     [Zone.BUTTON]: {
       element: null,
-      imgCursor: StaticData[CursorType.POINTER].src,
-      imgCursorClicked: StaticData[CursorType.POINTER_CLICKED].src,
+      imgCursor: CursorConfig[CursorType.POINTER].src,
+      imgCursorClicked: CursorConfig[CursorType.POINTER_CLICKED].src,
       handleOn: null,
       handleOff: null,
     },

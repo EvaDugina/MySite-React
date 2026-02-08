@@ -1,16 +1,46 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import "./Cursor.css";
 
+import { useCursor } from "./hooks/useCursor";
+
 function Cursor({
-  settings = new CursorSettings(),
-  zoneConfig = new ZoneConfig(),
+  cursorSettings = new CursorSettings(),
+  cursorZoneConfig = new CursorZoneConfig(),
 }) {
+  // Создаем ref для DOM элемента курсора
+  const cursorRef = useRef(null);
+
+  // Используем встроенный хук useCursor с передачей только settings
+  const {
+    cursorState = {
+      position: { x: 0, y: 0 },
+      isHidden: false,
+    },
+  } = useCursor(cursorSettings);
+
+  // Добавим безопасное извлечение данных из cursorState
+  const position = cursorState.position;
+  const isHidden = cursorState.isHidden;
+  // const src = CursorConfig[CursorType.NONE].src;
+  const src = CursorConfig[CursorType.POINTER].src;
+
+  // Пример использования методов (опционально)
+  useEffect(() => {
+    // Вы можете использовать методы из хука здесь
+  }, []);
+
   return (
     <img
+      ref={cursorRef}
       id="Cursor"
       className="cursor not-allowed z-999"
-      src={StaticData[CursorType.NONE].src}
+      src={src}
       alt="муха"
+      style={{
+        left: position.x,
+        top: position.y,
+        display: isHidden ? "none" : "block",
+      }}
     />
   );
 }
@@ -31,7 +61,7 @@ export const CursorType = {
   UNAVAILABLE: 6,
 };
 
-export const StaticData = {
+export const CursorConfig = {
   [CursorType.NONE]: {
     src: "/images/cursors/none.png",
   },
@@ -81,7 +111,7 @@ export class CursorSettings {
   }
 }
 
-export class ZoneConfig {
+export class CursorZoneConfig {
   constructor(config = {}) {
     // Определяем Zone
     this.Zone = {
@@ -92,14 +122,24 @@ export class ZoneConfig {
     // Настройки по умолчанию
     const defaultData = {
       element: null,
-      imgCursor: StaticData[CursorType.NONE].src,
-      imgCursorClicked: StaticData[CursorType.NONE].src,
+      imgCursor: CursorConfig[CursorType.POINTER].src,
+      imgCursorClicked: CursorConfig[CursorType.POINTER].src,
       handleOn: null,
       handleOff: null,
     };
 
     // Инициализируем Data
     this.Data = {};
+
+    // Функция для преобразования ключа в значение Zone
+    const resolveZoneKey = (key) => {
+      if (typeof key === "string") {
+        // Если ключ вида "Zone.NONE" или "NONE"
+        const zoneName = key.replace(/^Zone\./, "");
+        return this.Zone[zoneName];
+      }
+      return key; // Если уже число
+    };
 
     // Устанавливаем значения по умолчанию для всех зон
     Object.values(this.Zone).forEach((zoneValue) => {
@@ -120,15 +160,5 @@ export class ZoneConfig {
         }
       });
     }
-
-    // Функция для преобразования ключа в значение Zone
-    const resolveZoneKey = (key) => {
-      if (typeof key === "string") {
-        // Если ключ вида "Zone.NONE" или "NONE"
-        const zoneName = key.replace(/^Zone\./, "");
-        return this.Zone[zoneName];
-      }
-      return key; // Если уже число
-    };
   }
 }
