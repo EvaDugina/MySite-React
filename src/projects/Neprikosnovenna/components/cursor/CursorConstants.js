@@ -78,7 +78,7 @@ export class CursorZoneConfig {
 
         // Настройки по умолчанию
         const defaultData = {
-            element: null,
+            elementRef: null,
             imgCursor: CursorConfig[CursorType.POINTER].src,
             imgCursorClicked: CursorConfig[CursorType.POINTER].src,
             handleOn: null,
@@ -87,16 +87,6 @@ export class CursorZoneConfig {
 
         // Инициализируем Data
         this.Data = {}
-
-        // Функция для преобразования ключа в значение Zone
-        const resolveZoneKey = (key) => {
-            if (typeof key === "string") {
-                // Если ключ вида "Zone.NONE" или "NONE"
-                const zoneName = key.replace(/^Zone\./, "")
-                return this.Zone[zoneName]
-            }
-            return key // Если уже число
-        }
 
         // Устанавливаем значения по умолчанию для всех зон
         Object.values(this.Zone).forEach((zoneValue) => {
@@ -108,12 +98,9 @@ export class CursorZoneConfig {
         // Заполняем переданными настройками
         if (config.Data) {
             Object.entries(config.Data).forEach(([key, settings]) => {
-                const zoneValue = resolveZoneKey(key)
-                if (zoneValue !== undefined) {
-                    this.Data[zoneValue] = {
-                        ...defaultData,
-                        ...settings,
-                    }
+                this.Data[parseInt(key)] = {
+                    ...defaultData,
+                    ...settings,
                 }
             })
         }

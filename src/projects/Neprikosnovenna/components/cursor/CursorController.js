@@ -141,10 +141,8 @@ export class CursorController {
         Object.entries(this.Zone).forEach(([key, zoneType]) => {
             const elementRef = this.ZoneSettings[zoneType].elementRef
             if (elementRef != null) {
-                this.rectZones.set(
-                    zoneType,
-                    elementRef.current.getBoundingClientRect(),
-                )
+                const element = document.getElementById(elementRef)
+                this.rectZones.set(zoneType, element.getBoundingClientRect())
             }
         })
     }
@@ -167,10 +165,10 @@ export class CursorController {
             this.isMouseDown = true
             this.clickStartTime = Date.now()
 
-            // this.changeCursorSrc(
-            //     this.ZoneSettings[this.currentZone].imgCursorClicked,
-            // )
-            this.changeCursorSrc(CursorImages.POINTER_CLICKED)
+            this.changeCursorSrc(
+                this.ZoneSettings[this.state.zone].imgCursorClicked,
+            )
+            // this.changeCursorSrc(CursorImages.POINTER_CLICKED)
 
             // Обработка двойного клика
             const now = Date.now()
@@ -217,10 +215,10 @@ export class CursorController {
 
             // Проверяем, что кнопка ещё не нажата снова
             if (!this.isMouseDown) {
-                // this.changeCursorSrc(
-                //     this.ZoneSettings[this.state.zone].imgCursor,
-                // )
-                this.changeCursorSrc(CursorImages.POINTER)
+                this.changeCursorSrc(
+                    this.ZoneSettings[this.state.zone].imgCursor,
+                )
+                // this.changeCursorSrc(CursorImages.POINTER)
             }
         }
     }
@@ -323,7 +321,7 @@ export class CursorController {
         const zoneEntries = Object.entries(this.Zone).reverse()
 
         for (const [key, zoneType] of zoneEntries) {
-            if (this.isCursorZone(zoneType)) {
+            if (this.isCursorInZone(zoneType)) {
                 foundZone = zoneType
                 break
             }
@@ -355,6 +353,24 @@ export class CursorController {
         if (!this.animationId && !this.isStopped) {
             this.animationId = requestAnimationFrame(this.updatePosition)
         }
+    }
+
+    isCursorInZone(zoneType) {
+        if (zoneType == this.Zone.NONE) return true
+
+        let currentPosition = { ...this.state.position }
+        if (currentPosition.x === null || currentPosition.y === null)
+            return false
+
+        let radius = 0
+        let rect = this.rectZones.get(zoneType)
+
+        return (
+            currentPosition.x + radius >= rect.left &&
+            currentPosition.x - radius <= rect.right &&
+            currentPosition.y + radius >= rect.top &&
+            currentPosition.y - radius <= rect.bottom
+        )
     }
 
     changeCursorSrc(newSrc) {

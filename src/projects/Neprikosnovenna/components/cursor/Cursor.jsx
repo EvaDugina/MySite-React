@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useContext } from "react";
 import "./Cursor.css";
 
 import { useCursor } from "./hooks/useCursor";
@@ -8,9 +8,6 @@ function Cursor({
   cursorSettings = new CursorSettings(),
   cursorZoneConfig = new CursorZoneConfig(),
 }) {
-  // Создаем ref для DOM элемента курсора
-  const cursorRef = useRef(null);
-
   // Используем встроенный хук useCursor с передачей только settings
   const { cursorState } = useCursor(cursorSettings, cursorZoneConfig);
 
@@ -26,7 +23,6 @@ function Cursor({
 
   return (
     <img
-      ref={cursorRef}
       id="Cursor"
       className="cursor not-allowed z-999"
       src={src}
