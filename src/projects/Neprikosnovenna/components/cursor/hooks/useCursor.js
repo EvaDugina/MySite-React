@@ -1,18 +1,27 @@
 import { useState, useEffect, useRef } from "react"
 import { CursorController } from "../CursorController"
+import { CursorType, CursorImages } from "../CursorConstants"
 
-export function useCursor(settings) {
+export function useCursor(cursorSettings, cursorZoneConfig) {
     const [cursorState, setCursorState] = useState({
-        position: { x: 0, y: 0 },
+        position: {
+            x: 0,
+            y: 0,
+        },
+        src: CursorImages.POINTER,
         isHidden: false,
-        isStopped: false,
     })
 
     const cursorControllerRef = useRef(null)
 
     // Инициализация контроллера
     useEffect(() => {
-        const controller = new CursorController(settings, setCursorState)
+        const controller = new CursorController(
+            cursorState,
+            cursorSettings,
+            cursorZoneConfig,
+            setCursorState,
+        )
 
         cursorControllerRef.current = controller
 
@@ -22,7 +31,7 @@ export function useCursor(settings) {
         return () => {
             controller.destroy()
         }
-    }, [settings])
+    }, [cursorSettings])
 
     // Методы управления курсором
     const hideCursor = () => {

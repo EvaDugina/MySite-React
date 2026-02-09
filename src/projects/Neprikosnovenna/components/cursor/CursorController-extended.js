@@ -90,7 +90,6 @@ export class CursorController {
     stopCursor() {
         this.updateState({ isStopped: true })
         window.removeEventListener("mousemove", this.handleMosemove)
-        window.removeEventListener("blur", this.handleBlur)
 
         if (this.animationId) {
             cancelAnimationFrame(this.animationId)

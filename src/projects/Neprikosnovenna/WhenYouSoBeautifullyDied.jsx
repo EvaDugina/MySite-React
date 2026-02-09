@@ -1,12 +1,13 @@
 import React from "react";
 import "./WhenYouSoBeautifullyDied.css";
 
-import Cursor, {
+import {
   CursorType,
-  CursorConfig,
+  CursorImages,
   CursorSettings,
   CursorZoneConfig,
-} from "./components/cursor/Cursor";
+} from "./components/cursor/CursorConstants";
+import Cursor from "./components/cursor/Cursor";
 import Portrait, { PortraitType } from "./components/portrait/Portrait";
 import Flash, { FlashType } from "./components/Flash/Flash";
 import Background from "./components/background/Background";
@@ -50,7 +51,7 @@ const cursorSettings = new CursorSettings({
   stiffness: 0.4, // Жесткость пружины (скорость реакции)
   damping: 0.1, // Затухание (плавность остановки)
   mass: 0.1, // Масса объекта
-  maxSpeed: 50, // Максимальная скорость
+  maxSpeed: 10, // Максимальная скорость
 });
 
 const Zone = {
@@ -64,22 +65,22 @@ const cursorZoneConfig = new CursorZoneConfig({
   Data: {
     [Zone.BACK]: {
       element: null,
-      imgCursor: CursorConfig[CursorType.POINTER].src,
-      imgCursorClicked: CursorConfig[CursorType.POINTER].src,
+      imgCursor: CursorImages.POINTER,
+      imgCursorClicked: CursorImages.POINTER,
       handleOn: null,
       handleOff: null,
     },
     [Zone.PORTRAIT]: {
       element: null,
-      imgCursor: CursorConfig[CursorType.POINTER].src,
-      imgCursorClicked: CursorConfig[CursorType.POINTER_CLICKED].src,
+      imgCursor: CursorImages.POINTER,
+      imgCursorClicked: CursorImages.POINTER_CLICKED,
       handleOn: null,
       handleOff: null,
     },
     [Zone.BUTTON]: {
       element: null,
-      imgCursor: CursorConfig[CursorType.POINTER].src,
-      imgCursorClicked: CursorConfig[CursorType.POINTER_CLICKED].src,
+      imgCursor: CursorImages.POINTER,
+      imgCursorClicked: CursorImages.POINTER_CLICKED,
       handleOn: null,
       handleOff: null,
     },
