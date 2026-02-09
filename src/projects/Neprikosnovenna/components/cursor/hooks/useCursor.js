@@ -5,10 +5,11 @@ import { CursorType, CursorImages } from "../CursorConstants"
 export function useCursor(cursorSettings, cursorZoneConfig) {
     const [cursorState, setCursorState] = useState({
         position: {
-            x: 0,
-            y: 0,
+            x: null,
+            y: null,
         },
         src: CursorImages.POINTER,
+        zone: cursorZoneConfig.Zone.NONE,
         isHidden: false,
     })
 

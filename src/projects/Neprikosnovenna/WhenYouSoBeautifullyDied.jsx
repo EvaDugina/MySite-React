@@ -64,21 +64,21 @@ const cursorZoneConfig = new CursorZoneConfig({
   Zone: Zone,
   Data: {
     [Zone.BACK]: {
-      element: null,
+      elementRef: null,
       imgCursor: CursorImages.POINTER,
       imgCursorClicked: CursorImages.POINTER,
       handleOn: null,
       handleOff: null,
     },
     [Zone.PORTRAIT]: {
-      element: null,
+      elementRef: null,
       imgCursor: CursorImages.POINTER,
       imgCursorClicked: CursorImages.POINTER_CLICKED,
       handleOn: null,
       handleOff: null,
     },
     [Zone.BUTTON]: {
-      element: null,
+      elementRef: null,
       imgCursor: CursorImages.POINTER,
       imgCursorClicked: CursorImages.POINTER_CLICKED,
       handleOn: null,

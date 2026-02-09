@@ -3,28 +3,26 @@ import { CursorImages } from "./CursorConstants"
 export class CursorController {
     constructor(cursorState, cursorSettings, cursorZoneConfig, updateCallback) {
         // Сохраняем конфигурацию
-        this.CURSOR_SETTINGS = cursorSettings
-        this.ZONE = cursorZoneConfig.Zone
-        this.ZONES_SETTINGS = cursorZoneConfig.Data
+        this.CursorSettings = cursorSettings
+        this.Zone = cursorZoneConfig.Zone
+        this.ZoneSettings = cursorZoneConfig.Data
         this.updateCallback = updateCallback
 
         // Состояние курсора
         this.state = {
             position: {
-                x: 0,
-                y: 0,
+                x: null,
+                y: null,
             },
             src: CursorImages.NONE,
-            zone: this.ZONE.NONE,
+            zone: this.Zone.NONE,
             isHidden: false,
         }
         this.state = { ...this.state, ...cursorState }
 
         // Инициализация переменных состояния
-        this.targetX = 0
-        this.targetY = 0
-        this.currentX = 0
-        this.currentY = 0
+        this.targetX = null
+        this.targetY = null
         this.velocityX = 0
         this.velocityY = 0
 
@@ -37,6 +35,7 @@ export class CursorController {
 
         // Внутренние переменные
         this.animationId = null
+        this.rectZones = new Map()
 
         // Привязка контекста
         this.onMosemove = this.onMosemove.bind(this)
@@ -47,7 +46,13 @@ export class CursorController {
         this.updatePosition = this.updatePosition.bind(this)
     }
 
+    //
     // PUBLIC METHODS
+    //
+
+    isCursorZone(zoneType) {
+        return this.state.zone === zoneType
+    }
 
     hideCursor() {
         this.updateState({
@@ -82,28 +87,24 @@ export class CursorController {
 
     destroy() {
         this.stopCursor()
+        this.disableCursor()
         window.removeEventListener("blur", this.onBlur)
         window.removeEventListener("resize", this.onResize)
     }
 
-    // Локальные методы
-
-    updateState(newState) {
-        this.state = { ...this.state, ...newState }
-        if (this.updateCallback && typeof this.updateCallback === "function") {
-            this.updateCallback(this.state)
-        }
-    }
-
+    //
     // INIT METHODS
+    //
+
     init() {
         // Проверяем доступность window (для SSR)
         if (typeof window === "undefined") return
 
         this.initPosition()
+        this.initRectZones()
         this.startAnimation()
 
-        let timeout = this.CURSOR_SETTINGS.timeout || 0
+        let timeout = this.CursorSettings.timeout || 0
 
         setTimeout(() => {
             window.addEventListener("mousemove", this.onMosemove)
@@ -116,62 +117,43 @@ export class CursorController {
         return this.state
     }
 
-    // Инициализация Rect ZONES
-    // initRectZones() {
-    //     if (!this.zoneElements) return
-
-    //     this.rectZones.clear()
-
-    //     Object.entries(this.ZONES).forEach(([key, zoneId]) => {
-    //         const zoneConfig = this.ZONES_SETTINGS[zoneId]
-    //         if (zoneConfig && this.zoneElements[zoneId]) {
-    //             const element = this.zoneElements[zoneId].current
-    //             if (element) {
-    //                 this.rectZones.set(zoneId, element.getBoundingClientRect())
-    //             }
-    //         }
-    //     })
-    // }
-
     // Инициализация начальной позиции
     initPosition() {
         if (
-            this.CURSOR_SETTINGS.startX !== undefined &&
-            this.CURSOR_SETTINGS.startY !== undefined
+            this.CursorSettings.startX != null &&
+            this.CursorSettings.startY != null
         ) {
-            this.currentX = this.targetX =
-                window.innerWidth * this.CURSOR_SETTINGS.startX
-            this.currentY = this.targetY =
-                window.innerHeight * this.CURSOR_SETTINGS.startY
-
             this.updateState({
-                position: { x: this.currentX, y: this.currentY },
+                position: {
+                    x: window.innerWidth * this.CursorSettings.startX,
+                    y: window.innerHeight * this.CursorSettings.startY,
+                },
             })
         }
     }
 
-    startAnimation() {
-        if (!this.animationId && !this.isStopped) {
-            this.animationId = requestAnimationFrame(this.updatePosition)
-        }
+    // Инициализация Rect ZONES
+    initRectZones() {
+        this.rectZones.clear()
+
+        Object.entries(this.Zone).forEach(([key, zoneType]) => {
+            const elementRef = this.ZoneSettings[zoneType].elementRef
+            if (elementRef != null) {
+                this.rectZones.set(
+                    zoneType,
+                    elementRef.current.getBoundingClientRect(),
+                )
+            }
+        })
     }
 
+    //
     // Handlers
+    //
 
     onMosemove(e) {
-        const clientX = e.clientX
-        const clientY = e.clientY
-
-        if ((!clientX && clientX !== 0) || (!clientY && clientY !== 0)) return
-
-        this.targetX = clientX
-        this.targetY = clientY
-
-        if (this.currentX === null || this.currentY === null) {
-            this.currentX = this.targetX
-            this.currentY = this.targetY
-        }
-
+        this.targetX = e.clientX
+        this.targetY = e.clientY
         this.startAnimation()
     }
 
@@ -184,7 +166,7 @@ export class CursorController {
             this.clickStartTime = Date.now()
 
             // this.changeCursorSrc(
-            //     this.ZONES_SETTINGS[this.currentZone].imgCursorClicked,
+            //     this.ZoneSettings[this.currentZone].imgCursorClicked,
             // )
             this.changeCursorSrc(CursorImages.POINTER_CLICKED)
 
@@ -196,9 +178,9 @@ export class CursorController {
 
                 if (this.dbClickCount === 2) {
                     // Двойной клик
-                    // if (this.CURSOR_SETTINGS.handleDoubleLeftClick) {
-                    //     this.CURSOR_SETTINGS.handleDoubleLeftClick(event)
-                    // }
+                    if (this.CursorSettings.handleDoubleLeftClick) {
+                        this.CursorSettings.handleDoubleLeftClick(event)
+                    }
                     this.dbClickCount = 0
                     clearTimeout(this.dbClickTimeout)
                 }
@@ -212,9 +194,9 @@ export class CursorController {
                 }, 300)
 
                 // Обычный клик
-                // if (this.CURSOR_SETTINGS.handleLeftClickDown) {
-                //     await this.CURSOR_SETTINGS.handleLeftClickDown(event)
-                // }
+                if (this.CursorSettings.handleLeftClickDown) {
+                    await this.CursorSettings.handleLeftClickDown(event)
+                }
             }
 
             this.lastClickTime = now
@@ -227,14 +209,14 @@ export class CursorController {
 
             this.isMouseDown = false
 
-            // if (this.CURSOR_SETTINGS.handleLeftClickUp) {
-            //     await this.CURSOR_SETTINGS.handleLeftClickUp(event)
-            // }
+            if (this.CursorSettings.handleLeftClickUp) {
+                await this.CursorSettings.handleLeftClickUp(event)
+            }
 
             // Проверяем, что кнопка ещё не нажата снова
             if (!this.isMouseDown) {
                 // this.changeCursorSrc(
-                //     this.ZONES_SETTINGS[this.state.zone].imgCursor,
+                //     this.ZoneSettings[this.state.zone].imgCursor,
                 // )
                 this.changeCursorSrc(CursorImages.POINTER)
             }
@@ -249,69 +231,129 @@ export class CursorController {
     }
 
     onResize() {
-        // this.initRectZones()
+        this.initRectZones()
     }
 
-    // UPDATES
+    //
+    // LOCAL METHODS
+    //
+
+    updateState(newState) {
+        this.state = { ...this.state, ...newState }
+        if (this.updateCallback && typeof this.updateCallback === "function") {
+            this.updateCallback(this.state)
+        }
+    }
 
     updatePosition() {
-        if (this.isStopped) {
+        if (this.isStopped || this.targetX == null || this.targetY == null) {
             this.animationId = requestAnimationFrame(this.updatePosition)
             return
         }
 
+        let currentPosition = this.state.position
+
+        // Инициализация на месте указателя
+        if (currentPosition.x == null || currentPosition.y == null) {
+            currentPosition.x = this.targetX
+            currentPosition.y = this.targetY
+        }
+
         // Рассчитываем разницу
-        const dx = this.targetX - this.currentX
-        const dy = this.targetY - this.currentY
+        const dx = this.targetX - currentPosition.x
+        const dy = this.targetY - currentPosition.y
 
         // Если разница очень маленькая, останавливаемся
         if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
-            this.currentX = this.targetX
-            this.currentY = this.targetY
+            currentPosition.x = this.targetX
+            currentPosition.y = this.targetY
         } else {
             // Пружинная физика
-            const forceX = dx * this.CURSOR_SETTINGS.stiffness
-            const forceY = dy * this.CURSOR_SETTINGS.stiffness
+            const forceX = dx * this.CursorSettings.stiffness
+            const forceY = dy * this.CursorSettings.stiffness
 
-            const accelerationX = forceX / this.CURSOR_SETTINGS.mass
-            const accelerationY = forceY / this.CURSOR_SETTINGS.mass
+            const accelerationX = forceX / this.CursorSettings.mass
+            const accelerationY = forceY / this.CursorSettings.mass
 
             this.velocityX =
-                (this.velocityX + accelerationX) * this.CURSOR_SETTINGS.damping
+                (this.velocityX + accelerationX) * this.CursorSettings.damping
             this.velocityY =
-                (this.velocityY + accelerationY) * this.CURSOR_SETTINGS.damping
+                (this.velocityY + accelerationY) * this.CursorSettings.damping
 
             // Ограничение скорости
             const speed = Math.sqrt(
                 this.velocityX * this.velocityX +
                     this.velocityY * this.velocityY,
             )
-            const maxSpeed = this.CURSOR_SETTINGS.maxSpeed || 50
-
-            if (speed > maxSpeed) {
-                this.velocityX = (this.velocityX / speed) * maxSpeed
-                this.velocityY = (this.velocityY / speed) * maxSpeed
+            if (speed > this.CursorSettings.maxSpeed) {
+                this.velocityX =
+                    (this.velocityX / speed) * this.CursorSettings.maxSpeed
+                this.velocityY =
+                    (this.velocityY / speed) * this.CursorSettings.maxSpeed
             }
 
-            this.currentX += this.velocityX
-            this.currentY += this.velocityY
+            currentPosition.x += this.velocityX
+            currentPosition.y += this.velocityY
         }
 
         // Обновляем состояние
         this.updateState({
-            position: { x: this.currentX, y: this.currentY },
+            position: currentPosition,
         })
 
+        this.updateCurrentZone()
+
         // Продолжаем анимацию
-        if (!this.isStopped) {
+        this.animationId = requestAnimationFrame(this.updatePosition)
+    }
+
+    updateCurrentZone() {
+        if (!this.rectZones.size) return
+
+        let foundZone = null
+
+        // Проверяем зоны в обратном порядке (от последней к первой)
+        const zoneEntries = Object.entries(this.Zone).reverse()
+
+        for (const [key, zoneType] of zoneEntries) {
+            if (this.isCursorZone(zoneType)) {
+                foundZone = zoneType
+                break
+            }
+        }
+
+        // Если зона не найдена, используем NONE
+        const newZone = foundZone != null ? foundZone : this.Zone.NONE
+
+        // Если зона изменилась
+        if (newZone !== this.state.zone) {
+            // Вызываем обработчик выхода из старой зоны
+            if (this.ZoneSettings[this.state.zone]?.handleOff) {
+                this.ZoneSettings[this.state.zone].handleOff()
+            }
+
+            // Обновляем состояние
+            this.updateState({ zone: newZone })
+
+            this.changeCursorSrc(this.ZoneSettings[newZone].imgCursor)
+
+            // Вызываем обработчик входа в новую зону
+            if (this.ZoneSettings[newZone]?.handleOn) {
+                this.ZoneSettings[newZone].handleOn()
+            }
+        }
+    }
+
+    startAnimation() {
+        if (!this.animationId && !this.isStopped) {
             this.animationId = requestAnimationFrame(this.updatePosition)
         }
     }
 
     changeCursorSrc(newSrc) {
-        if (!newSrc && newSrc !== null) return
-        if (newSrc === null) newSrc = CursorImages.NONE
-        if (newSrc === this.state.src) return
+        if (!newSrc && newSrc != null) return
+        if (newSrc == null) newSrc = CursorImages.NONE
+        if (newSrc == this.state.src) return
 
         this.updateState({ src: newSrc })
     }
