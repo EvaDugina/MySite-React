@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { CursorController } from "../CursorController"
-import { CursorType, CursorImages } from "../CursorConstants"
+import { CursorImages } from "../CursorConstants"
 
 export function useCursor(cursorSettings, cursorZoneConfig) {
     const [cursorState, setCursorState] = useState({

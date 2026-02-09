@@ -55,12 +55,14 @@ export class CursorController {
     }
 
     hideCursor() {
+        if (isHidden) return
         this.updateState({
             isHidden: true,
         })
     }
 
     showCursor() {
+        if (!isHidden) return
         this.updateState({
             isHidden: false,
         })
@@ -251,7 +253,7 @@ export class CursorController {
             return
         }
 
-        let currentPosition = this.state.position
+        let currentPosition = { ...this.state.position }
 
         // Инициализация на месте указателя
         if (currentPosition.x == null || currentPosition.y == null) {
@@ -296,12 +298,17 @@ export class CursorController {
             currentPosition.y += this.velocityY
         }
 
-        // Обновляем состояние
-        this.updateState({
-            position: currentPosition,
-        })
+        if (
+            currentPosition.x != this.state.position.x ||
+            currentPosition.y != this.state.position.y
+        ) {
+            // Обновляем состояние
+            this.updateState({
+                position: { ...currentPosition },
+            })
 
-        this.updateCurrentZone()
+            this.updateCurrentZone()
+        }
 
         // Продолжаем анимацию
         this.animationId = requestAnimationFrame(this.updatePosition)
