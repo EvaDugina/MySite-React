@@ -9,7 +9,6 @@ export const CursorType = {
 }
 
 export const CursorImages = {
-    NONE: "/images/cursors/none.png",
     DEFAULT: "/images/cursors/default.png",
     POINTER: "/images/cursors/pointer.png",
     POINTER_CLICKED: "/images/cursors/pointer_clicked.png",
@@ -19,9 +18,6 @@ export const CursorImages = {
 }
 
 const CursorConfig = {
-    [CursorType.NONE]: {
-        src: "/images/cursors/none.png",
-    },
     [CursorType.DEFAULT]: {
         src: "/images/cursors/default.png",
     },
@@ -45,6 +41,8 @@ const CursorConfig = {
 export class CursorSettings {
     constructor({
         timeout = 0,
+        imgCursor = CursorImages.DEFAULT,
+        isHidden = false,
         startX = null,
         startY = null,
         handleLeftClickDown = null,
@@ -56,6 +54,8 @@ export class CursorSettings {
         maxSpeed = 50,
     } = {}) {
         this.timeout = timeout
+        this.imgCursor = imgCursor
+        this.isHidden = isHidden
         this.startX = startX
         this.startY = startY
         this.handleLeftClickDown = handleLeftClickDown
@@ -78,7 +78,7 @@ export class CursorZoneConfig {
 
         // Настройки по умолчанию
         const defaultData = {
-            elementRef: null,
+            elementId: null,
             imgCursor: CursorConfig[CursorType.POINTER].src,
             imgCursorClicked: CursorConfig[CursorType.POINTER].src,
             handleOn: null,
