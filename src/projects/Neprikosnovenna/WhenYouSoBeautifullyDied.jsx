@@ -22,7 +22,7 @@ const cursorSettings = new CursorSettings({
   stiffness: 0.4, // Жесткость пружины (скорость реакции)
   damping: 0.1, // Затухание (плавность остановки)
   mass: 0.1, // Масса объекта
-  maxSpeed: 10, // Максимальная скорость
+  maxSpeed: 50, // Максимальная скорость
 });
 
 const Zone = {
@@ -35,9 +35,9 @@ const cursorZoneConfig = new CursorZoneConfig({
   Zone: Zone,
   Data: {
     [Zone.BACK]: {
-      elementId: "Background",
-      imgCursor: CursorImages.POINTER,
-      imgCursorClicked: CursorImages.POINTER,
+      elementId: "Background-0",
+      imgCursor: CursorImages.DEFAULT,
+      imgCursorClicked: CursorImages.DEFAULT,
       handleOn: null,
       handleOff: null,
     },
@@ -81,8 +81,10 @@ function WhenYouSoBeautifullyDied() {
           <Portrait portraitType={PortraitType.VIDEO} />
         </article>
 
-        <Background zIndex="3" />
+        <Background id="Background-1" classes="bg-blue z-3 d-none" />
       </main>
+
+      <Background id="Background-0" classes="bg-white z-0" />
     </>
   );
 }

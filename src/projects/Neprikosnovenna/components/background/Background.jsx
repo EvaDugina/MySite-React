@@ -1,12 +1,7 @@
 import "./Background.css";
 
-function Background({ zIndex = 0 }) {
-  return (
-    <div
-      id="Background"
-      className={"background bg-blue z-" + zIndex + " d-none"}
-    ></div>
-  );
+function Background({ id = "", classes = "bg-white z-0 d-none" }) {
+  return <div id={id} className={"background  " + classes}></div>;
 }
 
 export default Background;

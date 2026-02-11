@@ -32,6 +32,7 @@
   display: block;
   width: auto;
   align-self: center;
+  pointer-events: none;
   position: absolute;
   border-radius: 7.5px;
 }

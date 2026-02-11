@@ -23,6 +23,7 @@ function Flash({ type = FlashType.DEFAULT }) {
   if (type === FlashType.DEFAULT) {
     return (
       <div
+        // key={crypto?.randomUUID() ?? Date.now().toString()}
         id={`FlashContainer${type}`}
         className="flash-container blend-exclusion z-3 d-none"
       >

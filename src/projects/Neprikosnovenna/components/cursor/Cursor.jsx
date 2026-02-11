@@ -1,51 +1,65 @@
-import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import "./Cursor.css";
 
 import { useCursor } from "./hooks/useCursor";
-import {
-  CursorSettings,
-  CursorZoneConfig,
-  CursorImages,
-} from "./CursorConstants";
+
+import { CursorSettings, CursorZoneConfig } from "./CursorConstants";
 
 function Cursor({
   cursorSettings = new CursorSettings(),
   cursorZoneConfig = new CursorZoneConfig(),
 }) {
+  const elementZoneRef = useRef(null);
+  const currentZoneData = useRef(
+    cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
+  );
+
   const handleLeftClickDown = () => {
-    changeCursorSrc(CursorImages.DEFAULT);
+    changeCursorSrc(currentZoneData.current.imgCursorClicked);
   };
 
   const handleLeftClickUp = () => {
-    changeCursorSrc(CursorImages.DEFAULT);
+    changeCursorSrc(currentZoneData.current.imgCursor);
   };
 
   const handleOnZone = (elementZone) => {
-    if (elementZone.id == "Portrait") {
-      changeCursorSrc(CursorImages.POINTER);
-    }
+    Object.entries(cursorZoneConfig.Data).forEach(([key, settings]) => {
+      const data = cursorZoneConfig.Data[parseInt(key)];
+      if (data.elementId == elementZone.id) {
+        changeCursorSrc(data.imgCursor);
+        currentZoneData.current = data;
+      }
+    });
   };
 
   const handleOffZone = (elementZone) => {};
 
-  // Используем встроенный хук useCursor с передачей только settings
-  const { cursorState, showCursor, hideCursor } = useCursor(
-    cursorSettings,
-    handleLeftClickDown,
-    handleLeftClickUp,
-  );
+  const updateCurrentZone = (cursorPositionX, cursorPositionY) => {
+    const elementUnder = document.elementFromPoint(
+      cursorPositionX,
+      cursorPositionY,
+    );
+    if (elementZoneRef.current == elementUnder) return;
 
-  const changeCursorSrc = (newSrc) => {
-    if (!newSrc && newSrc != null) return;
-    if (newSrc == null) newSrc = CursorImages.DEFAULT;
-    setSrc(newSrc);
+    if (handleOffZone) handleOffZone(elementZoneRef.current);
+    elementZoneRef.current = elementUnder;
+    if (handleOnZone) handleOnZone(elementZoneRef.current);
   };
 
-  const [src, setSrc] = useState(cursorSettings.imgCursor);
+  // Используем встроенный хук useCursor с передачей только settings
+  const { cursorState, showCursor, hideCursor, changeCursorSrc } = useCursor(
+    cursorSettings,
+    updateCurrentZone,
+    handleLeftClickDown,
+    handleLeftClickUp,
+    handleOnZone,
+    handleOffZone,
+  );
 
   // Добавим безопасное извлечение данных из cursorState
   const position = cursorState.position;
   const isHidden = cursorState.isHidden;
+  const src = cursorState.src;
 
   return (
     <img
