@@ -24,7 +24,6 @@ main {
 
 #BtnNeprikosnovenna {
   position: absolute;
-  pointer-events: all;
   transform: translate(-50%, -50%);
   top: 75%;
   left: 50%;
@@ -83,4 +82,8 @@ main {
   .portrait-container-default {
     width: 20%;
   }
+}
+
+.ignore-cursor {
+  pointer-events: none;
 }

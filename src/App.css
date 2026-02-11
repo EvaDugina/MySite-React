@@ -78,7 +78,6 @@
 
 button {
   cursor: none;
-  pointer-events: none;
   background-color: var(--color-xlight-grey);
   border-radius: 2px;
   border-width: thin;
@@ -168,9 +167,8 @@ button.active {
 }
 
 .hidden {
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
+  visibility: hidden;
+  opacity: 0;
 }
 
 /* MOUSE */
@@ -184,5 +182,4 @@ button.active {
   user-select: none; /* Standard syntax */
   -webkit-user-drag: none; /* Chrome, Safari, Opera */
   user-drag: none; /* Standard syntax */
-  /* pointer-events: none; */
 }

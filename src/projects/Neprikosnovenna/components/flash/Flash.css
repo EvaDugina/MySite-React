@@ -23,7 +23,6 @@
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
   border-radius: 7.5px;
   mix-blend-mode: normal;
 }
@@ -32,7 +31,6 @@
   display: block;
   width: auto;
   align-self: center;
-  pointer-events: none;
   position: absolute;
   border-radius: 7.5px;
 }

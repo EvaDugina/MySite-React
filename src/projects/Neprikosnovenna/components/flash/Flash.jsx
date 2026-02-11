@@ -25,7 +25,7 @@ function Flash({ type = FlashType.DEFAULT }) {
       <div
         // key={crypto?.randomUUID() ?? Date.now().toString()}
         id={`FlashContainer${type}`}
-        className="flash-container blend-exclusion z-3 d-none"
+        className="flash-container ignore-cursor blend-exclusion z-3 d-none"
       >
         <div id="FlashBack" className="flash-container not-allowed" />
       </div>
@@ -33,7 +33,10 @@ function Flash({ type = FlashType.DEFAULT }) {
   }
 
   return (
-    <div id={`FlashContainer${type}`} className={`flash-container z-3 d-none`}>
+    <div
+      id={`FlashContainer${type}`}
+      className={`flash-container ignore-cursor z-3 d-none`}
+    >
       <img
         id={`Flash${type}`}
         className="flash not-allowed"

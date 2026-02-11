@@ -64,7 +64,7 @@ function Cursor({
   return (
     <img
       id="Cursor"
-      className="cursor not-allowed z-999"
+      className="cursor ignore-cursor not-allowed z-999"
       src={src}
       alt="муха"
       style={{

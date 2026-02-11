@@ -68,7 +68,7 @@ function WhenYouSoBeautifullyDied() {
 
       <main>
         <article id="PortraitContainer" className="portrait-container-default">
-          <div id="CursorsContainer" className="d-none"></div>
+          <div id="CursorsContainer" className="ignore-cursor d-none"></div>
 
           <button id="BtnNeprikosnovenna" className="not-allowed z-6">
             неприкосновенна
