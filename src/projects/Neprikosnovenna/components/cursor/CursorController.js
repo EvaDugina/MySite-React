@@ -356,6 +356,8 @@ export class CursorController {
     }
 
     isCursorInZone(zoneType) {
+        // document.elementFromPoint(this.state);
+
         if (zoneType == this.Zone.NONE) return true
 
         let currentPosition = { ...this.state.position }

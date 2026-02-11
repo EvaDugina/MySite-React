@@ -1,7 +1,12 @@
 import "./Background.css";
 
-const Background = () => {
-  return <div id="Background" className="background bg-blue z-3 d-none"></div>;
-};
+function Background({ zIndex = 0 }) {
+  return (
+    <div
+      id="Background"
+      className={"background bg-blue z-" + zIndex + " d-none"}
+    ></div>
+  );
+}
 
 export default Background;

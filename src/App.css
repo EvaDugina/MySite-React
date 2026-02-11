@@ -74,14 +74,6 @@
   padding: 0;
 }
 
-.app {
-  position: relative;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  background-color: white;
-}
-
 /* BUTTON */
 
 button {

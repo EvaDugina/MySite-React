@@ -69,21 +69,23 @@ function WhenYouSoBeautifullyDied() {
         cursorZoneConfig={cursorZoneConfig}
       />
 
-      <div id="PortraitContainer" className="portrait-container-default">
-        <div id="CursorsContainer" className="d-none"></div>
+      <main>
+        <article id="PortraitContainer" className="portrait-container-default">
+          <div id="CursorsContainer" className="d-none"></div>
 
-        <button id="BtnNeprikosnovenna" className="not-allowed z-6">
-          неприкосновенна
-        </button>
+          <button id="BtnNeprikosnovenna" className="not-allowed z-6">
+            неприкосновенна
+          </button>
 
-        <Flash flashType={FlashType.BEHIND} />
-        <Flash flashType={FlashType.FRONT} />
-        <Flash />
+          <Flash type={FlashType.BEHIND} />
+          <Flash type={FlashType.FRONT} />
+          <Flash />
 
-        <Portrait portraitType={PortraitType.VIDEO} />
-      </div>
+          <Portrait portraitType={PortraitType.VIDEO} />
+        </article>
 
-      <Background />
+        <Background zIndex="3" />
+      </main>
     </>
   );
 }

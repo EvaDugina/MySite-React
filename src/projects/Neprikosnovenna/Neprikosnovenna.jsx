@@ -4,15 +4,17 @@ import "./Neprikosnovenna.css";
 
 function Neprikosnovenna() {
   return (
-    <>
-      <ul>
-        <li>
-          <Link to="when-you-so-beautifully-died">
-            когда ты так красиво умирала
-          </Link>
-        </li>
-      </ul>
-    </>
+    <main>
+      <nav>
+        <ul>
+          <li>
+            <Link to="when-you-so-beautifully-died">
+              когда ты так красиво умирала
+            </Link>
+          </li>
+        </ul>
+      </nav>
+    </main>
   );
 }
 

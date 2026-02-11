@@ -29,6 +29,7 @@
 }
 
 .flash {
+  display: block;
   width: auto;
   align-self: center;
   position: absolute;

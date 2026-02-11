@@ -3,7 +3,13 @@
   transition: opacity 0.8s ease-in-out;
 } */
 
+figure {
+  margin: 0;
+  padding: 0;
+}
+
 .portrait {
+  display: block;
   position: relative;
   width: 100%;
   height: auto;
