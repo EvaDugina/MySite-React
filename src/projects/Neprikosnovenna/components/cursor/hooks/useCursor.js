@@ -6,8 +6,6 @@ export function useCursor(
     updateCurrentZone,
     handleLeftClickDown,
     handleLeftClickUp,
-    handleOnZone,
-    handleOffZone,
 ) {
     // Refs для изменяемых значений
     const positionRef = useRef({ x: null, y: null })
@@ -19,12 +17,10 @@ export function useCursor(
     const isHiddenRef = useRef(true)
     const animationIdRef = useRef(null)
     const elementUnderIds = useRef(null)
-    const srcRef = useRef(cursorSettings.imgCursor)
 
     const [cursorState, setCursorState] = useState({
         position: { x: positionRef.current.x, y: positionRef.current.y },
         isHidden: isHiddenRef.current,
-        src: srcRef.current,
     })
 
     const updateState = (newState) => {
@@ -248,16 +244,6 @@ export function useCursor(
         animationIdRef.current = requestAnimationFrame(updatePosition)
     }
 
-    const changeCursorSrc = (newSrc) => {
-        if (!newSrc && newSrc != null) return
-        if (newSrc == null) newSrc = CursorImages.DEFAULT
-        if (newSrc == srcRef.current) return
-        srcRef.current = newSrc
-        updateState({
-            src: srcRef.current,
-        })
-    }
-
     return {
         cursorState,
         showCursor,
@@ -266,6 +252,5 @@ export function useCursor(
         startCursor,
         enableCursor,
         disableCursor,
-        changeCursorSrc,
     }
 }
