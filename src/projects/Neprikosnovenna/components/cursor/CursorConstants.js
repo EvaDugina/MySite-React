@@ -40,7 +40,6 @@ const CursorConfig = {
 
 export class CursorSettings {
     constructor({
-        timeout = 0,
         imgCursor = CursorImages.DEFAULT,
         isHidden = false,
         startX = null,
@@ -53,7 +52,6 @@ export class CursorSettings {
         mass = 0.1,
         maxSpeed = 50,
     } = {}) {
-        this.timeout = timeout
         this.imgCursor = imgCursor
         this.isHidden = isHidden
         this.startX = startX

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./Cursor.css";
 
 import { useCursor } from "./hooks/useCursor";
@@ -10,6 +10,10 @@ function Cursor({
   cursorSettings = new CursorSettings(),
   cursorZoneConfig = new CursorZoneConfig(),
 }) {
+  // useEffect(() => {
+  //   console.log("Render!");
+  // });
+
   const [src, setSrc] = useState(cursorSettings.imgCursor);
   const changeCursorSrc = (newSrc) => {
     if (!newSrc && newSrc != null) return;
@@ -17,28 +21,32 @@ function Cursor({
     setSrc(newSrc);
   };
 
-  const handleLeftClickDown = () => {
-    changeCursorSrc(currentZoneData.current.imgCursorClicked);
-  };
-
-  const handleLeftClickUp = () => {
-    changeCursorSrc(currentZoneData.current.imgCursor);
-  };
-
-  const { currentZoneData, updateCurrentZone } = useZone(
+  const { currentZoneDataRef, updateCurrentZone } = useZone(
     cursorZoneConfig,
     changeCursorSrc,
   );
-  const { cursorState, showCursor, hideCursor } = useCursor(
+  const handleLeftClickDown = useCallback(() => {
+    changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
+    cursorSettings.handleLeftClickDown?.();
+  }, [cursorSettings]);
+
+  const handleLeftClickUp = useCallback(() => {
+    changeCursorSrc(currentZoneDataRef.current.imgCursor);
+    cursorSettings.handleLeftClickUp?.();
+  }, [cursorSettings]);
+
+  const [position, setPosition] = useState({ x: null, y: null });
+  const [isHidden, setIsHidden] = useState(true);
+  const { showCursor, hideCursor } = useCursor(
     cursorSettings,
+    position,
+    setPosition,
+    isHidden,
+    setIsHidden,
     updateCurrentZone,
     handleLeftClickDown,
     handleLeftClickUp,
   );
-
-  // Добавим безопасное извлечение данных из cursorState
-  const position = cursorState.position;
-  const isHidden = cursorState.isHidden;
 
   return (
     <img

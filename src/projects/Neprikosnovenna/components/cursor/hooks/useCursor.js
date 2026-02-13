@@ -1,31 +1,41 @@
-import { useState, useEffect, useRef } from "react"
-import { CursorImages } from "../CursorConstants"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 export function useCursor(
     cursorSettings,
+    position,
+    setPosition,
+    isHidden,
+    setIsHidden,
     updateCurrentZone,
     handleLeftClickDown,
     handleLeftClickUp,
 ) {
     // Refs для изменяемых значений
-    const positionRef = useRef({ x: null, y: null })
+    const positionRef = useRef(position)
+    const isHiddenRef = useRef(isHidden)
+
     const targetRef = useRef({ x: null, y: null })
     const velocityRef = useRef({ x: 0, y: 0 })
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
     const isMouseDownRef = useRef(false)
-    const isHiddenRef = useRef(true)
     const animationIdRef = useRef(null)
-    const elementUnderIds = useRef(null)
 
-    const [cursorState, setCursorState] = useState({
-        position: { x: positionRef.current.x, y: positionRef.current.y },
-        isHidden: isHiddenRef.current,
+    const windowSizeRef = useRef({
+        width: window.innerWidth,
+        height: window.innerHeight,
     })
 
-    const updateState = (newState) => {
-        setCursorState((prev) => ({ ...prev, ...newState }))
-    }
+    const callbacksRef = useRef({
+        handleLeftClickDown,
+        handleLeftClickUp,
+    })
+    useEffect(() => {
+        callbacksRef.current = {
+            handleLeftClickDown,
+            handleLeftClickUp,
+        }
+    }, [handleLeftClickDown, handleLeftClickUp])
 
     // Инициализация контроллера
     useEffect(() => {
@@ -41,46 +51,39 @@ export function useCursor(
     // PUBLIC METHODS
     //
 
-    const hideCursor = () => {
+    const hideCursor = useCallback(() => {
         if (isHiddenRef.current) return
         isHiddenRef.current = true
-        updateState({
-            isHidden: isHiddenRef.current,
-        })
-    }
+        setIsHidden(isHiddenRef.current)
+    }, [])
 
-    const showCursor = () => {
+    const showCursor = useCallback(() => {
         if (!isHiddenRef.current) return
         isHiddenRef.current = false
-        updateState({
-            isHidden: isHiddenRef.current,
-        })
-    }
+        setIsHidden(isHiddenRef.current)
+    }, [])
 
-    const startCursor = () => {
+    const startCursor = useCallback(() => {
         isStoppedRef.current = false
-        window.addEventListener("mousemove", onMosemove)
+        window.addEventListener("mousemove", onMoseMove)
         startAnimation()
-    }
+    }, [])
 
-    const stopCursor = () => {
+    const stopCursor = useCallback(() => {
         isStoppedRef.current = true
-        window.removeEventListener("mousemove", onMosemove)
-        if (animationIdRef.current) {
-            cancelAnimationFrame(animationIdRef.current)
-            animationIdRef.current = null
-        }
-    }
+        window.removeEventListener("mousemove", onMoseMove)
+        stopAnimation()
+    }, [])
 
-    const enableCursor = () => {
+    const enableCursor = useCallback(() => {
         window.addEventListener("mousedown", onMouseDown)
         window.addEventListener("mouseup", onMouseUp)
-    }
+    }, [])
 
-    const disableCursor = () => {
+    const disableCursor = useCallback(() => {
         window.removeEventListener("mousedown", onMouseDown)
         window.removeEventListener("mouseup", onMouseUp)
-    }
+    }, [])
 
     //
     // INIT & DESTROY
@@ -89,74 +92,77 @@ export function useCursor(
     const init = () => {
         // initPosition
         if (cursorSettings.startX != null && cursorSettings.startY != null) {
-            positionRef.current.x = window.innerWidth * cursorSettings.startX
-            positionRef.current.y = window.innerHeight * cursorSettings.startY
-            updateState({
-                position: {
-                    x: positionRef.current.x,
-                    y: positionRef.current.y,
-                },
-            })
+            positionRef.current = {
+                x: window.innerWidth * cursorSettings.startX,
+                y: window.innerHeight * cursorSettings.startY,
+            }
+            setPosition(positionRef.current)
             showCursor()
         } else {
             isTargetNotInitRef.current = true
         }
 
-        let timeout = cursorSettings.timeout || 0
+        startCursor()
+        enableCursor()
 
-        setTimeout(() => {
-            startCursor()
-            enableCursor()
-            window.addEventListener("blur", onBlur)
-        }, timeout * 1000)
+        window.addEventListener("blur", onBlur)
+        window.addEventListener("resize", onResize)
     }
 
     const destroy = () => {
         stopCursor()
         disableCursor()
         window.removeEventListener("blur", onBlur)
+        window.removeEventListener("resize", onResize)
     }
 
     //
     // HANDLERS
     //
 
-    const onMosemove = (event) => {
+    const onMoseMove = (event) => {
         targetRef.current = { x: event.clientX, y: event.clientY }
         startAnimation()
     }
 
     // Обработчики событий мыши
     const onMouseDown = (event) => {
-        if (event.which === 1) {
+        if (event.button === 0) {
             if (isMouseDownRef.current) return
-
             isMouseDownRef.current = true
-
-            // Обычный клик
-            if (handleLeftClickDown) {
-                handleLeftClickDown(event)
-            }
+            callbacksRef.current.handleLeftClickDown?.(event)
         }
     }
 
     const onMouseUp = (event) => {
-        if (event.which === 1) {
+        if (event.button === 0) {
             if (!isMouseDownRef.current) return
-
             isMouseDownRef.current = false
-
-            if (handleLeftClickUp) {
-                handleLeftClickUp(event)
-            }
+            callbacksRef.current.handleLeftClickUp?.(event)
         }
     }
 
     const onBlur = () => {
-        if (animationIdRef.current) {
-            // cancelAnimationFrame(animationIdRef.current)
-            animationIdRef.current = null
+        stopAnimation()
+    }
+
+    const onResize = () => {
+        const newWindowSize = {
+            width: window.innerWidth,
+            height: window.innerHeight,
         }
+
+        positionRef.current = {
+            x:
+                (positionRef.current.x / windowSizeRef.current.width) *
+                newWindowSize.width,
+            y:
+                (positionRef.current.y / windowSizeRef.current.height) *
+                newWindowSize.height,
+        }
+        setPosition(positionRef.current)
+
+        windowSizeRef.current = { ...newWindowSize }
     }
 
     //
@@ -164,29 +170,53 @@ export function useCursor(
     //
 
     const startAnimation = () => {
-        if (!animationIdRef.current && !isStoppedRef.current) {
+        if (animationIdRef.current) return
+        if (!isStoppedRef.current)
             animationIdRef.current = requestAnimationFrame(updatePosition)
+    }
+
+    const stopAnimation = () => {
+        if (animationIdRef.current) {
+            cancelAnimationFrame(animationIdRef.current)
+            animationIdRef.current = null
         }
     }
 
-    const updatePosition = () => {
+    const updatePosition = useCallback(() => {
         if (
-            isStoppedRef.current ||
             targetRef.current.x == null ||
-            targetRef.current.y == null
+            targetRef.current.y == null ||
+            isStoppedRef.current
         ) {
-            animationIdRef.current = requestAnimationFrame(updatePosition)
+            stopAnimation()
             return
+        }
+
+        // Инициализация на месте указателя
+        if (isTargetNotInitRef.current) {
+            isTargetNotInitRef.current = false
+            positionRef.current = { ...targetRef.current }
+            setPosition(positionRef.current)
+            showCursor()
         }
 
         let currentPosition = { ...positionRef.current }
 
-        // Инициализация на месте указателя
-        if (isTargetNotInitRef.current) {
-            currentPosition.x = targetRef.current.x
-            currentPosition.y = targetRef.current.y
-            isTargetNotInitRef.current = false
-            showCursor()
+        // Оптимизация. Условие остановки анимации, когда курсор неподвижен
+        const EPS = 0.1
+        const isNearTarget =
+            Math.hypot(
+                targetRef.current.x - currentPosition.x,
+                targetRef.current.y - currentPosition.y,
+            ) < EPS
+        const isAlmostStopped =
+            Math.hypot(velocityRef.current.x, velocityRef.current.y) < EPS
+        if (isNearTarget && isAlmostStopped) {
+            positionRef.current = { ...targetRef.current }
+            setPosition(positionRef.current)
+            velocityRef.current = { x: 0, y: 0 }
+            stopAnimation()
+            return
         }
 
         // Рассчитываем силу (разница между текущей и целевой позицией)
@@ -217,35 +247,19 @@ export function useCursor(
                 (velocityRef.current.y / speed) * cursorSettings.maxSpeed
         }
 
-        currentPosition = {
+        positionRef.current = {
             x: currentPosition.x + velocityRef.current.x,
             y: currentPosition.y + velocityRef.current.y,
         }
+        setPosition(positionRef.current)
 
-        if (
-            currentPosition.x != positionRef.current.x ||
-            currentPosition.y != positionRef.current.y
-        ) {
-            positionRef.current.x = currentPosition.x
-            positionRef.current.y = currentPosition.y
-
-            // Обновляем состояние
-            updateState({
-                position: {
-                    x: positionRef.current.x,
-                    y: positionRef.current.y,
-                },
-            })
-
-            updateCurrentZone(positionRef.current.x, positionRef.current.y)
-        }
+        updateCurrentZone(positionRef.current.x, positionRef.current.y)
 
         // Продолжаем анимацию
         animationIdRef.current = requestAnimationFrame(updatePosition)
-    }
+    }, [cursorSettings])
 
     return {
-        cursorState,
         showCursor,
         hideCursor,
         stopCursor,

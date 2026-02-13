@@ -2,7 +2,7 @@ import { useRef, useCallback } from "react"
 
 export function useZone(cursorZoneConfig, changeCursorSrc) {
     const elementZoneRef = useRef(null)
-    const currentZoneData = useRef(
+    const currentZoneDataRef = useRef(
         cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
     )
 
@@ -13,7 +13,7 @@ export function useZone(cursorZoneConfig, changeCursorSrc) {
             if (data.elementId == elementZone.id) {
                 changeCursorSrc(data.imgCursor)
                 if (data.handleOn) data.handleOn()
-                currentZoneData.current = data
+                currentZoneDataRef.current = data
             }
         })
     }
@@ -40,5 +40,5 @@ export function useZone(cursorZoneConfig, changeCursorSrc) {
         if (handleOnZone) handleOnZone(elementZoneRef.current)
     }
 
-    return { currentZoneData, updateCurrentZone }
+    return { currentZoneDataRef, updateCurrentZone }
 }

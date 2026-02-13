@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import "./WhenYouSoBeautifullyDied.css";
 
 import {
@@ -10,20 +10,6 @@ import Cursor from "./components/cursor/Cursor";
 import Portrait, { PortraitType } from "./components/portrait/Portrait";
 import Flash, { FlashType } from "./components/Flash/Flash";
 import Background from "./components/background/Background";
-
-const cursorSettings = new CursorSettings({
-  timeout: 0, // Задержка перед началом
-  imgCursor: CursorImages.DEFAULT,
-  startX: null, // Начальная позиция от width по X
-  startY: null, // Начальная позиция от рушпре по Y
-  handleLeftClickDown: null,
-  handleLeftClickUp: null,
-  handleDoubleLeftClick: null,
-  stiffness: 0.4, // Жесткость пружины (скорость реакции)
-  damping: 0.1, // Затухание (плавность остановки)
-  mass: 0.1, // Масса объекта
-  maxSpeed: 50, // Максимальная скорость
-});
 
 const Zone = {
   BACK: 1,
@@ -59,6 +45,24 @@ const cursorZoneConfig = new CursorZoneConfig({
 });
 
 function WhenYouSoBeautifullyDied() {
+  const handleLeftClickDown = useCallback((val) => {}, []);
+
+  const handleLeftClickUp = useCallback((val) => {}, []);
+
+  const cursorSettings = useMemo(() => {
+    return new CursorSettings({
+      imgCursor: CursorImages.DEFAULT,
+      startX: null, // Начальная позиция от width по X
+      startY: null, // Начальная позиция от рушпре по Y
+      handleLeftClickDown: handleLeftClickDown,
+      handleLeftClickUp: handleLeftClickUp,
+      stiffness: 0.4, // Жесткость пружины (скорость реакции)
+      damping: 0.1, // Затухание (плавность остановки)
+      mass: 0.1, // Масса объекта
+      maxSpeed: 20, // Максимальная скорость
+    });
+  }, [handleLeftClickDown, handleLeftClickUp]);
+
   return (
     <>
       <Cursor
