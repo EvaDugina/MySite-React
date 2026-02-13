@@ -11,7 +11,10 @@ function useCursorPhysics(position, stiffness, mass, damping, maxSpeed) {
     }, [stiffness, mass, damping, maxSpeed])
 
     const recalculatePosition = () => {
+        if (targetRef.current.x == null || targetRef.current.y == null) return
+
         const { stiffness, mass, damping, maxSpeed } = settingsRef.current
+
         let currentPosition = { ...positionRef.current }
 
         // Рассчитываем силу (разница между текущей и целевой позицией)
@@ -42,8 +45,6 @@ function useCursorPhysics(position, stiffness, mass, damping, maxSpeed) {
             x: currentPosition.x + velocityRef.current.x,
             y: currentPosition.y + velocityRef.current.y,
         }
-
-        return positionRef.current
     }
 
     return {

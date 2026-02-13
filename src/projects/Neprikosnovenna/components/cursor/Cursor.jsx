@@ -31,14 +31,24 @@ function Cursor({
     setSrc(newSrc);
   }, []);
 
-  const [position, setPosition] = useState({ x: null, y: null });
   const [isHidden, setIsHidden] = useState(true);
+  const hideCursor = useCallback(() => {
+    setIsHidden(true);
+  }, []);
+
+  const showCursor = useCallback(() => {
+    setIsHidden(false);
+  }, []);
+
+  const [position, setPosition] = useState({ x: null, y: null });
+  // const [isHidden, setIsHidden] = useState(true);
   const {} = useCursor(
     cursorSettings,
     position,
     setPosition,
-    isHidden,
-    setIsHidden,
+    // isHidden,
+    showCursor,
+    // setIsHidden,
     handleLeftClickDown,
     handleLeftClickUp,
   );

@@ -5,8 +5,7 @@ export function useCursor(
     cursorSettings,
     position,
     setPosition,
-    isHidden,
-    setIsHidden,
+    showCursor,
     handleLeftClickDown,
     handleLeftClickUp,
 ) {
@@ -19,7 +18,6 @@ export function useCursor(
             cursorSettings.maxSpeed,
         )
 
-    const isHiddenRef = useRef(isHidden)
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
     const isMouseDownRef = useRef(false)
@@ -53,27 +51,15 @@ export function useCursor(
     // PUBLIC METHODS
     //
 
-    const hideCursor = useCallback(() => {
-        if (isHiddenRef.current) return
-        isHiddenRef.current = true
-        setIsHidden(isHiddenRef.current)
-    }, [])
-
-    const showCursor = useCallback(() => {
-        if (!isHiddenRef.current) return
-        isHiddenRef.current = false
-        setIsHidden(isHiddenRef.current)
-    }, [])
-
     const startCursor = useCallback(() => {
         isStoppedRef.current = false
-        window.addEventListener("mousemove", onMoseMove)
+        window.addEventListener("mousemove", onMouseMove)
         startAnimation()
     }, [])
 
     const stopCursor = useCallback(() => {
         isStoppedRef.current = true
-        window.removeEventListener("mousemove", onMoseMove)
+        window.removeEventListener("mousemove", onMouseMove)
         stopAnimation()
     }, [])
 
@@ -126,7 +112,7 @@ export function useCursor(
     // HANDLERS
     //
 
-    const onMoseMove = (event) => {
+    const onMouseMove = (event) => {
         targetRef.current = { x: event.clientX, y: event.clientY }
         startAnimation()
     }
@@ -225,15 +211,14 @@ export function useCursor(
             return
         }
 
-        setPosition(recalculatePosition())
+        recalculatePosition()
+        setPosition(positionRef.current)
 
         // Продолжаем анимацию
         animationIdRef.current = requestAnimationFrame(updatePosition)
-    }, [cursorSettings])
+    }, [])
 
     return {
-        showCursor,
-        hideCursor,
         stopCursor,
         startCursor,
         enableCursor,
