@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+import useCursorPhysics from "./useCursorPhysics"
 
 export function useCursor(
     cursorSettings,
@@ -6,24 +7,27 @@ export function useCursor(
     setPosition,
     isHidden,
     setIsHidden,
-    updateCurrentZone,
     handleLeftClickDown,
     handleLeftClickUp,
 ) {
-    // Refs для изменяемых значений
-    const positionRef = useRef(position)
-    const isHiddenRef = useRef(isHidden)
+    const { positionRef, targetRef, velocityRef, recalculatePosition } =
+        useCursorPhysics(
+            position,
+            cursorSettings.stiffness,
+            cursorSettings.mass,
+            cursorSettings.damping,
+            cursorSettings.maxSpeed,
+        )
 
-    const targetRef = useRef({ x: null, y: null })
-    const velocityRef = useRef({ x: 0, y: 0 })
+    const isHiddenRef = useRef(isHidden)
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
     const isMouseDownRef = useRef(false)
     const animationIdRef = useRef(null)
 
     const windowSizeRef = useRef({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: null,
+        height: null,
     })
 
     const callbacksRef = useRef({
@@ -39,9 +43,7 @@ export function useCursor(
 
     // Инициализация контроллера
     useEffect(() => {
-        // Инициализируем контроллер
         init()
-
         return () => {
             destroy()
         }
@@ -90,11 +92,15 @@ export function useCursor(
     //
 
     const init = () => {
-        // initPosition
+        windowSizeRef.current = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        }
+
         if (cursorSettings.startX != null && cursorSettings.startY != null) {
             positionRef.current = {
-                x: window.innerWidth * cursorSettings.startX,
-                y: window.innerHeight * cursorSettings.startY,
+                x: windowSizeRef.width * cursorSettings.startX,
+                y: windowSizeRef.height * cursorSettings.startY,
             }
             setPosition(positionRef.current)
             showCursor()
@@ -219,41 +225,7 @@ export function useCursor(
             return
         }
 
-        // Рассчитываем силу (разница между текущей и целевой позицией)
-        const forceX =
-            (targetRef.current.x - currentPosition.x) * cursorSettings.stiffness
-        const forceY =
-            (targetRef.current.y - currentPosition.y) * cursorSettings.stiffness
-
-        // Ускорение = сила / масса
-        const accelerationX = forceX / cursorSettings.mass
-        const accelerationY = forceY / cursorSettings.mass
-
-        // Обновляем скорость с учетом ускорения и затухания
-        velocityRef.current.x =
-            (velocityRef.current.x + accelerationX) * cursorSettings.damping
-        velocityRef.current.y =
-            (velocityRef.current.y + accelerationY) * cursorSettings.damping
-
-        // Ограничиваем максимальную скорость
-        const speed = Math.sqrt(
-            velocityRef.current.x * velocityRef.current.x +
-                velocityRef.current.y * velocityRef.current.y,
-        )
-        if (speed > cursorSettings.maxSpeed) {
-            velocityRef.current.x =
-                (velocityRef.current.x / speed) * cursorSettings.maxSpeed
-            velocityRef.current.y =
-                (velocityRef.current.y / speed) * cursorSettings.maxSpeed
-        }
-
-        positionRef.current = {
-            x: currentPosition.x + velocityRef.current.x,
-            y: currentPosition.y + velocityRef.current.y,
-        }
-        setPosition(positionRef.current)
-
-        updateCurrentZone(positionRef.current.x, positionRef.current.y)
+        setPosition(recalculatePosition())
 
         // Продолжаем анимацию
         animationIdRef.current = requestAnimationFrame(updatePosition)

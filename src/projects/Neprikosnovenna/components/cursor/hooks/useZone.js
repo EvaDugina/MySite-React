@@ -1,10 +1,30 @@
-import { useRef, useCallback } from "react"
+import { useRef, useEffect } from "react"
+import useThrottle from "./useThrottle"
 
-export function useZone(cursorZoneConfig, changeCursorSrc) {
+export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
     const elementZoneRef = useRef(null)
     const currentZoneDataRef = useRef(
         cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
     )
+
+    const updateCurrentZone = useThrottle(() => {
+        const elementUnder = document.elementFromPoint(
+            cursorPosition.x,
+            cursorPosition.y,
+        )
+        if (elementZoneRef.current == elementUnder) return
+
+        handleOffZone?.(elementZoneRef.current)
+        elementZoneRef.current = elementUnder
+        handleOnZone?.(elementZoneRef.current)
+    }, 50)
+
+    useEffect(() => {
+        document.addEventListener("mousemove", updateCurrentZone)
+        return () => {
+            document.removeEventListener("mousemove", updateCurrentZone)
+        }
+    }, [updateCurrentZone])
 
     const handleOnZone = (elementZone) => {
         if (!elementZone) return
@@ -28,17 +48,5 @@ export function useZone(cursorZoneConfig, changeCursorSrc) {
         })
     }
 
-    const updateCurrentZone = (cursorPositionX, cursorPositionY) => {
-        const elementUnder = document.elementFromPoint(
-            cursorPositionX,
-            cursorPositionY,
-        )
-        if (elementZoneRef.current == elementUnder) return
-
-        if (handleOffZone) handleOffZone(elementZoneRef.current)
-        elementZoneRef.current = elementUnder
-        if (handleOnZone) handleOnZone(elementZoneRef.current)
-    }
-
-    return { currentZoneDataRef, updateCurrentZone }
+    return { currentZoneDataRef }
 }

@@ -14,17 +14,6 @@ function Cursor({
   //   console.log("Render!");
   // });
 
-  const [src, setSrc] = useState(cursorSettings.imgCursor);
-  const changeCursorSrc = (newSrc) => {
-    if (!newSrc && newSrc != null) return;
-    if (newSrc == null) newSrc = CursorImages.DEFAULT;
-    setSrc(newSrc);
-  };
-
-  const { currentZoneDataRef, updateCurrentZone } = useZone(
-    cursorZoneConfig,
-    changeCursorSrc,
-  );
   const handleLeftClickDown = useCallback(() => {
     changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
     cursorSettings.handleLeftClickDown?.();
@@ -35,17 +24,29 @@ function Cursor({
     cursorSettings.handleLeftClickUp?.();
   }, [cursorSettings]);
 
+  const [src, setSrc] = useState(cursorSettings.imgCursor);
+  const changeCursorSrc = useCallback((newSrc) => {
+    if (!newSrc && newSrc != null) return;
+    if (newSrc == null) newSrc = CursorImages.DEFAULT;
+    setSrc(newSrc);
+  }, []);
+
   const [position, setPosition] = useState({ x: null, y: null });
   const [isHidden, setIsHidden] = useState(true);
-  const { showCursor, hideCursor } = useCursor(
+  const {} = useCursor(
     cursorSettings,
     position,
     setPosition,
     isHidden,
     setIsHidden,
-    updateCurrentZone,
     handleLeftClickDown,
     handleLeftClickUp,
+  );
+
+  const { currentZoneDataRef } = useZone(
+    position,
+    cursorZoneConfig,
+    changeCursorSrc,
   );
 
   return (
@@ -55,8 +56,7 @@ function Cursor({
       src={src}
       alt="муха"
       style={{
-        left: position.x,
-        top: position.y,
+        transform: `translate(-26.5%, -9%) translate3d(${position.x}px, ${position.y}px, 0)`,
         display: isHidden ? "none" : "block",
       }}
     />

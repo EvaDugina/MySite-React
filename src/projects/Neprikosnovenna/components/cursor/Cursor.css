@@ -3,6 +3,6 @@
   position: fixed;
   width: 1.9rem;
   height: 1.9rem;
-  will-change: transform; /* Для оптимизации анимации */
   transform: translate(-26.5%, -9%);
+  will-change: transform; /* Для оптимизации анимации */
 }
