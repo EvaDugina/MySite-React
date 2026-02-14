@@ -4,7 +4,7 @@ import "./Cursor.css";
 import { useCursor } from "./hooks/useCursor";
 
 import { CursorSettings, CursorZoneConfig } from "./CursorConstants";
-import { useZone } from "./hooks/useZone";
+import { useCursorZone } from "./hooks/useCursorZone";
 
 function Cursor({
   cursorSettings = new CursorSettings(),
@@ -41,19 +41,16 @@ function Cursor({
   }, []);
 
   const [position, setPosition] = useState({ x: null, y: null });
-  // const [isHidden, setIsHidden] = useState(true);
   const {} = useCursor(
     cursorSettings,
     position,
     setPosition,
-    // isHidden,
     showCursor,
-    // setIsHidden,
     handleLeftClickDown,
     handleLeftClickUp,
   );
 
-  const { currentZoneDataRef } = useZone(
+  const { currentZoneDataRef } = useCursorZone(
     position,
     cursorZoneConfig,
     changeCursorSrc,

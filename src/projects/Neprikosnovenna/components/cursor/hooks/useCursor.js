@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback } from "react"
 import useCursorPhysics from "./useCursorPhysics"
+import useCursorAnimation from "./useCursorAnimation"
 
 export function useCursor(
     cursorSettings,
@@ -9,6 +10,10 @@ export function useCursor(
     handleLeftClickDown,
     handleLeftClickUp,
 ) {
+    const isTargetNotInitRef = useRef(false)
+    const isStoppedRef = useRef(true)
+    const isMouseDownRef = useRef(false)
+
     const { positionRef, targetRef, velocityRef, recalculatePosition } =
         useCursorPhysics(
             position,
@@ -18,10 +23,8 @@ export function useCursor(
             cursorSettings.maxSpeed,
         )
 
-    const isTargetNotInitRef = useRef(false)
-    const isStoppedRef = useRef(true)
-    const isMouseDownRef = useRef(false)
-    const animationIdRef = useRef(null)
+    const { startAnimation, continueAnimation, stopAnimation } =
+        useCursorAnimation(updatePosition, isStoppedRef)
 
     const windowSizeRef = useRef({
         width: null,
@@ -161,20 +164,7 @@ export function useCursor(
     // LOCAL METHODS
     //
 
-    const startAnimation = () => {
-        if (animationIdRef.current) return
-        if (!isStoppedRef.current)
-            animationIdRef.current = requestAnimationFrame(updatePosition)
-    }
-
-    const stopAnimation = () => {
-        if (animationIdRef.current) {
-            cancelAnimationFrame(animationIdRef.current)
-            animationIdRef.current = null
-        }
-    }
-
-    const updatePosition = useCallback(() => {
+    function updatePosition() {
         if (
             targetRef.current.x === null ||
             targetRef.current.y === null ||
@@ -214,9 +204,8 @@ export function useCursor(
         recalculatePosition()
         setPosition(positionRef.current)
 
-        // Продолжаем анимацию
-        animationIdRef.current = requestAnimationFrame(updatePosition)
-    }, [])
+        continueAnimation()
+    }
 
     return {
         stopCursor,
@@ -225,3 +214,5 @@ export function useCursor(
         disableCursor,
     }
 }
+
+export default useCursor

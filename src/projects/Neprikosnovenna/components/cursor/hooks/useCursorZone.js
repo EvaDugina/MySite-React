@@ -1,7 +1,11 @@
 import { useRef, useEffect, useCallback } from "react"
 import useThrottle from "./useThrottle"
 
-export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
+export function useCursorZone(
+    cursorPosition,
+    cursorZoneConfig,
+    changeCursorSrc,
+) {
     const elementZoneRef = useRef(null)
     const currentZoneDataRef = useRef(
         cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
@@ -54,3 +58,5 @@ export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
 
     return { currentZoneDataRef }
 }
+
+export default useCursorZone
