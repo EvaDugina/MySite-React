@@ -40,11 +40,8 @@ function Cursor({
     setIsHidden(false);
   }, []);
 
-  const [position, setPosition] = useState({ x: null, y: null });
-  const {} = useCursor(
+  const { position } = useCursor(
     cursorSettings,
-    position,
-    setPosition,
     showCursor,
     handleLeftClickDown,
     handleLeftClickUp,

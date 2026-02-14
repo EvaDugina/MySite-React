@@ -1,11 +1,9 @@
-import { useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import useCursorPhysics from "./useCursorPhysics"
 import useCursorAnimation from "./useCursorAnimation"
 
 export function useCursor(
     cursorSettings,
-    position,
-    setPosition,
     showCursor,
     handleLeftClickDown,
     handleLeftClickUp,
@@ -14,6 +12,7 @@ export function useCursor(
     const isStoppedRef = useRef(true)
     const isMouseDownRef = useRef(false)
 
+    const [position, setPosition] = useState({ x: null, y: null })
     const { positionRef, targetRef, velocityRef, recalculatePosition } =
         useCursorPhysics(
             position,
@@ -22,9 +21,6 @@ export function useCursor(
             cursorSettings.damping,
             cursorSettings.maxSpeed,
         )
-
-    const { startAnimation, continueAnimation, stopAnimation } =
-        useCursorAnimation(updatePosition, isStoppedRef)
 
     const windowSizeRef = useRef({
         width: null,
@@ -164,7 +160,7 @@ export function useCursor(
     // LOCAL METHODS
     //
 
-    function updatePosition() {
+    const updatePosition = useCallback(() => {
         if (
             targetRef.current.x === null ||
             targetRef.current.y === null ||
@@ -205,9 +201,12 @@ export function useCursor(
         setPosition(positionRef.current)
 
         continueAnimation()
-    }
+    }, [])
+    const { startAnimation, continueAnimation, stopAnimation } =
+        useCursorAnimation(updatePosition, isStoppedRef)
 
     return {
+        position,
         stopCursor,
         startCursor,
         enableCursor,
