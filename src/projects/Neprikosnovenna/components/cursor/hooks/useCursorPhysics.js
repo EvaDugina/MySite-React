@@ -11,7 +11,7 @@ function useCursorPhysics(position, stiffness, mass, damping, maxSpeed) {
     }, [stiffness, mass, damping, maxSpeed])
 
     const recalculatePosition = () => {
-        if (targetRef.current.x == null || targetRef.current.y == null) return
+        if (targetRef.current.x === null || targetRef.current.y === null) return
 
         const { stiffness, mass, damping, maxSpeed } = settingsRef.current
 

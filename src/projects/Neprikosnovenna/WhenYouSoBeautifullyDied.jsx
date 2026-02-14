@@ -52,8 +52,8 @@ function WhenYouSoBeautifullyDied() {
   const cursorSettings = useMemo(() => {
     return new CursorSettings({
       imgCursor: CursorImages.DEFAULT,
-      startX: null, // Начальная позиция от width по X
-      startY: null, // Начальная позиция от рушпре по Y
+      startX: 0.9, // Начальная позиция от width по X
+      startY: 0.25, // Начальная позиция от рушпре по Y
       handleLeftClickDown: handleLeftClickDown,
       handleLeftClickUp: handleLeftClickUp,
       stiffness: 0.4, // Жесткость пружины (скорость реакции)

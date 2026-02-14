@@ -12,7 +12,7 @@ export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
             cursorPosition.x,
             cursorPosition.y,
         )
-        if (elementZoneRef.current == elementUnder) return
+        if (elementZoneRef.current === elementUnder) return
 
         handleOffZone?.(elementZoneRef.current)
         elementZoneRef.current = elementUnder
@@ -31,7 +31,7 @@ export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
             if (!elementZone) return
             Object.values(cursorZoneConfig.Zone).forEach((zoneValue) => {
                 const data = cursorZoneConfig.Data[zoneValue]
-                if (data.elementId == elementZone.id) {
+                if (data.elementId === elementZone.id) {
                     changeCursorSrc(data.imgCursor)
                     currentZoneDataRef.current = data
                     data.handleOn?.()
@@ -46,7 +46,7 @@ export function useZone(cursorPosition, cursorZoneConfig, changeCursorSrc) {
             if (!elementZone) return
             Object.values(cursorZoneConfig.Zone).forEach((zoneValue) => {
                 const data = cursorZoneConfig.Data[zoneValue]
-                if (data.elementId == elementZone.id) data.handleOff?.()
+                if (data.elementId === elementZone.id) data.handleOff?.()
             })
         },
         [cursorZoneConfig],

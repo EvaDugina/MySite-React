@@ -85,8 +85,8 @@ export function useCursor(
 
         if (cursorSettings.startX != null && cursorSettings.startY != null) {
             positionRef.current = {
-                x: windowSizeRef.width * cursorSettings.startX,
-                y: windowSizeRef.height * cursorSettings.startY,
+                x: windowSizeRef.current.width * cursorSettings.startX,
+                y: windowSizeRef.current.height * cursorSettings.startY,
             }
             setPosition(positionRef.current)
             showCursor()
@@ -176,8 +176,8 @@ export function useCursor(
 
     const updatePosition = useCallback(() => {
         if (
-            targetRef.current.x == null ||
-            targetRef.current.y == null ||
+            targetRef.current.x === null ||
+            targetRef.current.y === null ||
             isStoppedRef.current
         ) {
             stopAnimation()

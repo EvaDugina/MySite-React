@@ -27,7 +27,7 @@ function Cursor({
   const [src, setSrc] = useState(cursorSettings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
     if (!newSrc && newSrc != null) return;
-    if (newSrc == null) newSrc = CursorImages.DEFAULT;
+    if (newSrc === null) newSrc = CursorImages.DEFAULT;
     setSrc(newSrc);
   }, []);
 
