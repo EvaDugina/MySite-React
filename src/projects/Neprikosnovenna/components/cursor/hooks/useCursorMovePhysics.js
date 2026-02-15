@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react"
 
-function useCursorPhysics(position, stiffness, mass, damping, maxSpeed) {
+function useCursorMovePhysics(position, stiffness, mass, damping, maxSpeed) {
     const positionRef = useRef(position)
     const targetRef = useRef({ x: null, y: null })
     const velocityRef = useRef({ x: 0, y: 0 })
@@ -55,4 +55,4 @@ function useCursorPhysics(position, stiffness, mass, damping, maxSpeed) {
     }
 }
 
-export default useCursorPhysics
+export default useCursorMovePhysics

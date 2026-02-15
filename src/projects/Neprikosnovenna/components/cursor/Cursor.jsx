@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import "./Cursor.css";
 
-import { useCursor } from "./hooks/useCursor";
+import { useCursorMove } from "./hooks/useCursorMove";
 
 import { CursorSettings, CursorZoneConfig } from "./CursorConstants";
 import { useCursorZone } from "./hooks/useCursorZone";
+import useCursorEvents from "./hooks/useCursorEvents";
 
 function Cursor({
   cursorSettings = new CursorSettings(),
@@ -40,11 +41,16 @@ function Cursor({
     setIsHidden(false);
   }, []);
 
-  const { position } = useCursor(
-    cursorSettings,
-    showCursor,
+  const { enableCursor, disableCursor } = useCursorEvents(
     handleLeftClickDown,
     handleLeftClickUp,
+  );
+
+  const { position } = useCursorMove(
+    cursorSettings,
+    showCursor,
+    enableCursor,
+    disableCursor,
   );
 
   const { currentZoneDataRef } = useCursorZone(

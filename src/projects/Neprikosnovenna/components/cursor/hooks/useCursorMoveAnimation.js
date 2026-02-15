@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react"
 
-export function useCursorAnimation(callbackUpdatePosition, isStoppedRef) {
+export function useCursorMoveAnimation(callbackUpdatePosition, isStoppedRef) {
     const animationIdRef = useRef(null)
 
     const startAnimation = useCallback(() => {
@@ -25,4 +25,4 @@ export function useCursorAnimation(callbackUpdatePosition, isStoppedRef) {
     return { startAnimation, continueAnimation, stopAnimation }
 }
 
-export default useCursorAnimation
+export default useCursorMoveAnimation

@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import useCursorPhysics from "./useCursorPhysics"
-import useCursorAnimation from "./useCursorAnimation"
+import useCursorMovePhysics from "./useCursorMovePhysics"
+import useCursorMoveAnimation from "./useCursorMoveAnimation"
+import useCursorEvents from "./useCursorEvents"
 
-export function useCursor(
+export function useCursorMove(
     cursorSettings,
     showCursor,
-    handleLeftClickDown,
-    handleLeftClickUp,
+    enableCursor,
+    disableCursor,
 ) {
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
-    const isMouseDownRef = useRef(false)
 
     const [position, setPosition] = useState({ x: null, y: null })
     const { positionRef, targetRef, velocityRef, recalculatePosition } =
-        useCursorPhysics(
+        useCursorMovePhysics(
             position,
             cursorSettings.stiffness,
             cursorSettings.mass,
@@ -26,17 +26,6 @@ export function useCursor(
         width: null,
         height: null,
     })
-
-    const callbacksRef = useRef({
-        handleLeftClickDown,
-        handleLeftClickUp,
-    })
-    useEffect(() => {
-        callbacksRef.current = {
-            handleLeftClickDown,
-            handleLeftClickUp,
-        }
-    }, [handleLeftClickDown, handleLeftClickUp])
 
     // Инициализация контроллера
     useEffect(() => {
@@ -60,16 +49,6 @@ export function useCursor(
         isStoppedRef.current = true
         window.removeEventListener("mousemove", onMouseMove)
         stopAnimation()
-    }, [])
-
-    const enableCursor = useCallback(() => {
-        window.addEventListener("mousedown", onMouseDown)
-        window.addEventListener("mouseup", onMouseUp)
-    }, [])
-
-    const disableCursor = useCallback(() => {
-        window.removeEventListener("mousedown", onMouseDown)
-        window.removeEventListener("mouseup", onMouseUp)
     }, [])
 
     //
@@ -114,23 +93,6 @@ export function useCursor(
     const onMouseMove = (event) => {
         targetRef.current = { x: event.clientX, y: event.clientY }
         startAnimation()
-    }
-
-    // Обработчики событий мыши
-    const onMouseDown = (event) => {
-        if (event.button === 0) {
-            if (isMouseDownRef.current) return
-            isMouseDownRef.current = true
-            callbacksRef.current.handleLeftClickDown?.(event)
-        }
-    }
-
-    const onMouseUp = (event) => {
-        if (event.button === 0) {
-            if (!isMouseDownRef.current) return
-            isMouseDownRef.current = false
-            callbacksRef.current.handleLeftClickUp?.(event)
-        }
     }
 
     const onBlur = () => {
@@ -203,15 +165,13 @@ export function useCursor(
         continueAnimation()
     }, [])
     const { startAnimation, continueAnimation, stopAnimation } =
-        useCursorAnimation(updatePosition, isStoppedRef)
+        useCursorMoveAnimation(updatePosition, isStoppedRef)
 
     return {
         position,
         stopCursor,
         startCursor,
-        enableCursor,
-        disableCursor,
     }
 }
 
-export default useCursor
+export default useCursorMove
