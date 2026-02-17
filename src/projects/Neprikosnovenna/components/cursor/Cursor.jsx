@@ -39,12 +39,7 @@ const Cursor = forwardRef((props, ref) => {
     setIsHidden(false);
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    hideCursor,
-    showCursor,
-  }));
-
-  const {position, getPositionStable} = useCursorMove(
+  const {position, getPositionStable, stopCursor, startCursor} = useCursorMove(
     settings,
     showCursor,
     enableCursor,
@@ -56,6 +51,15 @@ const Cursor = forwardRef((props, ref) => {
     zoneSettings,
     changeCursorSrc,
   );
+
+  useImperativeHandle(ref, () => ({
+    hideCursor,
+    showCursor,
+    disableCursor,
+    enableCursor,
+    stopCursor, 
+    startCursor
+  }));
 
   return (
     <img
