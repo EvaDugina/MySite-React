@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback } from "react"
 import useThrottle from "./useThrottle"
 
 export function useCursorZone(
-    cursorPosition,
+    getPositionStable,
     cursorZoneConfig,
     changeCursorSrc,
 ) {
@@ -12,9 +12,10 @@ export function useCursorZone(
     )
 
     const updateCurrentZone = useThrottle(() => {
+        const position = getPositionStable()
         const elementUnder = document.elementFromPoint(
-            cursorPosition.x,
-            cursorPosition.y,
+            position.x,
+            position.y,
         )
         if (elementZoneRef.current === elementUnder) return
 
@@ -24,6 +25,7 @@ export function useCursorZone(
     }, 50)
 
     useEffect(() => {
+        console.log("useCursorZone() -> useEffect()")
         document.addEventListener("mousemove", updateCurrentZone)
         return () => {
             document.removeEventListener("mousemove", updateCurrentZone)

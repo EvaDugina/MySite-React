@@ -4,8 +4,6 @@ import useCursorMoveAnimation from "./useCursorMoveAnimation"
 
 export function useCursorMove(
     cursorSettings,
-    position,
-    setPosition,
     showCursor,
     enableCursor,
     disableCursor,
@@ -13,7 +11,12 @@ export function useCursorMove(
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
 
+    const [position, setPosition] = useState({ x: null, y: null })
     const positionRef = useRef(position)
+    const getPositionStable = useCallback((() => {
+        return { ...positionRef.current }
+    }), [])
+
     const targetRef = useRef({ x: null, y: null })
 
     const { resetVelocity, isNearTarget, getRecalculatedPosition } =
@@ -88,42 +91,6 @@ export function useCursorMove(
         window.removeEventListener("resize", onResize)
     }
 
-    //
-    // HANDLERS
-    //
-
-    const onMouseMove = (event) => {
-        targetRef.current = { x: event.clientX, y: event.clientY }
-        startAnimation()
-    }
-
-    const onBlur = () => {
-        stopAnimation()
-    }
-
-    const onResize = () => {
-        const newWindowSize = {
-            width: window.innerWidth,
-            height: window.innerHeight,
-        }
-
-        positionRef.current = {
-            x:
-                (positionRef.current.x / windowSizeRef.current.width) *
-                newWindowSize.width,
-            y:
-                (positionRef.current.y / windowSizeRef.current.height) *
-                newWindowSize.height,
-        }
-        setPosition(positionRef.current)
-
-        windowSizeRef.current = { ...newWindowSize }
-    }
-
-    //
-    // LOCAL METHODS
-    //
-
     const updatePosition = useCallback(() => {
         if (
             targetRef.current.x === null ||
@@ -160,7 +127,43 @@ export function useCursorMove(
     const { startAnimation, continueAnimation, stopAnimation } =
         useCursorMoveAnimation(updatePosition, isStoppedRef)
 
+    //
+    // HANDLERS
+    //
+
+    const onMouseMove = useCallback((event) => {
+        targetRef.current = { x: event.clientX, y: event.clientY }
+        startAnimation()
+    }, [])
+
+    const onBlur = useCallback(() => {
+        stopAnimation()
+    }, [])
+
+    const onResize = useCallback(() => {
+        if (positionRef.current.x === null || positionRef.current.y === null) return;
+
+        const newWindowSize = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        }
+
+        positionRef.current = {
+            x:
+                (positionRef.current.x / windowSizeRef.current.width) *
+                newWindowSize.width,
+            y:
+                (positionRef.current.y / windowSizeRef.current.height) *
+                newWindowSize.height,
+        }
+        setPosition(positionRef.current)
+
+        windowSizeRef.current = { ...newWindowSize }
+    }, [])
+
     return {
+        position,
+        getPositionStable,
         stopCursor,
         startCursor,
     }

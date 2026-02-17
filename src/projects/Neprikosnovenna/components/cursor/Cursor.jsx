@@ -17,8 +17,7 @@ function Cursor({ cursorSettings, cursorZoneConfig}) {
 
   const [src, setSrc] = useState(settings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
-    if (!newSrc && newSrc != null) return;
-    if (newSrc === null) newSrc = CursorImages.DEFAULT;
+    if (newSrc === undefined || newSrc === null) return;
     setSrc(newSrc);
   }, []);
 
@@ -46,18 +45,15 @@ function Cursor({ cursorSettings, cursorZoneConfig}) {
     setIsHidden(false);
   }, []);
 
-  const [position, setPosition] = useState({ x: null, y: null })
-  const {} = useCursorMove(
+  const {position, getPositionStable} = useCursorMove(
     settings,
-    position,
-    setPosition,
     showCursor,
     enableCursor,
     disableCursor,
   );
 
   const { currentZoneDataRef } = useCursorZone(
-    position,
+    getPositionStable,
     zoneConfig,
     changeCursorSrc,
   );
