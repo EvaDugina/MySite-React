@@ -1,7 +1,12 @@
-import { useCallback, useRef } from "react"
+import { useCallback, useRef, useEffect } from "react"
 
 export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
     const isMouseDownRef = useRef(false)
+
+    const callbacksRef = useRef({ handleLeftClickDown, handleLeftClickUp });
+    useEffect(() => {
+        callbacksRef.current = { handleLeftClickDown, handleLeftClickUp };
+    }, [handleLeftClickDown, handleLeftClickUp]);
 
     //
     // PUBLIC
@@ -21,27 +26,21 @@ export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
     // LOCAL
     //
 
-    const onMouseDown = useCallback(
-        (event) => {
-            if (event.button === 0) {
-                if (isMouseDownRef.current) return
-                isMouseDownRef.current = true
-                handleLeftClickDown?.(event)
-            }
-        },
-        [handleLeftClickDown],
-    )
+    const onMouseDown = useCallback((event) => {
+        if (event.button === 0) {
+            if (isMouseDownRef.current) return
+            isMouseDownRef.current = true
+            callbacksRef.current.handleLeftClickDown?.(event)
+        }
+    }, [])
 
-    const onMouseUp = useCallback(
-        (event) => {
-            if (event.button === 0) {
-                if (!isMouseDownRef.current) return
-                isMouseDownRef.current = false
-                handleLeftClickUp?.(event)
-            }
-        },
-        [handleLeftClickUp],
-    )
+    const onMouseUp = useCallback((event) => {
+        if (event.button === 0) {
+            if (!isMouseDownRef.current) return
+            isMouseDownRef.current = false
+            callbacksRef.current.handleLeftClickUp?.(event)
+        }
+    }, [])
 
     return { enableCursor, disableCursor }
 }

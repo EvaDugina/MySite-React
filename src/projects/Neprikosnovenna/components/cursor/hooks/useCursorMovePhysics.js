@@ -1,8 +1,8 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useCallback } from "react"
 
-function useCursorMovePhysics(position, stiffness, mass, damping, maxSpeed) {
-    const positionRef = useRef(position)
-    const targetRef = useRef({ x: null, y: null })
+const EPS = 0.1
+
+function useCursorMovePhysics(stiffness, mass, damping, maxSpeed) {
     const velocityRef = useRef({ x: 0, y: 0 })
     const settingsRef = useRef({ stiffness, mass, damping, maxSpeed })
 
@@ -10,16 +10,29 @@ function useCursorMovePhysics(position, stiffness, mass, damping, maxSpeed) {
         settingsRef.current = { stiffness, mass, damping, maxSpeed }
     }, [stiffness, mass, damping, maxSpeed])
 
-    const recalculatePosition = () => {
-        if (targetRef.current.x === null || targetRef.current.y === null) return
+    const isNearTarget = useCallback(((position, target) => {
+        const isNearTarget =
+            Math.hypot(
+                target.x - position.x,
+                target.y - position.y,
+            ) < EPS
+        const isAlmostStopped =
+            Math.hypot(velocityRef.current.x, velocityRef.current.y) < EPS
+        return isNearTarget && isAlmostStopped
+    }), [])
+
+    const resetVelocity = useCallback((() => {
+        velocityRef.current = { x: 0, y: 0 }
+    }), [])
+
+    const recalculatePosition = useCallback((position, target) => {
+        if (target.x === null || target.y === null) return { ...position }
 
         const { stiffness, mass, damping, maxSpeed } = settingsRef.current
 
-        let currentPosition = { ...positionRef.current }
-
         // Рассчитываем силу (разница между текущей и целевой позицией)
-        const forceX = (targetRef.current.x - currentPosition.x) * stiffness
-        const forceY = (targetRef.current.y - currentPosition.y) * stiffness
+        const forceX = (target.x - position.x) * stiffness
+        const forceY = (target.y - position.y) * stiffness
 
         // Ускорение = сила / масса
         const accelerationX = forceX / mass
@@ -34,23 +47,22 @@ function useCursorMovePhysics(position, stiffness, mass, damping, maxSpeed) {
         // Ограничиваем максимальную скорость
         const speed = Math.sqrt(
             velocityRef.current.x * velocityRef.current.x +
-                velocityRef.current.y * velocityRef.current.y,
+            velocityRef.current.y * velocityRef.current.y,
         )
         if (speed > maxSpeed) {
             velocityRef.current.x = (velocityRef.current.x / speed) * maxSpeed
             velocityRef.current.y = (velocityRef.current.y / speed) * maxSpeed
         }
 
-        positionRef.current = {
-            x: currentPosition.x + velocityRef.current.x,
-            y: currentPosition.y + velocityRef.current.y,
+        return {
+            x: position.x + velocityRef.current.x,
+            y: position.y + velocityRef.current.y,
         }
-    }
+    }, [])
 
     return {
-        positionRef,
-        targetRef,
-        velocityRef,
+        resetVelocity,
+        isNearTarget,
         recalculatePosition,
     }
 }

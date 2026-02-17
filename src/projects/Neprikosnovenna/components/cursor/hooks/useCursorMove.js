@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import useCursorMovePhysics from "./useCursorMovePhysics"
 import useCursorMoveAnimation from "./useCursorMoveAnimation"
-import useCursorEvents from "./useCursorEvents"
 
 export function useCursorMove(
     cursorSettings,
@@ -13,9 +12,10 @@ export function useCursorMove(
     const isStoppedRef = useRef(true)
 
     const [position, setPosition] = useState({ x: null, y: null })
-    const { positionRef, targetRef, velocityRef, recalculatePosition } =
+    const positionRef = useRef(position)
+    const targetRef = useRef({ x: null, y: null })
+    const { resetVelocity, isNearTarget, recalculatePosition } =
         useCursorMovePhysics(
-            position,
             cursorSettings.stiffness,
             cursorSettings.mass,
             cursorSettings.damping,
@@ -140,30 +140,21 @@ export function useCursorMove(
             showCursor()
         }
 
-        let currentPosition = { ...positionRef.current }
-
         // Оптимизация. Условие остановки анимации, когда курсор неподвижен
-        const EPS = 0.1
-        const isNearTarget =
-            Math.hypot(
-                targetRef.current.x - currentPosition.x,
-                targetRef.current.y - currentPosition.y,
-            ) < EPS
-        const isAlmostStopped =
-            Math.hypot(velocityRef.current.x, velocityRef.current.y) < EPS
-        if (isNearTarget && isAlmostStopped) {
+        if (isNearTarget(positionRef.current, targetRef.current)) {
             positionRef.current = { ...targetRef.current }
             setPosition(positionRef.current)
-            velocityRef.current = { x: 0, y: 0 }
+            resetVelocity()
             stopAnimation()
             return
         }
 
-        recalculatePosition()
+        positionRef.current = recalculatePosition(positionRef.current, targetRef.current)
         setPosition(positionRef.current)
 
         continueAnimation()
     }, [])
+
     const { startAnimation, continueAnimation, stopAnimation } =
         useCursorMoveAnimation(updatePosition, isStoppedRef)
 
