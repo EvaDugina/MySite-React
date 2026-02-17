@@ -2,18 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import "./Cursor.css";
 
 import { useCursorMove } from "./hooks/useCursorMove";
-
-import { CursorSettings, CursorZoneConfig } from "./CursorConstants";
 import { useCursorZone } from "./hooks/useCursorZone";
 import useCursorEvents from "./hooks/useCursorEvents";
 
-const defaultSettings = new CursorSettings();
-const defaultZoneConfig = new CursorZoneConfig();
-
-function Cursor({ cursorSettings, cursorZoneConfig}) {
-
-  const settings = cursorSettings || defaultSettings;
-  const zoneConfig = cursorZoneConfig || defaultZoneConfig;
+function Cursor({ settings, zoneConfig}) {
 
   const [src, setSrc] = useState(settings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
@@ -24,12 +16,12 @@ function Cursor({ cursorSettings, cursorZoneConfig}) {
   const handleLeftClickDown = useCallback(() => {
     changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
     settings.handleLeftClickDown?.();
-  }, [settings]);
+  }, []);
 
   const handleLeftClickUp = useCallback(() => {
     changeCursorSrc(currentZoneDataRef.current.imgCursor);
     settings.handleLeftClickUp?.();
-  }, [settings]);
+  }, []);
 
   const { enableCursor, disableCursor } = useCursorEvents(
     handleLeftClickDown,

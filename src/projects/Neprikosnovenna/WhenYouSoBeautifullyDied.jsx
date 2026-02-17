@@ -61,13 +61,13 @@ function WhenYouSoBeautifullyDied() {
       mass: 0.1, // Масса объекта
       maxSpeed: 20, // Максимальная скорость
     });
-  }, [handleLeftClickDown, handleLeftClickUp]);
+  }, []);
 
   return (
     <>
       <Cursor
-        cursorSettings={cursorSettings}
-        cursorZoneConfig={cursorZoneConfig}
+        settings={cursorSettings}
+        zoneConfig={cursorZoneConfig}
       />
 
       <main>
