@@ -4,6 +4,8 @@ import useCursorMoveAnimation from "./useCursorMoveAnimation"
 
 export function useCursorMove(
     cursorSettings,
+    position,
+    setPosition,
     showCursor,
     enableCursor,
     disableCursor,
@@ -11,10 +13,10 @@ export function useCursorMove(
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
 
-    const [position, setPosition] = useState({ x: null, y: null })
     const positionRef = useRef(position)
     const targetRef = useRef({ x: null, y: null })
-    const { resetVelocity, isNearTarget, recalculatePosition } =
+
+    const { resetVelocity, isNearTarget, getRecalculatedPosition } =
         useCursorMovePhysics(
             cursorSettings.stiffness,
             cursorSettings.mass,
@@ -149,7 +151,7 @@ export function useCursorMove(
             return
         }
 
-        positionRef.current = recalculatePosition(positionRef.current, targetRef.current)
+        positionRef.current = getRecalculatedPosition(positionRef.current, targetRef.current)
         setPosition(positionRef.current)
 
         continueAnimation()
@@ -159,7 +161,6 @@ export function useCursorMove(
         useCursorMoveAnimation(updatePosition, isStoppedRef)
 
     return {
-        position,
         stopCursor,
         startCursor,
     }

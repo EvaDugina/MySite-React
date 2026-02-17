@@ -33,14 +33,25 @@ export function useCursorZone(
     const handleOnZone = useCallback(
         (elementZone) => {
             if (!elementZone) return
+            let isFoundZone = false
             Object.values(cursorZoneConfig.Zone).forEach((zoneValue) => {
                 const data = cursorZoneConfig.Data[zoneValue]
                 if (data.elementId === elementZone.id) {
+                    isFoundZone = true
                     changeCursorSrc(data.imgCursor)
                     currentZoneDataRef.current = data
                     data.handleOn?.()
                 }
             })
+
+            if (isFoundZone) return
+
+            // Если зона не найдена обнуляем зону в NONE
+            // const noneData = cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE];
+            // changeCursorSrc(noneData.imgCursor);
+            // currentZoneDataRef.current = noneData;
+            // noneData.handleOn?.();
+
         },
         [cursorZoneConfig, changeCursorSrc],
     )

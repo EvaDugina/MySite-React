@@ -25,7 +25,7 @@ function useCursorMovePhysics(stiffness, mass, damping, maxSpeed) {
         velocityRef.current = { x: 0, y: 0 }
     }), [])
 
-    const recalculatePosition = useCallback((position, target) => {
+    const getRecalculatedPosition = useCallback((position, target) => {
         if (target.x === null || target.y === null) return { ...position }
 
         const { stiffness, mass, damping, maxSpeed } = settingsRef.current
@@ -63,7 +63,7 @@ function useCursorMovePhysics(stiffness, mass, damping, maxSpeed) {
     return {
         resetVelocity,
         isNearTarget,
-        recalculatePosition,
+        getRecalculatedPosition,
     }
 }
 

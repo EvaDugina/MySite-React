@@ -7,30 +7,35 @@ import { CursorSettings, CursorZoneConfig } from "./CursorConstants";
 import { useCursorZone } from "./hooks/useCursorZone";
 import useCursorEvents from "./hooks/useCursorEvents";
 
-function Cursor({
-  cursorSettings = new CursorSettings(),
-  cursorZoneConfig = new CursorZoneConfig(),
-}) {
-  // useEffect(() => {
-  //   console.log("Render!");
-  // });
+const defaultSettings = new CursorSettings();
+const defaultZoneConfig = new CursorZoneConfig();
 
-  const handleLeftClickDown = useCallback(() => {
-    changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
-    cursorSettings.handleLeftClickDown?.();
-  }, [cursorSettings]);
+function Cursor({ cursorSettings, cursorZoneConfig}) {
 
-  const handleLeftClickUp = useCallback(() => {
-    changeCursorSrc(currentZoneDataRef.current.imgCursor);
-    cursorSettings.handleLeftClickUp?.();
-  }, [cursorSettings]);
+  const settings = cursorSettings || defaultSettings;
+  const zoneConfig = cursorZoneConfig || defaultZoneConfig;
 
-  const [src, setSrc] = useState(cursorSettings.imgCursor);
+  const [src, setSrc] = useState(settings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
     if (!newSrc && newSrc != null) return;
     if (newSrc === null) newSrc = CursorImages.DEFAULT;
     setSrc(newSrc);
   }, []);
+
+  const handleLeftClickDown = useCallback(() => {
+    changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
+    settings.handleLeftClickDown?.();
+  }, [settings]);
+
+  const handleLeftClickUp = useCallback(() => {
+    changeCursorSrc(currentZoneDataRef.current.imgCursor);
+    settings.handleLeftClickUp?.();
+  }, [settings]);
+
+  const { enableCursor, disableCursor } = useCursorEvents(
+    handleLeftClickDown,
+    handleLeftClickUp,
+  );
 
   const [isHidden, setIsHidden] = useState(true);
   const hideCursor = useCallback(() => {
@@ -41,13 +46,11 @@ function Cursor({
     setIsHidden(false);
   }, []);
 
-  const { enableCursor, disableCursor } = useCursorEvents(
-    handleLeftClickDown,
-    handleLeftClickUp,
-  );
-
-  const { position } = useCursorMove(
-    cursorSettings,
+  const [position, setPosition] = useState({ x: null, y: null })
+  const {} = useCursorMove(
+    settings,
+    position,
+    setPosition,
     showCursor,
     enableCursor,
     disableCursor,
@@ -55,7 +58,7 @@ function Cursor({
 
   const { currentZoneDataRef } = useCursorZone(
     position,
-    cursorZoneConfig,
+    zoneConfig,
     changeCursorSrc,
   );
 
