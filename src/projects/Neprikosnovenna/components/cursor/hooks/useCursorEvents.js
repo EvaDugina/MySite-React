@@ -3,10 +3,10 @@ import { useCallback, useRef, useEffect } from "react"
 export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
     const isMouseDownRef = useRef(false)
 
-    const callbacksRef = useRef({ handleLeftClickDown, handleLeftClickUp });
-    useEffect(() => {
-        callbacksRef.current = { handleLeftClickDown, handleLeftClickUp };
-    }, [handleLeftClickDown, handleLeftClickUp]);
+    // const callbacksRef = useRef({ handleLeftClickDown, handleLeftClickUp });
+    // useEffect(() => {
+    //     callbacksRef.current = { handleLeftClickDown, handleLeftClickUp };
+    // }, [handleLeftClickDown, handleLeftClickUp]);
 
     //
     // PUBLIC
@@ -30,7 +30,8 @@ export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
         if (event.button === 0) {
             if (isMouseDownRef.current) return
             isMouseDownRef.current = true
-            callbacksRef.current.handleLeftClickDown?.(event)
+            // callbacksRef.current.handleLeftClickDown?.(event)
+            handleLeftClickDown(event)
         }
     }, [])
 
@@ -38,7 +39,8 @@ export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
         if (event.button === 0) {
             if (!isMouseDownRef.current) return
             isMouseDownRef.current = false
-            callbacksRef.current.handleLeftClickUp?.(event)
+            // callbacksRef.current.handleLeftClickUp?.(event)
+            handleLeftClickUp(event)
         }
     }, [])
 

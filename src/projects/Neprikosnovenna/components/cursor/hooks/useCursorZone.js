@@ -11,7 +11,7 @@ export function useCursorZone(
         cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
     )
 
-    const updateCurrentZone = useThrottle(() => {
+    const stableUpdate = useCallback(() => {
         const position = getPositionStable()
         const elementUnder = document.elementFromPoint(
             position.x,
@@ -22,7 +22,9 @@ export function useCursorZone(
         handleOffZone?.(elementZoneRef.current)
         elementZoneRef.current = elementUnder
         handleOnZone?.(elementZoneRef.current)
-    }, 50)
+    }, []);
+
+    const updateCurrentZone = useThrottle(stableUpdate, 50);
 
     useEffect(() => {
         console.log("useCursorZone() -> useEffect()")
@@ -30,7 +32,7 @@ export function useCursorZone(
         return () => {
             document.removeEventListener("mousemove", updateCurrentZone)
         }
-    }, [updateCurrentZone])
+    }, [])
 
     const handleOnZone = useCallback(
         (elementZone) => {
@@ -54,9 +56,7 @@ export function useCursorZone(
             // currentZoneDataRef.current = noneData;
             // noneData.handleOn?.();
 
-        },
-        [cursorZoneConfig, changeCursorSrc],
-    )
+        }, [])
 
     const handleOffZone = useCallback(
         (elementZone) => {
@@ -65,9 +65,7 @@ export function useCursorZone(
                 const data = cursorZoneConfig.Data[zoneValue]
                 if (data.elementId === elementZone.id) data.handleOff?.()
             })
-        },
-        [cursorZoneConfig],
-    )
+        }, [])
 
     return { currentZoneDataRef }
 }
