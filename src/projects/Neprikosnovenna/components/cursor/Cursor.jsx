@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { forwardRef, useImperativeHandle, useCallback, useState } from "react";
 import "./Cursor.css";
 
 import { useCursorMove } from "./hooks/useCursorMove";
 import { useCursorZone } from "./hooks/useCursorZone";
 import useCursorEvents from "./hooks/useCursorEvents";
 
-function Cursor({ settings, zoneConfig}) {
+const Cursor = forwardRef((props, ref) => {
+
+  const { settings, zoneSettings} = props 
 
   const [src, setSrc] = useState(settings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
@@ -37,6 +39,11 @@ function Cursor({ settings, zoneConfig}) {
     setIsHidden(false);
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    hideCursor,
+    showCursor,
+  }));
+
   const {position, getPositionStable} = useCursorMove(
     settings,
     showCursor,
@@ -46,7 +53,7 @@ function Cursor({ settings, zoneConfig}) {
 
   const { currentZoneDataRef } = useCursorZone(
     getPositionStable,
-    zoneConfig,
+    zoneSettings,
     changeCursorSrc,
   );
 
@@ -62,6 +69,6 @@ function Cursor({ settings, zoneConfig}) {
       }}
     />
   );
-}
+});
 
 export default Cursor;

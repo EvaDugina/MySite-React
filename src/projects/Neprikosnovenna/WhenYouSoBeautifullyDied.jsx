@@ -4,8 +4,8 @@ import "./WhenYouSoBeautifullyDied.css";
 import {
   CursorImages,
   CursorSettings,
-  CursorZoneConfig,
-} from "./components/cursor/CursorConstants";
+  CursorZoneSettings,
+} from "./components/cursor/CursorSettingsHandler";
 import Cursor from "./components/cursor/Cursor";
 import Portrait, { PortraitType } from "./components/portrait/Portrait";
 import Flash, { FlashType } from "./components/Flash/Flash";
@@ -17,7 +17,7 @@ const Zone = {
   BUTTON: 3,
 };
 
-const cursorZoneConfig = new CursorZoneConfig({
+const cursorZoneSettings = new CursorZoneSettings({
   Zone: Zone,
   Data: {
     [Zone.BACK]: {
@@ -45,29 +45,36 @@ const cursorZoneConfig = new CursorZoneConfig({
 });
 
 function WhenYouSoBeautifullyDied() {
-  const handleLeftClickDown = useCallback((val) => {}, []);
 
-  const handleLeftClickUp = useCallback((val) => {}, []);
+  const cursorControllRef = useRef();
+
+  const handleLeftClickDown = useCallback((val) => {
+    // cursorControllRef.current?.hideCursor();
+  }, []);
+
+  const handleLeftClickUp = useCallback((val) => {
+    // cursorControllRef.current?.showCursor();
+  }, []);
 
   const cursorSettings = useMemo(() => {
     return new CursorSettings({
       imgCursor: CursorImages.DEFAULT,
-      startX: 0.9, // Начальная позиция от width по X
-      startY: 0.25, // Начальная позиция от рушпре по Y
+      startX: null, // Начальная позиция от width по X
+      startY: null, // Начальная позиция от рушпре по Y
       handleLeftClickDown: handleLeftClickDown,
       handleLeftClickUp: handleLeftClickUp,
       stiffness: 0.4, // Жесткость пружины (скорость реакции)
       damping: 0.1, // Затухание (плавность остановки)
       mass: 0.1, // Масса объекта
-      maxSpeed: 20, // Максимальная скорость
+      maxSpeed: 15, // Максимальная скорость
     });
   }, []);
 
   return (
     <>
-      <Cursor
+      <Cursor ref={cursorControllRef}
         settings={cursorSettings}
-        zoneConfig={cursorZoneConfig}
+        zoneSettings={cursorZoneSettings}
       />
 
       <main>

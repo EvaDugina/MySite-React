@@ -66,7 +66,7 @@ export class CursorSettings {
     }
 }
 
-export class CursorZoneConfig {
+export class CursorZoneSettings {
     constructor(config = {}) {
         // Определяем Zone
         this.Zone = {

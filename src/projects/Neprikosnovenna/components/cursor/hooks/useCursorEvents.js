@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react"
+import { useCallback, useRef } from "react"
 
 export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
     const isMouseDownRef = useRef(false)

@@ -3,7 +3,7 @@ import useCursorMovePhysics from "./useCursorMovePhysics"
 import useCursorMoveAnimation from "./useCursorMoveAnimation"
 
 export function useCursorMove(
-    cursorSettings,
+    settings,
     showCursor,
     enableCursor,
     disableCursor,
@@ -21,10 +21,10 @@ export function useCursorMove(
 
     const { resetVelocity, isNearTarget, getRecalculatedPosition } =
         useCursorMovePhysics(
-            cursorSettings.stiffness,
-            cursorSettings.mass,
-            cursorSettings.damping,
-            cursorSettings.maxSpeed,
+            settings.stiffness,
+            settings.mass,
+            settings.damping,
+            settings.maxSpeed,
         )
 
     const windowSizeRef = useRef({
@@ -66,10 +66,10 @@ export function useCursorMove(
             height: window.innerHeight,
         }
 
-        if (cursorSettings.startX != null && cursorSettings.startY != null) {
+        if (settings.startX != null && settings.startY != null) {
             positionRef.current = {
-                x: windowSizeRef.current.width * cursorSettings.startX,
-                y: windowSizeRef.current.height * cursorSettings.startY,
+                x: windowSizeRef.current.width * settings.startX,
+                y: windowSizeRef.current.height * settings.startY,
             }
             setPosition(positionRef.current)
             showCursor()

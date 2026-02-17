@@ -3,12 +3,12 @@ import useThrottle from "./useThrottle"
 
 export function useCursorZone(
     getPositionStable,
-    cursorZoneConfig,
+    zoneSettings,
     changeCursorSrc,
 ) {
     const elementZoneRef = useRef(null)
     const currentZoneDataRef = useRef(
-        cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE],
+        zoneSettings.Data[zoneSettings.Zone.NONE],
     )
 
     const stableUpdate = useCallback(() => {
@@ -27,7 +27,6 @@ export function useCursorZone(
     const updateCurrentZone = useThrottle(stableUpdate, 50);
 
     useEffect(() => {
-        console.log("useCursorZone() -> useEffect()")
         document.addEventListener("mousemove", updateCurrentZone)
         return () => {
             document.removeEventListener("mousemove", updateCurrentZone)
@@ -38,8 +37,8 @@ export function useCursorZone(
         (elementZone) => {
             if (!elementZone) return
             let isFoundZone = false
-            Object.values(cursorZoneConfig.Zone).forEach((zoneValue) => {
-                const data = cursorZoneConfig.Data[zoneValue]
+            Object.values(zoneSettings.Zone).forEach((zoneValue) => {
+                const data = zoneSettings.Data[zoneValue]
                 if (data.elementId === elementZone.id) {
                     isFoundZone = true
                     changeCursorSrc(data.imgCursor)
@@ -51,7 +50,7 @@ export function useCursorZone(
             if (isFoundZone) return
 
             // Если зона не найдена обнуляем зону в NONE
-            // const noneData = cursorZoneConfig.Data[cursorZoneConfig.Zone.NONE];
+            // const noneData = zoneSettings.Data[zoneSettings.Zone.NONE];
             // changeCursorSrc(noneData.imgCursor);
             // currentZoneDataRef.current = noneData;
             // noneData.handleOn?.();
@@ -61,8 +60,8 @@ export function useCursorZone(
     const handleOffZone = useCallback(
         (elementZone) => {
             if (!elementZone) return
-            Object.values(cursorZoneConfig.Zone).forEach((zoneValue) => {
-                const data = cursorZoneConfig.Data[zoneValue]
+            Object.values(zoneSettings.Zone).forEach((zoneValue) => {
+                const data = zoneSettings.Data[zoneValue]
                 if (data.elementId === elementZone.id) data.handleOff?.()
             })
         }, [])
