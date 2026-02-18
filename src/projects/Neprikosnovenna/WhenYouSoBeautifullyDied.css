@@ -22,26 +22,6 @@ main {
   align-self: center;
 }
 
-#BtnNeprikosnovenna {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  top: 75%;
-  left: 50%;
-  font-size: var(--font-size-xsm);
-}
-
-/* @media (min-width: 768px) {
-  #BtnNeprikosnovenna {
-    font-size: var(--font-size-sm);
-  }
-}
-
-@media (min-width: 1600px) {
-  #BtnNeprikosnovenna {
-    font-size: var(--font-size-xsm);
-  }
-} */
-
 /* CLASSES */
 
 .portrait-container-default {

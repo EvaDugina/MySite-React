@@ -77,8 +77,8 @@ export class CursorZoneSettings {
         // Настройки по умолчанию
         const defaultData = {
             elementId: null,
-            imgCursor: CursorConfig[CursorType.POINTER].src,
-            imgCursorClicked: CursorConfig[CursorType.POINTER].src,
+            imgCursor: CursorConfig[CursorType.DEFAULT].src,
+            imgCursorClicked: CursorConfig[CursorType.DEFAULT].src,
             handleOn: null,
             handleOff: null,
         }

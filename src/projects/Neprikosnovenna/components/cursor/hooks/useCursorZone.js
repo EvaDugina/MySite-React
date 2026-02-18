@@ -50,10 +50,10 @@ export function useCursorZone(
             if (isFoundZone) return
 
             // Если зона не найдена обнуляем зону в NONE
-            // const noneData = zoneSettings.Data[zoneSettings.Zone.NONE];
-            // changeCursorSrc(noneData.imgCursor);
-            // currentZoneDataRef.current = noneData;
-            // noneData.handleOn?.();
+            const noneData = zoneSettings.Data[zoneSettings.Zone.NONE];
+            changeCursorSrc(noneData.imgCursor);
+            currentZoneDataRef.current = noneData;
+            noneData.handleOn?.();
 
         }, [])
 
@@ -62,7 +62,8 @@ export function useCursorZone(
             if (!elementZone) return
             Object.values(zoneSettings.Zone).forEach((zoneValue) => {
                 const data = zoneSettings.Data[zoneValue]
-                if (data.elementId === elementZone.id) data.handleOff?.()
+                if (data.elementId === elementZone.id)
+                    data.handleOff?.()
             })
         }, [])
 

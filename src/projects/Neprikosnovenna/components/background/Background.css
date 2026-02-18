@@ -1,3 +1,7 @@
+:root {
+  --color-klein-blue: #1a17ba
+}
+
 .background {
   position: fixed;
   top: 0;
@@ -8,7 +12,7 @@
 }
 
 .bg-blue {
-  background-color: blue;
+  background-color: var(--color-klein-blue);
 }
 
 .bg-white {

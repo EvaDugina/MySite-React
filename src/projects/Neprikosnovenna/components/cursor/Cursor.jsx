@@ -17,12 +17,12 @@ const Cursor = forwardRef((props, ref) => {
 
   const handleLeftClickDown = useCallback(() => {
     changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
-    settings.handleLeftClickDown?.();
+    settings.handleLeftClickDown?.(currentZoneDataRef.current.elementId);
   }, []);
 
   const handleLeftClickUp = useCallback(() => {
     changeCursorSrc(currentZoneDataRef.current.imgCursor);
-    settings.handleLeftClickUp?.();
+    settings.handleLeftClickUp?.(currentZoneDataRef.current.elementId);
   }, []);
 
   const { enableCursor, disableCursor } = useCursorEvents(

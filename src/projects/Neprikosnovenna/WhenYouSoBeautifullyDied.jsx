@@ -10,50 +10,76 @@ import Cursor from "./components/cursor/Cursor";
 import Portrait, { PortraitType } from "./components/portrait/Portrait";
 import Flash, { FlashType } from "./components/Flash/Flash";
 import Background from "./components/background/Background";
+import Button from "./components/button/Button";
 
 const Zone = {
+  NONE: 0,
   BACK: 1,
   PORTRAIT: 2,
   BUTTON: 3,
 };
 
-const cursorZoneSettings = new CursorZoneSettings({
-  Zone: Zone,
-  Data: {
-    [Zone.BACK]: {
-      elementId: "Background-0",
-      imgCursor: CursorImages.DEFAULT,
-      imgCursorClicked: CursorImages.DEFAULT,
-      handleOn: null,
-      handleOff: null,
-    },
-    [Zone.PORTRAIT]: {
-      elementId: "Portrait",
-      imgCursor: CursorImages.POINTER,
-      imgCursorClicked: CursorImages.POINTER_CLICKED,
-      handleOn: null,
-      handleOff: null,
-    },
-    [Zone.BUTTON]: {
-      elementId: "BtnNeprikosnovenna",
-      imgCursor: CursorImages.POINTER,
-      imgCursorClicked: CursorImages.POINTER_CLICKED,
-      handleOn: null,
-      handleOff: null,
-    },
-  },
-});
-
 function WhenYouSoBeautifullyDied() {
 
-  const cursorControllRef = useRef();
+  const cursorRef = useRef();
+  const backgroundRef = useRef();
+  const buttonRef = useRef()
 
-  const handleLeftClickDown = useCallback((val) => {
+  const handleOnButton = () => {
+    backgroundRef.current?.hide()
+    // buttonRef.current.hover()
+  }
+  
+  const handleOffButton = () => {
+    backgroundRef.current?.show()
+    // buttonRef.current.reset()
+  }
+
+const cursorZoneSettings = new CursorZoneSettings({
+    Zone: Zone,
+    Data: {
+      [Zone.NONE]: {
+        elementId: null,
+        imgCursor: CursorImages.DEFAULT,
+        imgCursorClicked: CursorImages.DEFAULT,
+        handleOn: null,
+        handleOff: null,
+      },
+      [Zone.BACK]: {
+        elementId: "Background-0",
+        imgCursor: CursorImages.DEFAULT,
+        imgCursorClicked: CursorImages.DEFAULT,
+        handleOn: null,
+        handleOff: null,
+      },
+      [Zone.PORTRAIT]: {
+        elementId: "Portrait",
+        imgCursor: CursorImages.POINTER,
+        imgCursorClicked: CursorImages.POINTER_CLICKED,
+        handleOn: null,
+        handleOff: null,
+      },
+      [Zone.BUTTON]: {
+        elementId: "BtnNeprikosnovenna",
+        imgCursor: CursorImages.POINTER,
+        imgCursorClicked: CursorImages.POINTER_CLICKED,
+        handleOn: handleOnButton,
+        handleOff: handleOffButton,
+      },
+    },
+  });
+
+  const handleLeftClickDown = useCallback((currentElementId) => {
+    if (currentElementId == "BtnNeprikosnovenna") {
+      buttonRef.current.focus()
+    }
     // cursorControllRef.current?.hideCursor();
   }, []);
 
-  const handleLeftClickUp = useCallback((val) => {
-    // cursorControllRef.current?.showCursor();
+  const handleLeftClickUp = useCallback((currentElementId) => {
+    if (currentElementId == "BtnNeprikosnovenna") {
+      // buttonRef.current.hover()
+    }
   }, []);
 
   const cursorSettings = useMemo(() => {
@@ -72,7 +98,7 @@ function WhenYouSoBeautifullyDied() {
 
   return (
     <>
-      <Cursor ref={cursorControllRef}
+      <Cursor ref={cursorRef}
         settings={cursorSettings}
         zoneSettings={cursorZoneSettings}
       />
@@ -81,9 +107,7 @@ function WhenYouSoBeautifullyDied() {
         <article id="PortraitContainer" className="portrait-container-default">
           <div id="CursorsContainer" className="ignore-cursor d-none"></div>
 
-          <button id="BtnNeprikosnovenna" className="not-allowed z-6">
-            неприкосновенна
-          </button>
+          <Button ref={buttonRef} id="BtnNeprikosnovenna" text="неприкосновенна"/>
 
           <Flash type={FlashType.BEHIND} />
           <Flash type={FlashType.FRONT} />
@@ -92,7 +116,7 @@ function WhenYouSoBeautifullyDied() {
           <Portrait portraitType={PortraitType.VIDEO} />
         </article>
 
-        <Background id="Background-1" classes="bg-blue z-3 d-none" />
+        <Background ref={backgroundRef} id="Background-1" classes="bg-blue z-3" />
       </main>
 
       <Background id="Background-0" classes="bg-white z-0" />

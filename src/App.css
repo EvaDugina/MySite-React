@@ -74,30 +74,6 @@
   padding: 0;
 }
 
-/* BUTTON */
-
-button {
-  cursor: none;
-  background-color: var(--color-xlight-grey);
-  border-radius: 2px;
-  border-width: thin;
-}
-
-button:disabled {
-  opacity: 0.7;
-  background-color: var(--color-xlight-grey-a) !important;
-}
-
-button.hovered {
-  background-color: var(--color-light-grey);
-}
-
-button.active {
-  border-width: medium !important;
-  border-color: black !important;
-  background-color: var(--color-light-grey);
-}
-
 /* CLASSES */
 
 .w-100 {
