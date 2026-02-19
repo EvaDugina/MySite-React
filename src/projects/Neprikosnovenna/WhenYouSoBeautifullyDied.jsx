@@ -98,8 +98,8 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
   const handleLeftClickUp = useCallback((currentElementId) => {
     if (isVideoEndedRef.current) return
     if (currentElementId == "BtnNeprikosnovenna") {
-      cursorRef.current.stop()
-      cursorRef.current.disable()
+      // cursorRef.current.stop()
+      // cursorRef.current.disable()
     }
   }, []);
 
@@ -127,8 +127,8 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
     // ZoneData[Zone.PORTRAIT].imgCursorClicked = CursorImages.POINTER_CLICKED
     // cursorZoneSettingsRef.current.Data = {...ZoneData}
 
-    cursorRef.current.enable();
-    cursorRef.current.start();
+    // cursorRef.current.enable();
+    // cursorRef.current.start();
     buttonRef.current.reset();
     // buttonRef.current.focus();
   }, []);
