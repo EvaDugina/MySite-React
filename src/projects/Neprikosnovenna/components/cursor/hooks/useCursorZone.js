@@ -3,37 +3,34 @@ import useThrottle from "./useThrottle"
 
 export function useCursorZone(
     getPositionStable,
-    zoneSettings,
+    zoneSettingsRef,
     changeCursorSrc,
 ) {
     const elementZoneRef = useRef(null)
     const currentZoneDataRef = useRef(
-        zoneSettings.Data[zoneSettings.Zone.NONE],
+        zoneSettingsRef.current.Data[zoneSettingsRef.current.Zone.NONE],
     )
 
-    const stableUpdate = useCallback((event) => {
-        event.preventDefault();
-        console.log("stableUpdate()")
+    const updateCurrentZone = useCallback(() => {
+        // event.preventDefault();
         const position = getPositionStable()
         const elementUnder = document.elementFromPoint(
             position.x,
             position.y,
         )
-        if (elementZoneRef.current === elementUnder) return
+        if (elementZoneRef.current && elementZoneRef.current.id === elementUnder.id) return null
 
         handleOffZone?.(elementZoneRef.current)
         elementZoneRef.current = elementUnder
         handleOnZone?.(elementZoneRef.current)
     }, []);
 
-    const updateCurrentZone = useThrottle(stableUpdate, 50);
+    const updateCurrentZoneThrottled = useThrottle(updateCurrentZone, 50);
 
     useEffect(() => {
-        document.addEventListener("pointerup", updateCurrentZone)
-        document.addEventListener("pointermove", updateCurrentZone)
+        document.addEventListener("pointermove", updateCurrentZoneThrottled)
         return () => {
-            document.removeEventListener("pointerup", updateCurrentZone)
-            document.removeEventListener("pointermove", updateCurrentZone)
+            document.removeEventListener("pointermove", updateCurrentZoneThrottled)
         }
     }, [])
 
@@ -41,8 +38,8 @@ export function useCursorZone(
         (elementZone) => {
             if (!elementZone) return
             let isFoundZone = false
-            Object.values(zoneSettings.Zone).forEach((zoneValue) => {
-                const data = zoneSettings.Data[zoneValue]
+            Object.values(zoneSettingsRef.current.Zone).forEach((zoneValue) => {
+                const data = zoneSettingsRef.current.Data[zoneValue]
                 if (data.elementId === elementZone.id) {
                     isFoundZone = true
                     changeCursorSrc(data.imgCursor)
@@ -54,7 +51,7 @@ export function useCursorZone(
             if (isFoundZone) return
 
             // Если зона не найдена обнуляем зону в NONE
-            const noneData = zoneSettings.Data[zoneSettings.Zone.NONE];
+            const noneData = zoneSettingsRef.current.Data[zoneSettingsRef.current.Zone.NONE];
             changeCursorSrc(noneData.imgCursor);
             currentZoneDataRef.current = noneData;
             noneData.handleOn?.();
@@ -64,14 +61,14 @@ export function useCursorZone(
     const handleOffZone = useCallback(
         (elementZone) => {
             if (!elementZone) return
-            Object.values(zoneSettings.Zone).forEach((zoneValue) => {
-                const data = zoneSettings.Data[zoneValue]
+            Object.values(zoneSettingsRef.current.Zone).forEach((zoneValue) => {
+                const data = zoneSettingsRef.current.Data[zoneValue]
                 if (data.elementId === elementZone.id)
                     data.handleOff?.()
             })
         }, [])
 
-    return { currentZoneDataRef }
+    return { currentZoneDataRef, updateCurrentZoneThrottled }
 }
 
 export default useCursorZone

@@ -2,12 +2,11 @@ import { forwardRef, useImperativeHandle, useCallback, useState } from "react";
 import "./Cursor.css";
 
 import { useCursorMove } from "./hooks/useCursorMove";
-import { useCursorZone } from "./hooks/useCursorZone";
 import useCursorEvents from "./hooks/useCursorEvents";
 
 const Cursor = forwardRef((props, ref) => {
 
-  const { settings, zoneSettings} = props 
+  const { settings, zoneSettingsRef} = props 
 
   const [src, setSrc] = useState(settings.imgCursor);
   const changeCursorSrc = useCallback((newSrc) => {
@@ -39,17 +38,13 @@ const Cursor = forwardRef((props, ref) => {
     setIsHidden(false);
   }, []);
 
-  const {position, getPositionStable, stopCursor, startCursor} = useCursorMove(
+  const {position, stopCursor, startCursor, currentZoneDataRef} = useCursorMove(
     settings,
     showCursor,
     enableCursor,
     disableCursor,
-  );
-
-  const { currentZoneDataRef } = useCursorZone(
-    getPositionStable,
-    zoneSettings,
     changeCursorSrc,
+    zoneSettingsRef
   );
 
   useImperativeHandle(ref, () => ({

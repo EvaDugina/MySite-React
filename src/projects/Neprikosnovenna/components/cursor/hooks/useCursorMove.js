@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import useCursorMovePhysics from "./useCursorMovePhysics"
 import useCursorMoveAnimation from "./useCursorMoveAnimation"
+import useCursorZone from "./useCursorZone"
 
 export function useCursorMove(
     settings,
     showCursor,
     enableCursor,
     disableCursor,
+    changeCursorSrc,
+    zoneSettingsRef
 ) {
     const isTargetNotInitRef = useRef(false)
     const isStoppedRef = useRef(true)
@@ -18,6 +21,12 @@ export function useCursorMove(
     }), [])
 
     const targetRef = useRef({ x: null, y: null })
+
+    const { currentZoneDataRef, updateCurrentZoneThrottled } = useCursorZone(
+        getPositionStable,
+        zoneSettingsRef,
+        changeCursorSrc,
+    );
 
     const { resetVelocity, isNearTarget, getRecalculatedPosition } =
         useCursorMovePhysics(
@@ -115,6 +124,7 @@ export function useCursorMove(
 
         // Оптимизация. Условие остановки анимации, когда курсор неподвижен
         if (isNearTarget(positionRef.current, targetRef.current)) {
+            updateCurrentZoneThrottled()
             positionRef.current = { ...targetRef.current }
             setPosition(positionRef.current)
             resetVelocity()
@@ -178,6 +188,7 @@ export function useCursorMove(
         getPositionStable,
         stopCursor,
         startCursor,
+        currentZoneDataRef
     }
 }
 

@@ -35,7 +35,7 @@ function WhenYouSoBeautifullyDied() {
     // buttonRef.current.reset()
   }
 
-const cursorZoneSettings = new CursorZoneSettings({
+const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
     Zone: Zone,
     Data: {
       [Zone.NONE]: {
@@ -54,8 +54,8 @@ const cursorZoneSettings = new CursorZoneSettings({
       },
       [Zone.PORTRAIT]: {
         elementId: "Portrait",
-        imgCursor: CursorImages.POINTER,
-        imgCursorClicked: CursorImages.POINTER_CLICKED,
+        imgCursor: CursorImages.DEFAULT,
+        imgCursorClicked: CursorImages.DEFAULT,
         handleOn: null,
         handleOff: null,
       },
@@ -67,7 +67,7 @@ const cursorZoneSettings = new CursorZoneSettings({
         handleOff: handleOffButton,
       },
     },
-  });
+  }))
 
   const handleLeftClickDown = useCallback((currentElementId) => {
     if (currentElementId == "BtnNeprikosnovenna") {
@@ -100,7 +100,7 @@ const cursorZoneSettings = new CursorZoneSettings({
     <>
       <Cursor ref={cursorRef}
         settings={cursorSettings}
-        zoneSettings={cursorZoneSettings}
+        zoneSettingsRef={cursorZoneSettingsRef}
       />
 
       <main>
