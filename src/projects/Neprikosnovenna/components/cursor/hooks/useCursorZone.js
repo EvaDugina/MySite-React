@@ -11,6 +11,10 @@ export function useCursorZone(
         zoneSettingsRef.current.Data[zoneSettingsRef.current.Zone.NONE],
     )
 
+    useEffect(() => {
+        elementZoneRef.current = null
+    }, [zoneSettingsRef.current.Data])
+
     const updateCurrentZone = useCallback(() => {
         // event.preventDefault();
         const position = getPositionStable()

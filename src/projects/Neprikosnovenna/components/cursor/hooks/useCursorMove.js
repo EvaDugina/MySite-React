@@ -41,7 +41,7 @@ export function useCursorMove(
         height: null,
     })
 
-    // Инициализация контроллера
+    // Инициализация
     useEffect(() => {
         init()
         return () => {
@@ -134,8 +134,6 @@ export function useCursorMove(
 
         positionRef.current = getRecalculatedPosition(positionRef.current, targetRef.current)
         setPosition(positionRef.current)
-
-        console.log(positionRef.current)
 
         continueAnimation()
     }, [])

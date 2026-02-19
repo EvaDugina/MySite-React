@@ -1,5 +1,5 @@
-import "./Button.css";
-import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
+import "./Button.scss";
+import { forwardRef, useImperativeHandle, useState, useCallback, useRef } from "react";
 
 const ButtonType = {
     DEFAULT: 0,
@@ -20,21 +20,28 @@ const Button = forwardRef((props, ref) => {
     const {id, text} = props
     
     const [buttonType, setButtonType] = useState(ButtonType.DEFAULT)
+    const buttonTypeRef = useRef(buttonType)
 
     const reset = useCallback(() => {
-        setButtonType(ButtonType.DEFAULT)
+        buttonTypeRef.current = ButtonType.DEFAULT
+        setButtonType(buttonTypeRef.current)
     }, [])
     
     const hover = useCallback(() => {
-        setButtonType(ButtonType.HOVER)
+        if (buttonTypeRef.current == ButtonType.DISABLE) return
+        buttonTypeRef.current = ButtonType.HOVER
+        setButtonType(buttonTypeRef.current)
     }, [])
-
+    
     const focus = useCallback(() => {
-        setButtonType(ButtonType.ACTIVE)
+        if (buttonTypeRef.current == ButtonType.DISABLE) return
+        buttonTypeRef.current = ButtonType.ACTIVE
+        setButtonType(buttonTypeRef.current)
     }, [])
     
     const disable = useCallback(() => {
-        setButtonType(ButtonType.DISABLE)
+        buttonTypeRef.current = ButtonType.DISABLE
+        setButtonType(buttonTypeRef.current)
     }, [])
 
     useImperativeHandle(ref, () => ({

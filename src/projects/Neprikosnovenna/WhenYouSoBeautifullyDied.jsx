@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef } from "react";
 import "./WhenYouSoBeautifullyDied.css";
+import React, { useCallback, useMemo, useRef } from "react";
 
 import {
   CursorImages,
@@ -19,26 +19,34 @@ const Zone = {
   BUTTON: 3,
 };
 
-function WhenYouSoBeautifullyDied() {
+const WhenYouSoBeautifullyDied = ({}) => {
 
-  const cursorRef = useRef();
-  const backgroundRef = useRef();
-  const buttonRef = useRef()
+  const cursorRef = useRef(null);
+  const backgroundRef = useRef(null);
+  const buttonRef = useRef(null)
+  const portraitRef = useRef(null)
+
+  const isClickedRef = useRef(false)
+  const isVideoEndedRef = useRef(false)
+  
+  // 
+  // 
+  // 
 
   const handleOnButton = () => {
+    if (isVideoEndedRef.current) return
     backgroundRef.current?.hide()
     // buttonRef.current.hover()
   }
   
   const handleOffButton = () => {
+    if (isVideoEndedRef.current) return
     backgroundRef.current?.show()
     // buttonRef.current.reset()
   }
 
-const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
-    Zone: Zone,
-    Data: {
-      [Zone.NONE]: {
+  const ZoneData = {
+    [Zone.NONE]: {
         elementId: null,
         imgCursor: CursorImages.DEFAULT,
         imgCursorClicked: CursorImages.DEFAULT,
@@ -65,13 +73,29 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
         imgCursorClicked: CursorImages.POINTER_CLICKED,
         handleOn: handleOnButton,
         handleOff: handleOffButton,
-      },
-    },
+      }
+    }
+
+const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
+    Zone: Zone,
+    Data: {...ZoneData},
   }))
+
+  // 
+  // 
+  // 
 
   const handleLeftClickDown = useCallback((currentElementId) => {
     if (currentElementId == "BtnNeprikosnovenna") {
-      buttonRef.current.focus()
+      isClickedRef.current = true
+      portraitRef.current.play();
+      buttonRef.current.focus();
+      buttonRef.current.disable();
+      setTimeout(() => {
+        // ZoneData[Zone.BUTTON].imgCursor = CursorImages.DEFAULT
+        // ZoneData[Zone.BUTTON].imgCursorClicked = CursorImages.DEFAULT
+        // cursorZoneSettingsRef.current.Data = {...ZoneData}
+      }, 500);
     }
     // cursorControllRef.current?.hideCursor();
   }, []);
@@ -92,8 +116,26 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
       stiffness: 0.4, // Жесткость пружины (скорость реакции)
       damping: 0.1, // Затухание (плавность остановки)
       mass: 0.1, // Масса объекта
-      maxSpeed: 15, // Максимальная скорость
+      maxSpeed: 25, // Максимальная скорость
     });
+  }, []);
+
+  // 
+  // 
+  // 
+
+  const handleVideoEnded = useCallback(() => {
+    isVideoEndedRef.current = true
+    ZoneData[Zone.PORTRAIT].imgCursor = CursorImages.POINTER
+    ZoneData[Zone.PORTRAIT].imgCursorClicked = CursorImages.POINTER_CLICKED
+    cursorZoneSettingsRef.current.Data = {...ZoneData}
+    // buttonRef.current.reset()
+  }, []);
+
+  const videoSettings = useMemo(() => {
+    return {
+      onEnded: handleVideoEnded,
+    }
   }, []);
 
   return (
@@ -113,7 +155,7 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
           <Flash type={FlashType.FRONT} />
           <Flash />
 
-          <Portrait portraitType={PortraitType.VIDEO} />
+          <Portrait ref={portraitRef} portraitType={PortraitType.VIDEO} settings={videoSettings}/>
         </article>
 
         <Background ref={backgroundRef} id="Background-1" classes="bg-blue z-3" />

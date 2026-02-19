@@ -1,0 +1,23 @@
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+.portrait {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: auto;
+  opacity: 1;
+  border-radius: 7.5px;
+  
+  &.video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 3s ease-in-out;
+    object-fit: cover;
+  }
+}

@@ -1,24 +1,29 @@
 /* BUTTON */
+:root {
+  --color-xlight-grey: rgb(240, 240, 240);
+  --color-light-grey: rgb(220, 220, 220);
+}
+
 
 button {
   background-color: var(--color-xlight-grey);
   border-radius: 2px;
   border-width: thin;
-}
 
-button:disabled {
-  opacity: 0.7;
-  background-color: var(--color-xlight-grey-a) !important;
-}
+  &.disabled {
+    opacity: 0.35;
+    // pointer-events: none;
+  }
 
-button.hovered {
-  background-color: var(--color-light-grey);
-}
+  &.hovered {
+    background-color: var(--color-light-grey);
+  }
 
-button.active {
-  border-width: revert !important;
-  border-color: black !important;
-  background-color: var(--color-light-grey);
+  &.active {
+    border-width: revert !important;
+    border-color: black !important;
+  }
+
 }
 
 #BtnNeprikosnovenna {
