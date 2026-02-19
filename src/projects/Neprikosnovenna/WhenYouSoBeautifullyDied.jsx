@@ -34,13 +34,13 @@ const WhenYouSoBeautifullyDied = ({}) => {
   // 
 
   const handleOnButton = () => {
-    if (isVideoEndedRef.current) return
+    // if (isVideoEndedRef.current) return
     backgroundRef.current?.hide()
     // buttonRef.current.hover()
   }
   
   const handleOffButton = () => {
-    if (isVideoEndedRef.current) return
+    // if (isVideoEndedRef.current) return
     backgroundRef.current?.show()
     // buttonRef.current.reset()
   }
@@ -86,23 +86,20 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
   // 
 
   const handleLeftClickDown = useCallback((currentElementId) => {
+    if (isVideoEndedRef.current) return
     if (currentElementId == "BtnNeprikosnovenna") {
       isClickedRef.current = true
       portraitRef.current.play();
       buttonRef.current.focus();
       buttonRef.current.disable();
-      setTimeout(() => {
-        // ZoneData[Zone.BUTTON].imgCursor = CursorImages.DEFAULT
-        // ZoneData[Zone.BUTTON].imgCursorClicked = CursorImages.DEFAULT
-        // cursorZoneSettingsRef.current.Data = {...ZoneData}
-      }, 500);
     }
-    // cursorControllRef.current?.hideCursor();
   }, []);
 
   const handleLeftClickUp = useCallback((currentElementId) => {
+    if (isVideoEndedRef.current) return
     if (currentElementId == "BtnNeprikosnovenna") {
-      // buttonRef.current.hover()
+      cursorRef.current.stop()
+      cursorRef.current.disable()
     }
   }, []);
 
@@ -126,10 +123,14 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
 
   const handleVideoEnded = useCallback(() => {
     isVideoEndedRef.current = true
-    ZoneData[Zone.PORTRAIT].imgCursor = CursorImages.POINTER
-    ZoneData[Zone.PORTRAIT].imgCursorClicked = CursorImages.POINTER_CLICKED
-    cursorZoneSettingsRef.current.Data = {...ZoneData}
-    // buttonRef.current.reset()
+    // ZoneData[Zone.PORTRAIT].imgCursor = CursorImages.POINTER
+    // ZoneData[Zone.PORTRAIT].imgCursorClicked = CursorImages.POINTER_CLICKED
+    // cursorZoneSettingsRef.current.Data = {...ZoneData}
+
+    cursorRef.current.enable();
+    cursorRef.current.start();
+    buttonRef.current.reset();
+    // buttonRef.current.focus();
   }, []);
 
   const videoSettings = useMemo(() => {

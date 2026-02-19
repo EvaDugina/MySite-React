@@ -48,12 +48,12 @@ const Cursor = forwardRef((props, ref) => {
   );
 
   useImperativeHandle(ref, () => ({
-    hideCursor,
-    showCursor,
-    disableCursor,
-    enableCursor,
-    stopCursor, 
-    startCursor
+    hide: hideCursor,
+    show: showCursor,
+    disable: disableCursor,
+    enable: enableCursor,
+    stop: stopCursor, 
+    start: startCursor
   }));
 
   return (

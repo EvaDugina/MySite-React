@@ -12,16 +12,16 @@ button {
 
   &.disabled {
     opacity: 0.35;
-    // pointer-events: none;
   }
 
   &.hovered {
     background-color: var(--color-light-grey);
   }
-
+  
   &.active {
     border-width: revert !important;
     border-color: black !important;
+    background-color: var(--color-light-grey);
   }
 
 }

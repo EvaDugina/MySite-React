@@ -22,7 +22,7 @@ export function useCursorZone(
             position.x,
             position.y,
         )
-        if (elementZoneRef.current && elementZoneRef.current.id === elementUnder.id) return null
+        if (!elementUnder || (elementZoneRef.current && elementZoneRef.current.id === elementUnder.id)) return null
 
         handleOffZone?.(elementZoneRef.current)
         elementZoneRef.current = elementUnder
