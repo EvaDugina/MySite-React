@@ -1,7 +1,6 @@
 /* BUTTON */
 
 button {
-  cursor: none;
   background-color: var(--color-xlight-grey);
   border-radius: 2px;
   border-width: thin;

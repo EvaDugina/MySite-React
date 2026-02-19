@@ -11,7 +11,9 @@ export function useCursorZone(
         zoneSettings.Data[zoneSettings.Zone.NONE],
     )
 
-    const stableUpdate = useCallback(() => {
+    const stableUpdate = useCallback((event) => {
+        event.preventDefault();
+        console.log("stableUpdate()")
         const position = getPositionStable()
         const elementUnder = document.elementFromPoint(
             position.x,
@@ -27,9 +29,11 @@ export function useCursorZone(
     const updateCurrentZone = useThrottle(stableUpdate, 50);
 
     useEffect(() => {
-        document.addEventListener("mousemove", updateCurrentZone)
+        document.addEventListener("pointerup", updateCurrentZone)
+        document.addEventListener("pointermove", updateCurrentZone)
         return () => {
-            document.removeEventListener("mousemove", updateCurrentZone)
+            document.removeEventListener("pointerup", updateCurrentZone)
+            document.removeEventListener("pointermove", updateCurrentZone)
         }
     }, [])
 

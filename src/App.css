@@ -6,8 +6,6 @@
   --color-xlight-grey-a: rgba(240, 240, 240, 0.3);
   --color-light-grey: rgb(220, 220, 220);
 
-  cursor: none;
-
   font-size: var(--font-size);
   font-family: Helvetica, Arial, sans-serif;
 }

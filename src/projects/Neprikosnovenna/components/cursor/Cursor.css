@@ -1,3 +1,13 @@
+:root {
+  cursor: none !important;
+  touch-action: none !important
+}
+
+* {
+  cursor: none !important;
+  touch-action: none !important
+}
+
 .cursor {
   display: block;
   position: fixed;
@@ -5,4 +15,5 @@
   height: 1.9rem;
   transform: translate(-26.5%, -9%);
   will-change: transform; /* Для оптимизации анимации */
+  user-select: none;
 }

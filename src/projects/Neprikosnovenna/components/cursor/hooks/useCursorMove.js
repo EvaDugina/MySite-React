@@ -46,13 +46,17 @@ export function useCursorMove(
 
     const startCursor = useCallback(() => {
         isStoppedRef.current = false
-        window.addEventListener("mousemove", onMouseMove)
+        window.addEventListener("pointerdown", onPointerMove)
+        window.addEventListener("pointermove", onPointerMove)
+        window.addEventListener("pointercancel", onPointerCancel)
         startAnimation()
     }, [])
 
     const stopCursor = useCallback(() => {
         isStoppedRef.current = true
-        window.removeEventListener("mousemove", onMouseMove)
+        window.removeEventListener("pointerdown", onPointerMove)
+        window.removeEventListener("pointermove", onPointerMove)
+        window.removeEventListener("pointercancel", onPointerCancel)
         stopAnimation()
     }, [])
 
@@ -121,6 +125,8 @@ export function useCursorMove(
         positionRef.current = getRecalculatedPosition(positionRef.current, targetRef.current)
         setPosition(positionRef.current)
 
+        console.log(positionRef.current)
+
         continueAnimation()
     }, [])
 
@@ -131,9 +137,15 @@ export function useCursorMove(
     // HANDLERS
     //
 
-    const onMouseMove = useCallback((event) => {
+    const onPointerMove = useCallback((event) => {
+        event.preventDefault(); // Для сенсоров
+
         targetRef.current = { x: event.clientX, y: event.clientY }
         startAnimation()
+    }, [])
+
+    const onPointerCancel = useCallback((event) => {
+        event.preventDefault(); // Для сенсоров
     }, [])
 
     const onBlur = useCallback(() => {

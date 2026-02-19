@@ -1,7 +1,6 @@
 import { useCallback, useRef } from "react"
 
 export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
-    const isMouseDownRef = useRef(false)
 
     // const callbacksRef = useRef({ handleLeftClickDown, handleLeftClickUp });
     // useEffect(() => {
@@ -13,33 +12,31 @@ export function useCursorEvents(handleLeftClickDown, handleLeftClickUp) {
     //
 
     const enableCursor = useCallback(() => {
-        window.addEventListener("mousedown", onMouseDown)
-        window.addEventListener("mouseup", onMouseUp)
+        window.addEventListener("pointerdown", onPointerDown)
+        window.addEventListener("pointerup", onPointerUp)
     }, [])
 
     const disableCursor = useCallback(() => {
-        window.removeEventListener("mousedown", onMouseDown)
-        window.removeEventListener("mouseup", onMouseUp)
+        window.removeEventListener("pointerdown", onPointerDown)
+        window.removeEventListener("pointerup", onPointerUp)
     }, [])
 
     //
     // LOCAL
     //
 
-    const onMouseDown = useCallback((event) => {
+    const onPointerDown = useCallback((event) => {
+        event.preventDefault(); // Для сенсоров
+
         if (event.button === 0) {
-            if (isMouseDownRef.current) return
-            isMouseDownRef.current = true
-            // callbacksRef.current.handleLeftClickDown?.(event)
             handleLeftClickDown(event)
         }
     }, [])
 
-    const onMouseUp = useCallback((event) => {
+    const onPointerUp = useCallback((event) => {
+        event.preventDefault(); // Для сенсоров
+
         if (event.button === 0) {
-            if (!isMouseDownRef.current) return
-            isMouseDownRef.current = false
-            // callbacksRef.current.handleLeftClickUp?.(event)
             handleLeftClickUp(event)
         }
     }, [])
