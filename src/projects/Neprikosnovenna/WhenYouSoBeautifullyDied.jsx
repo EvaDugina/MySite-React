@@ -1,5 +1,11 @@
 import "./WhenYouSoBeautifullyDied.css";
-import React, { useCallback, useMemo, useRef } from "react";
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import {
   CursorImages,
@@ -20,87 +26,103 @@ const Zone = {
 };
 
 const WhenYouSoBeautifullyDied = ({}) => {
-
   const cursorRef = useRef(null);
   const backgroundRef = useRef(null);
-  const buttonRef = useRef(null)
-  const portraitRef = useRef(null)
+  const buttonRef = useRef(null);
+  const portraitRef = useRef(null);
 
-  const isClickedRef = useRef(false)
-  const isVideoEndedRef = useRef(false)
-  
-  // 
-  // 
-  // 
+  const isClickedRef = useRef(false);
+  const isVideoEndedRef = useRef(false);
+
+  // Инициализация состояния из localStorage (или 0, если там ничего нет)
+  const [isBloody, setIsBloody] = useState(() => {
+    const isBloody = localStorage.getItem("01-isBloody");
+    return isBloody ?? false;
+  });
+
+  useEffect(() => {
+    if (isBloody) portraitRef.current.rewindToEnd();
+    portraitRef.current.show(false);
+  }, []);
+
+  // При каждом изменении count обновляем localStorage
+  useEffect(() => {
+    localStorage.setItem("01-isBloody", isBloody);
+  }, [isBloody]);
+
+  //
+  //
+  //
+
+  // useEffect(() => {
+  //   console.log("WhenYouSoBeautifullyDied");
+  // });
 
   const handleOnButton = () => {
-    // if (isVideoEndedRef.current) return
-    backgroundRef.current?.hide()
-    // buttonRef.current.hover()
-  }
-  
+    backgroundRef.current?.hide();
+  };
+
   const handleOffButton = () => {
-    // if (isVideoEndedRef.current) return
-    backgroundRef.current?.show()
-    // buttonRef.current.reset()
-  }
+    backgroundRef.current?.show();
+  };
 
   const ZoneData = {
     [Zone.NONE]: {
-        elementId: null,
-        imgCursor: CursorImages.DEFAULT,
-        imgCursorClicked: CursorImages.DEFAULT,
-        handleOn: null,
-        handleOff: null,
-      },
-      [Zone.BACK]: {
-        elementId: "Background-0",
-        imgCursor: CursorImages.DEFAULT,
-        imgCursorClicked: CursorImages.DEFAULT,
-        handleOn: null,
-        handleOff: null,
-      },
-      [Zone.PORTRAIT]: {
-        elementId: "Portrait",
-        imgCursor: CursorImages.DEFAULT,
-        imgCursorClicked: CursorImages.DEFAULT,
-        handleOn: null,
-        handleOff: null,
-      },
-      [Zone.BUTTON]: {
-        elementId: "BtnNeprikosnovenna",
-        imgCursor: CursorImages.POINTER,
-        imgCursorClicked: CursorImages.POINTER_CLICKED,
-        handleOn: handleOnButton,
-        handleOff: handleOffButton,
-      }
-    }
+      elementId: null,
+      imgCursor: CursorImages.DEFAULT,
+      imgCursorClicked: CursorImages.DEFAULT,
+      handleOn: null,
+      handleOff: null,
+    },
+    [Zone.BACK]: {
+      elementId: "Background-0",
+      imgCursor: CursorImages.DEFAULT,
+      imgCursorClicked: CursorImages.DEFAULT,
+      handleOn: null,
+      handleOff: null,
+    },
+    [Zone.PORTRAIT]: {
+      elementId: "Portrait",
+      imgCursor: CursorImages.DEFAULT,
+      imgCursorClicked: CursorImages.DEFAULT,
+      handleOn: null,
+      handleOff: null,
+    },
+    [Zone.BUTTON]: {
+      elementId: "BtnNeprikosnovenna",
+      imgCursor: CursorImages.POINTER,
+      imgCursorClicked: CursorImages.POINTER_CLICKED,
+      handleOn: handleOnButton,
+      handleOff: handleOffButton,
+    },
+  };
 
-const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
-    Zone: Zone,
-    Data: {...ZoneData},
-  }))
+  const cursorZoneSettingsRef = useRef(
+    new CursorZoneSettings({
+      Zone: Zone,
+      Data: { ...ZoneData },
+    }),
+  );
 
-  // 
-  // 
-  // 
+  //
+  //
+  //
 
   const handleLeftClickDown = useCallback((currentElementId) => {
-    if (isVideoEndedRef.current) return
+    if (isVideoEndedRef.current) return;
+    if (isBloody) return;
     if (currentElementId == "BtnNeprikosnovenna") {
-      isClickedRef.current = true
+      isClickedRef.current = true;
+      portraitRef.current.show(true);
       portraitRef.current.play();
-      buttonRef.current.focus();
+      setIsBloody(true);
+      buttonRef.current.click();
       buttonRef.current.disable();
     }
   }, []);
 
   const handleLeftClickUp = useCallback((currentElementId) => {
-    if (isVideoEndedRef.current) return
-    if (currentElementId == "BtnNeprikosnovenna") {
-      // cursorRef.current.stop()
-      // cursorRef.current.disable()
-    }
+    if (isVideoEndedRef.current) return;
   }, []);
 
   const cursorSettings = useMemo(() => {
@@ -117,31 +139,25 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
     });
   }, []);
 
-  // 
-  // 
-  // 
+  //
+  //
+  //
 
   const handleVideoEnded = useCallback(() => {
-    isVideoEndedRef.current = true
-    // ZoneData[Zone.PORTRAIT].imgCursor = CursorImages.POINTER
-    // ZoneData[Zone.PORTRAIT].imgCursorClicked = CursorImages.POINTER_CLICKED
-    // cursorZoneSettingsRef.current.Data = {...ZoneData}
-
-    // cursorRef.current.enable();
-    // cursorRef.current.start();
+    isVideoEndedRef.current = true;
     buttonRef.current.reset();
-    // buttonRef.current.focus();
   }, []);
 
   const videoSettings = useMemo(() => {
     return {
       onEnded: handleVideoEnded,
-    }
+    };
   }, []);
 
   return (
     <>
-      <Cursor ref={cursorRef}
+      <Cursor
+        ref={cursorRef}
         settings={cursorSettings}
         zoneSettingsRef={cursorZoneSettingsRef}
       />
@@ -150,21 +166,33 @@ const cursorZoneSettingsRef = useRef(new CursorZoneSettings({
         <article id="PortraitContainer" className="portrait-container-default">
           <div id="CursorsContainer" className="ignore-cursor d-none"></div>
 
-          <Button ref={buttonRef} id="BtnNeprikosnovenna" text="неприкосновенна"/>
+          <Button
+            ref={buttonRef}
+            id="BtnNeprikosnovenna"
+            text="неприкосновенна"
+          />
 
           <Flash type={FlashType.BEHIND} />
           <Flash type={FlashType.FRONT} />
           <Flash />
 
-          <Portrait ref={portraitRef} portraitType={PortraitType.VIDEO} settings={videoSettings}/>
+          <Portrait
+            ref={portraitRef}
+            portraitType={PortraitType.VIDEO}
+            settings={videoSettings}
+          />
         </article>
 
-        <Background ref={backgroundRef} id="Background-1" classes="bg-blue z-3" />
+        <Background
+          ref={backgroundRef}
+          id="Background-1"
+          classes="bg-blue z-3"
+        />
       </main>
 
       <Background id="Background-0" classes="bg-white z-0" />
     </>
   );
-}
+};
 
 export default WhenYouSoBeautifullyDied;
