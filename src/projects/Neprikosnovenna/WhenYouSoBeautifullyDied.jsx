@@ -36,18 +36,19 @@ const WhenYouSoBeautifullyDied = ({}) => {
 
   // Инициализация состояния из localStorage (или 0, если там ничего нет)
   const [isBloody, setIsBloody] = useState(() => {
-    const isBloody = localStorage.getItem("01-isBloody");
-    return isBloody ?? false;
+    return JSON.parse(localStorage.getItem("01-isBloody")) ?? false;
   });
 
   useEffect(() => {
-    if (isBloody) portraitRef.current.rewindToEnd();
-    portraitRef.current.show(false);
+    if (isBloody) {
+      portraitRef.current.rewindToEnd();
+      portraitRef.current.show(false);
+    }
   }, []);
 
   // При каждом изменении count обновляем localStorage
   useEffect(() => {
-    localStorage.setItem("01-isBloody", isBloody);
+    localStorage.setItem("01-isBloody", JSON.stringify(isBloody));
   }, [isBloody]);
 
   //
