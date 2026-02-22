@@ -13,8 +13,10 @@ import {
   CursorZoneSettings,
 } from "./components/cursor/CursorSettingsHandler";
 import Cursor from "./components/cursor/Cursor";
-import Portrait, { PortraitType } from "./components/portrait/Portrait";
-import Flash, { FlashType } from "./components/Flash/Flash";
+import Portrait from "./components/portrait/Portrait";
+import { PortraitType } from "./components/portrait/PortraitSettingsHandler";
+import Flash from "./components/Flash/Flash";
+import {FlashType} from "./components/Flash/FlashSettingsHandler";
 import Background from "./components/background/Background";
 import Button from "./components/button/Button";
 

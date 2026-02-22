@@ -17,7 +17,7 @@ button {
   &.hovered {
     background-color: var(--color-light-grey);
   }
-  
+
   &.active {
     border-width: revert !important;
     border-color: black !important;

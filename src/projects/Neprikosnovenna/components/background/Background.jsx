@@ -1,28 +1,27 @@
 import "./Background.css";
-import { forwardRef, useImperativeHandle, useCallback, useState } from "react";
+import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
 
 const Background = forwardRef((props, ref) => {
-  const { id = "", classes = "bg-white z-0 d-none" } = props
+    const {id = "", classes = "bg-white z-0 d-none"} = props
 
-  const [isHidden, setIsHidden] = useState(false);
-  const hide = useCallback(() => {
-    setIsHidden(true);
-  }, []);
+    const [isHidden, setIsHidden] = useState(false);
+    const hide = useCallback(() => {
+        setIsHidden(true);
+    }, []);
 
-  const show = useCallback(() => {
-    setIsHidden(false);
-  }, []);
+    const show = useCallback(() => {
+        setIsHidden(false);
+    }, []);
 
-  useImperativeHandle(ref, () => ({
-    hide,
-    show
-  }));
+    useImperativeHandle(ref, () => ({
+        hide, show
+    }));
 
-  return <div 
-  id={id} className={"background  " + classes}
+    return <div
+        id={id} className={"background  " + classes}
         style={{
-        display: isHidden ? "none" : "block",
-      }}></div>;
+            display: isHidden ? "none" : "block",
+        }}></div>;
 });
 
 export default Background;
