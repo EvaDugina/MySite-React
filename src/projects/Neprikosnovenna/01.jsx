@@ -1,4 +1,4 @@
-import "./WhenYouSoBeautifullyDied.css";
+import "./01.css";
 import React, {
   useCallback,
   useState,
