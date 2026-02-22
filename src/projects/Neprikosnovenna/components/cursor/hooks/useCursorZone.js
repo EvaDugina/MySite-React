@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef} from "react"
-import useThrottle from "./useThrottle"
+import { useThrottleCallback } from '@react-hook/throttle';
 
 export function useCursorZone(getPosition, zoneSettingsRef, changeCursorSrc,) {
     const elementZoneRef = useRef(null);
@@ -48,7 +48,7 @@ export function useCursorZone(getPosition, zoneSettingsRef, changeCursorSrc,) {
     }, [getPosition, handleOnZone, handleOffZone]);
 
     // Пересоздается при изменении updateCurrentZone()
-    const throttledUpdateCurrentZone = useThrottle(updateCurrentZone, 50);
+    const throttledUpdateCurrentZone = useThrottleCallback(updateCurrentZone, 50);
 
     useEffect(() => {
         document.addEventListener("pointermove", throttledUpdateCurrentZone)
