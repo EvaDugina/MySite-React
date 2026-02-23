@@ -19,7 +19,7 @@ function Flash({type = FlashType.DEFAULT}) {
             id={`FlashContainer${type}`}
             className="flash-container ignore-cursor blend-exclusion z-3 d-none"
         >
-            <div id="FlashBack" className="flash-container not-allowed"/>
+            <div id="FlashBack" className="flash-container flash-back not-allowed"/>
         </div>);
     }
 

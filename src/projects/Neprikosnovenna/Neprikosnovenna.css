@@ -14,18 +14,15 @@ main {
     background-color: white;
 }
 
-#PortraitContainer {
+/* CLASSES */
+
+.portrait-container-default {
     position: relative;
+    width: 50%;
     height: auto;
     margin: 0;
     display: block;
     align-self: center;
-}
-
-/* CLASSES */
-
-.portrait-container-default {
-    width: 50%;
 }
 
 @media (min-width: 768px) {

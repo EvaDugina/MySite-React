@@ -46,7 +46,7 @@ const Button = forwardRef((props, ref) => {
 
     const classes = getClassNameByButtonType(buttonType);
 
-    return (<button id={id} className={`not-allowed z-6 ${classes}`}>
+    return (<button id={id} className={`btn-neprikosnovenna not-allowed z-6 ${classes}`}>
         {text}
     </button>);
 });

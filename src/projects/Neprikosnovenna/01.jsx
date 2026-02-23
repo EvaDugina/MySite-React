@@ -1,4 +1,4 @@
-import "./01.css";
+import "./Neprikosnovenna.css";
 import React, {useCallback, useEffect, useMemo, useRef, useState,} from "react";
 
 import {CursorImages, CursorSettings, CursorZoneSettings,} from "./components/cursor/CursorSettingsHandler";
@@ -142,9 +142,7 @@ const WhenYouSoBeautifullyDied = () => {
         />
 
         <main>
-            <article id="PortraitContainer" className="portrait-container-default">
-                <div id="CursorsContainer" className="ignore-cursor d-none"></div>
-
+            <article className="portrait-container-default">
                 <Button
                     ref={buttonRef}
                     id="BtnNeprikosnovenna"
