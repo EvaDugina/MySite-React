@@ -24,15 +24,20 @@ function useSoundEffect(src, volume = 1) {
         audioContextRef.current = context;
         gainNodeRef.current = gainNode;
 
-        try {
+        const responseSrc = async () => {
             const response = await fetch(srcRef.current);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const arrayBuffer = await response.arrayBuffer();
-            const buffer = await context.decodeAudioData(arrayBuffer);
-            bufferRef.current = buffer;
-        } catch (err) {
-            console.error('Ошибка загрузки звука:', err);
-            bufferRef.current = null;
+            return await context.decodeAudioData(arrayBuffer);
+        }
+
+        while(bufferRef.current === null) {
+            try {
+                bufferRef.current = await responseSrc()
+            } catch (err) {
+                console.error('Ошибка загрузки звука:', err);
+                bufferRef.current = null;
+            }
         }
     }, []);
 
