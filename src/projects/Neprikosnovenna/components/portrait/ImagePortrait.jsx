@@ -1,16 +1,22 @@
-import "./Portrait.scss";
+import styles from './Portrait.module.scss';
 
-const ImagePortrait = ({zIndex}) => {
-    return (<>
-        <figure>
+/**
+ * Статичный портрет (изображение).
+ * @param {Object} props
+ * @param {number} [props.zIndex]
+ */
+const ImagePortrait = ({ zIndex }) => (
+    <>
+        <figure className={styles.figure}>
             <img
                 id="Portrait"
-                className={`portrait image not-allowed z-${zIndex}`}
+                className={`${styles.portrait} ${styles['portrait--image']} not-allowed z-${zIndex}`}
                 src="/images/НЕПРИКОСНОВЕННА.png"
                 alt="НЕПРИКОСНОВЕННА"
             />
         </figure>
-    </>);
-};
+    </>
+);
 
+export { ImagePortrait };
 export default ImagePortrait;

@@ -1,23 +1,41 @@
-import {useCallback, useEffect, useRef, useState} from "react"
-import useCursorMovePhysics from "./useCursorMovePhysics"
-import useCursorMoveAnimation from "./useCursorMoveAnimation"
-import useCursorZone from "./useCursorZone"
+import { useCallback, useEffect, useRef, useState } from "react";
+import useCursorMovePhysics from "./useCursorMovePhysics";
+import useCursorMoveAnimation from "./useCursorMoveAnimation";
+import useCursorZone from "./useCursorZone";
 import useCursorEvents from "./useCursorEvents.js";
 
-export function useCursor(settings, showCursor, changeCursorSrc, zoneSettingsRef, handleLeftClickDownRef, handleLeftClickUpRef,) {
-    const [position, setPosition] = useState({x: null, y: null})
+/**
+ * Хук кастомного курсора: инициализация, движение, зоны, клики.
+ * @param {Object} settings - объект createCursorSettings()
+ * @param {Function} showCursor
+ * @param {Function} changeCursorSrc
+ * @param {React.MutableRefObject} zoneSettingsRef - ref с объектом createCursorZoneSettings()
+ * @param {React.MutableRefObject} handleLeftClickDownRef
+ * @param {React.MutableRefObject} handleLeftClickUpRef
+ * @returns {{ position: { x, y }, stopCursor: Function, startCursor: Function, currentZoneDataRef: React.MutableRefObject }}
+ */
+export function useCursor(
+    settings,
+    showCursor,
+    changeCursorSrc,
+    zoneSettingsRef,
+    handleLeftClickDownRef,
+    handleLeftClickUpRef,
+) {
+    const [position, setPosition] = useState({ x: null, y: null });
 
-    const positionRef = useRef(position)
-    const getPosition = useCallback((() => {
-        return {...positionRef.current}
-    }), [])
+    const positionRef = useRef(position);
+    const getPosition = useCallback(() => {
+        return { ...positionRef.current };
+    }, []);
 
-    const isStoppedRef = useRef(true)
-    const isTargetNotInitRef = useRef(false)
-    const targetRef = useRef({x: null, y: null})
+    const isStoppedRef = useRef(true);
+    const isTargetNotInitRef = useRef(false);
+    const targetRef = useRef({ x: null, y: null });
     const windowSizeRef = useRef({
-        width: null, height: null,
-    })
+        width: null,
+        height: null,
+    });
 
     const updatePositionRef = useRef(null);
 
@@ -25,70 +43,92 @@ export function useCursor(settings, showCursor, changeCursorSrc, zoneSettingsRef
     // INITIALIZATION HOOKS
     //
 
-    const {currentZoneDataRef, updateCurrentZone} = useCursorZone(getPosition, zoneSettingsRef, changeCursorSrc,);
+    const { currentZoneDataRef, updateCurrentZone } = useCursorZone(
+        getPosition,
+        zoneSettingsRef,
+        changeCursorSrc,
+    );
 
-    const {enableCursor, disableCursor} = useCursorEvents(updatePositionRef, handleLeftClickDownRef, handleLeftClickUpRef,);
+    const { enableCursor, disableCursor } = useCursorEvents(
+        updatePositionRef,
+        handleLeftClickDownRef,
+        handleLeftClickUpRef,
+    );
 
-    const {
-        resetVelocity, isNeedToStop, getRecalculatedPosition
-    } = useCursorMovePhysics(settings.stiffness, settings.mass, settings.damping, settings.maxSpeed,)
+    const { resetVelocity, isNeedToStop, getRecalculatedPosition } =
+        useCursorMovePhysics(
+            settings.stiffness,
+            settings.mass,
+            settings.damping,
+            settings.maxSpeed,
+        );
 
-    const {startAnimation, continueAnimation, stopAnimation} = useCursorMoveAnimation(updatePositionRef)
+    const { startAnimation, continueAnimation, stopAnimation } =
+        useCursorMoveAnimation(updatePositionRef);
 
     //
     // HANDLERS
     //
 
-    const onPointerMove = useCallback((event) => {
-        event.preventDefault(); // Для сенсоров
+    const onPointerMove = useCallback(
+        (event) => {
+            event.preventDefault(); // Для сенсоров
 
-        targetRef.current = {x: event.clientX, y: event.clientY}
-        startAnimation()
-    }, [startAnimation])
+            targetRef.current = { x: event.clientX, y: event.clientY };
+            startAnimation();
+        },
+        [startAnimation],
+    );
 
     const onPointerCancel = useCallback((event) => {
         event.preventDefault(); // Для сенсоров
-    }, [])
+    }, []);
 
     const onBlur = useCallback(() => {
-        stopAnimation()
-    }, [stopAnimation])
+        stopAnimation();
+    }, [stopAnimation]);
 
     const onResize = useCallback(() => {
-        if (positionRef.current.x === null || positionRef.current.y === null) return;
+        if (positionRef.current.x === null || positionRef.current.y === null)
+            return;
 
         const newWindowSize = {
-            width: window.innerWidth, height: window.innerHeight,
-        }
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
 
         positionRef.current = {
-            x: (positionRef.current.x / windowSizeRef.current.width) * newWindowSize.width,
-            y: (positionRef.current.y / windowSizeRef.current.height) * newWindowSize.height,
-        }
-        setPosition(positionRef.current)
+            x:
+                (positionRef.current.x / windowSizeRef.current.width) *
+                newWindowSize.width,
+            y:
+                (positionRef.current.y / windowSizeRef.current.height) *
+                newWindowSize.height,
+        };
+        setPosition(positionRef.current);
 
-        windowSizeRef.current = {...newWindowSize}
-    }, [])
+        windowSizeRef.current = { ...newWindowSize };
+    }, []);
 
     //
     // PUBLIC METHODS
     //
 
     const startCursor = useCallback(() => {
-        isStoppedRef.current = false
-        window.addEventListener("pointerdown", onPointerMove)
-        window.addEventListener("pointermove", onPointerMove)
-        window.addEventListener("pointercancel", onPointerCancel)
-        startAnimation()
-    }, [onPointerMove, onPointerCancel, startAnimation])
+        isStoppedRef.current = false;
+        window.addEventListener("pointerdown", onPointerMove);
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointercancel", onPointerCancel);
+        startAnimation();
+    }, [onPointerMove, onPointerCancel, startAnimation]);
 
     const stopCursor = useCallback(() => {
-        isStoppedRef.current = true
-        window.removeEventListener("pointerdown", onPointerMove)
-        window.removeEventListener("pointermove", onPointerMove)
-        window.removeEventListener("pointercancel", onPointerCancel)
-        stopAnimation()
-    }, [onPointerMove, onPointerCancel, stopAnimation])
+        isStoppedRef.current = true;
+        window.removeEventListener("pointerdown", onPointerMove);
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointercancel", onPointerCancel);
+        stopAnimation();
+    }, [onPointerMove, onPointerCancel, stopAnimation]);
 
     //
     // INIT & DESTROY
@@ -96,73 +136,95 @@ export function useCursor(settings, showCursor, changeCursorSrc, zoneSettingsRef
 
     const init = useCallback(() => {
         windowSizeRef.current = {
-            width: window.innerWidth, height: window.innerHeight,
-        }
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
 
-        if (settings.startX != null && settings.startY != null) {
+        const hasStart =
+            settings.startX !== null &&
+            settings.startX !== undefined &&
+            settings.startY !== null &&
+            settings.startY !== undefined;
+        if (hasStart) {
             positionRef.current = {
-                x: windowSizeRef.current.width * settings.startX, y: windowSizeRef.current.height * settings.startY,
-            }
-            setPosition(positionRef.current)
-            showCursor()
+                x: windowSizeRef.current.width * settings.startX,
+                y: windowSizeRef.current.height * settings.startY,
+            };
+            setPosition(positionRef.current);
+            showCursor();
         } else {
-            isTargetNotInitRef.current = true
+            isTargetNotInitRef.current = true;
         }
 
-        startCursor()
-        enableCursor()
+        startCursor();
+        enableCursor();
 
-        window.addEventListener("blur", onBlur)
-        window.addEventListener("resize", onResize)
-    }, [settings, showCursor, startCursor, enableCursor, onBlur, onResize])
+        window.addEventListener("blur", onBlur);
+        window.addEventListener("resize", onResize);
+    }, [settings, showCursor, startCursor, enableCursor, onBlur, onResize]);
 
     const destroy = useCallback(() => {
-        stopCursor()
-        disableCursor()
-        window.removeEventListener("blur", onBlur)
-        window.removeEventListener("resize", onResize)
-    }, [stopCursor, disableCursor, onBlur, onResize])
+        stopCursor();
+        disableCursor();
+        window.removeEventListener("blur", onBlur);
+        window.removeEventListener("resize", onResize);
+    }, [stopCursor, disableCursor, onBlur, onResize]);
 
     useEffect(() => {
-        init()
+        init();
         return () => {
-            destroy()
-        }
-    }, [init, destroy])
+            destroy();
+        };
+    }, [init, destroy]);
 
     //
     // UPDATE POSITION
     //
 
     const updatePosition = useCallback(() => {
-        if ((targetRef.current.x === null || targetRef.current.y === null) || isStoppedRef.current) {
-            stopAnimation()
-            return
+        if (
+            targetRef.current.x === null ||
+            targetRef.current.y === null ||
+            isStoppedRef.current
+        ) {
+            stopAnimation();
+            return;
         }
 
         // Инициализация на месте указателя
         if (isTargetNotInitRef.current) {
-            isTargetNotInitRef.current = false
-            positionRef.current = {...targetRef.current}
-            setPosition(positionRef.current)
-            showCursor()
+            isTargetNotInitRef.current = false;
+            positionRef.current = { ...targetRef.current };
+            setPosition(positionRef.current);
+            showCursor();
         }
 
         // Оптимизация. Условие остановки анимации, когда курсор неподвижен
         if (isNeedToStop(positionRef.current, targetRef.current)) {
-            updateCurrentZone()
-            positionRef.current = {...targetRef.current}
-            setPosition(positionRef.current)
-            resetVelocity()
-            stopAnimation()
-            return
+            updateCurrentZone();
+            positionRef.current = { ...targetRef.current };
+            setPosition(positionRef.current);
+            resetVelocity();
+            stopAnimation();
+            return;
         }
 
-        positionRef.current = getRecalculatedPosition(positionRef.current, targetRef.current)
-        setPosition(positionRef.current)
+        positionRef.current = getRecalculatedPosition(
+            positionRef.current,
+            targetRef.current,
+        );
+        setPosition(positionRef.current);
 
-        continueAnimation()
-    }, [stopAnimation, showCursor, isNeedToStop, updateCurrentZone, resetVelocity, getRecalculatedPosition, continueAnimation])
+        continueAnimation();
+    }, [
+        stopAnimation,
+        showCursor,
+        isNeedToStop,
+        updateCurrentZone,
+        resetVelocity,
+        getRecalculatedPosition,
+        continueAnimation,
+    ]);
 
     useEffect(() => {
         updatePositionRef.current = updatePosition;
@@ -173,8 +235,11 @@ export function useCursor(settings, showCursor, changeCursorSrc, zoneSettingsRef
     //
 
     return {
-        position, stopCursor, startCursor, currentZoneDataRef
-    }
+        position,
+        stopCursor,
+        startCursor,
+        currentZoneDataRef,
+    };
 }
 
-export default useCursor
+export default useCursor;

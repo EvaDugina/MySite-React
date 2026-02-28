@@ -1,17 +1,26 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+const MAX_LOAD_RETRIES = 5;
+
+/**
+ * Хук для воспроизведения звукового эффекта через Web Audio API.
+ * @param {string} src - URL аудиофайла
+ * @param {number} [volume=1] - громкость (0–1)
+ * @returns {{ play: () => void, error?: string }}
+ */
 function useSoundEffect(src, volume = 1) {
     const audioContextRef = useRef(null);
     const gainNodeRef = useRef(null);
     const bufferRef = useRef(null);
-    const lastSourceRef = useRef(null); // для остановки предыдущего звука
+    const lastSourceRef = useRef(null);
     const srcRef = useRef(src);
     const volumeRef = useRef(volume);
 
-    // Функция для (пере)создания контекста и загрузки буфера
     const initContext = useCallback(async () => {
-        // Закрываем старый контекст, если он есть
-        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        if (
+            audioContextRef.current
+            && audioContextRef.current.state !== 'closed'
+        ) {
             await audioContextRef.current.close();
         }
 
@@ -29,26 +38,30 @@ function useSoundEffect(src, volume = 1) {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const arrayBuffer = await response.arrayBuffer();
             return await context.decodeAudioData(arrayBuffer);
-        }
+        };
 
-        while(bufferRef.current === null) {
+        let attempts = 0;
+        while (bufferRef.current === null && attempts < MAX_LOAD_RETRIES) {
             try {
-                bufferRef.current = await responseSrc()
+                bufferRef.current = await responseSrc();
             } catch (err) {
                 console.error('Ошибка загрузки звука:', err);
                 bufferRef.current = null;
+                attempts += 1;
             }
         }
     }, []);
 
-    // Инициализация при монтировании или изменении src/volume
     useEffect(() => {
         srcRef.current = src;
         volumeRef.current = volume;
         initContext();
 
         return () => {
-            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            if (
+                audioContextRef.current
+                && audioContextRef.current.state !== 'closed'
+            ) {
                 audioContextRef.current.close();
             }
         };
@@ -64,22 +77,17 @@ function useSoundEffect(src, volume = 1) {
             return;
         }
 
-        // Если контекст закрыт, пробуем пересоздать его и буфер
         if (context.state === 'closed') {
             console.warn('AudioContext закрыт, пересоздаём...');
-            initContext().then(() => {
-                // После пересоздания пробуем снова
-                play();
-            });
+            initContext().then(() => play());
             return;
         }
 
         const playSound = () => {
-
             const source = context.createBufferSource();
             source.buffer = buffer;
             source.connect(gainNode);
-            source.start(); // всегда начинается с 0
+            source.start();
             lastSourceRef.current = source;
 
             source.onended = () => {
@@ -90,7 +98,7 @@ function useSoundEffect(src, volume = 1) {
         };
 
         if (context.state === 'suspended') {
-            context.resume().then(playSound).catch(err => {
+            context.resume().then(playSound).catch((err) => {
                 console.error('Не удалось возобновить AudioContext:', err);
             });
         } else {
@@ -101,4 +109,5 @@ function useSoundEffect(src, volume = 1) {
     return { play };
 }
 
+export { useSoundEffect };
 export default useSoundEffect;

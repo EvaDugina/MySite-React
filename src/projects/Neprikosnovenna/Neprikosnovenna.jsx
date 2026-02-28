@@ -1,27 +1,33 @@
 import "./Neprikosnovenna.css";
-import React, {useCallback, useEffect, useMemo, useRef,} from "react";
-import {CursorImages, CursorSettings, CursorZoneSettings,} from "./components/cursor/CursorSettingsHandler";
+import styles from "./Neprikosnovenna.module.css";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+    CursorImages,
+    createCursorSettings,
+    createCursorZoneSettings,
+} from "./components/cursor/CursorSettingsHandler";
 import Cursor from "./components/cursor/Cursor";
 import Background from "./components/background/Background";
 import Button from "./components/button/Button";
 import ImagePortrait from "./components/portrait/ImagePortrait.jsx";
 
 const Zone = {
-    NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
+    NONE: 0,
+    BACK: 1,
+    PORTRAIT: 2,
+    BUTTON: 3,
 };
 
 const WhenYouSoBeautifullyDied = () => {
     const cursorRef = useRef(null);
     const buttonRef = useRef(null);
 
-    //
-    //
-    //
-
     const handleOnButton = () => {
+        buttonRef.current.hover();
     };
 
     const handleOffButton = () => {
+        buttonRef.current.reset();
     };
 
     const cursorZoneSettingsRef = useRef(null);
@@ -33,19 +39,22 @@ const WhenYouSoBeautifullyDied = () => {
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.BACK]: {
+            },
+            [Zone.BACK]: {
                 elementId: "Background-0",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.PORTRAIT]: {
+            },
+            [Zone.PORTRAIT]: {
                 elementId: "Portrait",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.BUTTON]: {
+            },
+            [Zone.BUTTON]: {
                 elementId: "BtnNeprikosnovenna",
                 imgCursor: CursorImages.POINTER,
                 imgCursorClicked: CursorImages.POINTER_CLICKED,
@@ -54,78 +63,74 @@ const WhenYouSoBeautifullyDied = () => {
             },
         };
 
-        cursorZoneSettingsRef.current = new CursorZoneSettings({
-            Zone: Zone, Data: {...ZoneData},
+        cursorZoneSettingsRef.current = createCursorZoneSettings({
+            Zone,
+            Data: { ...ZoneData },
         });
-    }, [])
-
-    //
-    //
-    //
-
-    const handleLeftClickDown = useCallback(() => {
     }, []);
 
-    const handleLeftClickUp = useCallback(() => {
+    const handleLeftClickDown = useCallback((currentElementId) => {
+        if (currentElementId === "BtnNeprikosnovenna") {
+            buttonRef.current.click();
+        }
     }, []);
 
-    const cursorSettings = useMemo(() => {
-        // Линтер принимает обращение к current внутри фнукций handle* за ошибку, но они не вызываются при рендере => норм
-        return new CursorSettings({
-            imgCursor: CursorImages.DEFAULT, // Начальное изображение курсора
-            startX: null, // Начальная позиция от width по X
-            startY: null, // Начальная позиция от рушпре по Y
-            handleLeftClickDown: handleLeftClickDown, // Функци обработки нажатия
-            handleLeftClickUp: handleLeftClickUp, // Функци обработки отжатия
-            stiffness: 0.4, // Жесткость пружины (скорость реакции)
-            damping: 0.1, // Затухание (плавность остановки)
-            mass: 0.1, // Масса объекта
-            maxSpeed: 25, // Максимальная скорость
-        });
-    }, [handleLeftClickDown, handleLeftClickUp]);
+    const handleLeftClickUp = useCallback((currentElementId) => {
+        if (currentElementId === "BtnNeprikosnovenna") {
+            buttonRef.current.hover();
+        }
+    }, []);
 
-    //
-    //
-    //
+    const cursorSettings = useMemo(
+        () =>
+            createCursorSettings({
+                imgCursor: CursorImages.DEFAULT,
+                startX: null,
+                startY: null,
+                handleLeftClickDown,
+                handleLeftClickUp,
+                stiffness: 0.4,
+                damping: 0.1,
+                mass: 0.1,
+                maxSpeed: 25,
+            }),
+        [handleLeftClickDown, handleLeftClickUp],
+    );
 
-    const incontentAdId = import.meta.env.VITE_AD_INCONTENT_ID ?? null;
+    return (
+        <>
+            <Cursor
+                ref={cursorRef}
+                settings={cursorSettings}
+                zoneSettingsRef={cursorZoneSettingsRef}
+            />
 
-    //
-    //
-    //
+            <main className={styles.main}>
+                <div className={`${styles.container} z-1`}>
+                    <article
+                        className={`${styles["portrait-container-default"]} ${styles.center}`}
+                    >
+                        <div
+                            className={`${styles["ignore-cursor"]} d-none`}
+                            aria-hidden
+                        />
 
-    return (<>
-        <Cursor
-            ref={cursorRef}
-            settings={cursorSettings}
-            zoneSettingsRef={cursorZoneSettingsRef}
-        />
+                        <Button
+                            ref={buttonRef}
+                            id="BtnNeprikosnovenna"
+                            zIndex={3}
+                            text="неприкосновенна"
+                        />
 
-        <main>
+                        <ImagePortrait zIndex={2} />
+                    </article>
+                </div>
+            </main>
 
-            <div className="container z-1">
-
-                {/*<div className="center"></div>*/}
-
-                <article className="portrait-container-default center">
-                    <div className="cursor-container ignore-cursor d-none"></div>
-
-                    <Button
-                        ref={buttonRef}
-                        id="BtnNeprikosnovenna"
-                        zIndex={3}
-                        text="неприкосновенна"
-                    />
-
-                    <ImagePortrait zIndex={2}/>
-                </article>
-
-            </div>
-
-        </main>
-
-        <Background id="Background-0" classes="bg-white" zIndex={0}/>
-    </>);
+            <Background id="Background-0" variant="white" zIndex={0} />
+        </>
+    );
 };
 
+export { WhenYouSoBeautifullyDied };
 export default WhenYouSoBeautifullyDied;

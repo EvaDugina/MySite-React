@@ -1,0 +1,40 @@
+.main {
+    height: 100vh;
+    width: 100vw;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    background-color: white;
+}
+
+.container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    --center-width: var(--portrait-width);
+    --center-height: var(--portrait-height);
+    --side-width: calc((100vw - var(--center-width)) / 2 - 2px);
+    --side-height: calc((100vh - var(--center-height)) / 2 - 2px);
+}
+
+.portrait-container-default {
+    position: relative;
+    width: var(--portrait-width);
+    height: auto;
+    margin: 0;
+    display: block;
+    align-self: center;
+}
+
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

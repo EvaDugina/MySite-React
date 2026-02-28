@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/**
+ * Хук воспроизведения нескольких звуков (случайный или по индексу) через Web Audio API.
+ * @param {string[]} sources - массив URL аудиофайлов
+ * @returns {{ play: (index?: number | null) => void, isLoaded: boolean, error: string | null }}
+ */
 function useSoundEffects(sources) {
     const audioContextRef = useRef(null);
     const buffersRef = useRef([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [error, setError] = useState(null);
-
-    // const queueRef = useRef([]);
 
     useEffect(() => {
         if (!sources || sources.length === 0) return;
@@ -15,17 +18,13 @@ function useSoundEffects(sources) {
         const context = new AudioContextClass();
         audioContextRef.current = context;
 
-        // queueRef.current = []
-
         const loadAll = async () => {
             try {
                 const fetchPromises = sources.map(async (src) => {
-                    // queueRef.current.push( {
-                    //     index: index,
-                    //     isPlayed: false
-                    // });
                     const response = await fetch(src);
-                    if (!response.ok) throw new Error(`HTTP ${response.status} для ${src}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} для ${src}`);
+                    }
                     const arrayBuffer = await response.arrayBuffer();
                     return await context.decodeAudioData(arrayBuffer);
                 });
@@ -53,29 +52,16 @@ function useSoundEffects(sources) {
 
         if (!context || context.state === 'closed' || buffers.length === 0) return;
 
-        // Если нужен случайный из неповторяющихся
-        // let notPlayedSources = [];
-        // if (index === null) {
-        //     notPlayedSources = queueRef.current.filter(source => !source.isPlayed);
-        //     if (notPlayedSources.length === 0) {
-        //         for (let i = 0; i < queueRef.current.length; i++) {
-        //             queueRef.current[i].isPlayed = false;
-        //         }
-        //         notPlayedSources = [...queueRef.current];
-        //     }
-        // }
-        // const randomNumber = index === null ? Math.floor(Math.random() * notPlayedSources.length) : index;
-        // const randomIndex = notPlayedSources[randomNumber].index;
-        // queueRef.current[randomIndex].isPlayed = true;
-
-        const randomIndex = index === null ? Math.floor(Math.random() * buffers.length) : index;
+        const randomIndex = index === null
+            ? Math.floor(Math.random() * buffers.length)
+            : index;
         const buffer = buffers[randomIndex];
 
         const playSound = () => {
             const source = context.createBufferSource();
             source.buffer = buffer;
             source.connect(context.destination);
-            source.start(); // всегда начинается с начала
+            source.start();
         };
 
         if (context.state === 'suspended') {
@@ -88,4 +74,5 @@ function useSoundEffects(sources) {
     return { play, isLoaded, error };
 }
 
+export { useSoundEffects };
 export default useSoundEffects;

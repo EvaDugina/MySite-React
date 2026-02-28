@@ -1,9 +1,14 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-function useAudio(src, volume=null) {
+/**
+ * Хук воспроизведения одного аудиофайла через HTMLAudioElement.
+ * @param {string} src - URL аудио
+ * @param {number|null} [volume=null] - громкость (0–1)
+ * @returns {{ play: () => void, pause: () => void, stop: () => void }}
+ */
+function useAudio(src, volume = null) {
     const audioRef = useRef(null);
 
-    // Создаём и загружаем аудио при изменении src
     useEffect(() => {
         if (!src) return;
 
@@ -11,9 +16,10 @@ function useAudio(src, volume=null) {
         audio.load();
         audioRef.current = audio;
 
-        if (volume) audioRef.current.volume = volume;
+        if (volume !== null && volume !== undefined) {
+            audioRef.current.volume = volume;
+        }
 
-        // Очистка при размонтировании или смене src
         return () => {
             audio.pause();
             audio.src = '';
@@ -39,4 +45,5 @@ function useAudio(src, volume=null) {
     return { play, pause, stop };
 }
 
+export { useAudio };
 export default useAudio;

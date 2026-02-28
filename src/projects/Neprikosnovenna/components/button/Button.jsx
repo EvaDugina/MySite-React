@@ -1,16 +1,30 @@
-import "./Button.scss";
-import {forwardRef, useCallback, useImperativeHandle, useRef, useState,} from "react";
+import styles from './Button.module.scss';
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 
 const ButtonType = {
-    DEFAULT: 0, HOVER: 1, ACTIVE: 2, DISABLE: 3,
+    DEFAULT: 0,
+    HOVER: 1,
+    ACTIVE: 2,
+    DISABLE: 3,
 };
 
-const getClassNameByButtonType = (buttonType) => {
-    return buttonType === ButtonType.ACTIVE ? "active" : buttonType === ButtonType.HOVER ? "hovered" : buttonType === ButtonType.DISABLE ? "disabled" : "";
+const getModifierClass = (buttonType, stylesMap) => {
+    if (buttonType === ButtonType.ACTIVE) return stylesMap['button--active'];
+    if (buttonType === ButtonType.HOVER) return stylesMap['button--hovered'];
+    if (buttonType === ButtonType.DISABLE) return stylesMap['button--disabled'];
+    return '';
 };
 
+/**
+ * Кнопка с состояниями (hover, active, disabled), управление через ref.
+ * @param {Object} props
+ * @param {string} [props.id]
+ * @param {number} [props.zIndex]
+ * @param {string} [props.text]
+ * @param {string} [props.ariaLabel]
+ */
 const Button = forwardRef((props, ref) => {
-    const {id, zIndex, text} = props;
+    const { id, zIndex, text, ariaLabel } = props;
 
     const [buttonType, setButtonType] = useState(ButtonType.DEFAULT);
     const buttonTypeRef = useRef(buttonType);
@@ -40,15 +54,30 @@ const Button = forwardRef((props, ref) => {
         isClickAbleRef.current = false;
     }, []);
 
-    useImperativeHandle(ref, () => ({
-        reset, hover, click, disable,
-    }));
+    useImperativeHandle(ref, () => ({ reset, hover, click, disable }));
 
-    const classes = getClassNameByButtonType(buttonType);
+    const modifierClass = getModifierClass(buttonType, styles);
+    const className = [
+        styles.button,
+        styles['button--neprikosnovenna'],
+        modifierClass,
+        'not-allowed',
+        `z-${zIndex}`,
+    ].filter(Boolean).join(' ');
 
-    return (<button id={id} className={`btn-neprikosnovenna not-allowed z-${zIndex} ${classes}`}>
-        {text}
-    </button>);
+    return (
+        <button
+            id={id}
+            type="button"
+            className={className}
+            aria-label={ariaLabel ?? text}
+        >
+            {text}
+        </button>
+    );
 });
 
+Button.displayName = 'Button';
+
+export { Button };
 export default Button;

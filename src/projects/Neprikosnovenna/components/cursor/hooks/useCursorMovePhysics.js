@@ -1,57 +1,73 @@
-import {useCallback, useEffect, useRef} from "react"
+import { useCallback, useEffect, useRef } from 'react';
 
-const EPS = 0.1
+const EPS = 0.1;
 
+/**
+ * Хук расчёта физики движения курсора (пружина, затухание, ограничение скорости).
+ * @param {number} stiffness
+ * @param {number} mass
+ * @param {number} damping
+ * @param {number} maxSpeed
+ */
 function useCursorMovePhysics(stiffness, mass, damping, maxSpeed) {
-    const velocityRef = useRef({x: 0, y: 0})
-    const settingsRef = useRef({stiffness, mass, damping, maxSpeed})
+    const velocityRef = useRef({ x: 0, y: 0 });
+    const settingsRef = useRef({ stiffness, mass, damping, maxSpeed });
 
     useEffect(() => {
-        settingsRef.current = {stiffness, mass, damping, maxSpeed}
+        settingsRef.current = { stiffness, mass, damping, maxSpeed };
     }, [stiffness, mass, damping, maxSpeed]);
 
-    const isNeedToStop = useCallback(((position, target) => {
-        const isNearTarget = Math.hypot(target.x - position.x, target.y - position.y,) < EPS
-        const isAlmostStopped = Math.hypot(velocityRef.current.x, velocityRef.current.y) < EPS
-        return isNearTarget && isAlmostStopped
-    }), [])
+    const isNeedToStop = useCallback((position, target) => {
+        const isNearTarget = Math.hypot(
+            target.x - position.x,
+            target.y - position.y,
+        ) < EPS;
+        const isAlmostStopped = Math.hypot(
+            velocityRef.current.x,
+            velocityRef.current.y,
+        ) < EPS;
+        return isNearTarget && isAlmostStopped;
+    }, []);
 
-    const resetVelocity = useCallback((() => {
-        velocityRef.current = {x: 0, y: 0}
-    }), [])
+    const resetVelocity = useCallback(() => {
+        velocityRef.current = { x: 0, y: 0 };
+    }, []);
 
     const getRecalculatedPosition = useCallback((position, target) => {
-        if (target.x === null || target.y === null) return {...position}
+        if (target.x === null || target.y === null) return { ...position };
 
-        const {stiffness, mass, damping, maxSpeed} = settingsRef.current
+        const { stiffness: s, mass: m, damping: d, maxSpeed: max } = settingsRef.current;
 
-        // Рассчитываем силу (разница между текущей и целевой позицией)
-        const forceX = (target.x - position.x) * stiffness
-        const forceY = (target.y - position.y) * stiffness
+        const forceX = (target.x - position.x) * s;
+        const forceY = (target.y - position.y) * s;
 
-        // Ускорение = сила / масса
-        const accelerationX = forceX / mass
-        const accelerationY = forceY / mass
+        const accelerationX = forceX / m;
+        const accelerationY = forceY / m;
 
-        // Обновляем скорость с учетом ускорения и затухания
-        velocityRef.current.x = (velocityRef.current.x + accelerationX) * damping
-        velocityRef.current.y = (velocityRef.current.y + accelerationY) * damping
+        velocityRef.current.x = (velocityRef.current.x + accelerationX) * d;
+        velocityRef.current.y = (velocityRef.current.y + accelerationY) * d;
 
-        // Ограничиваем максимальную скорость
-        const speed = Math.sqrt(velocityRef.current.x * velocityRef.current.x + velocityRef.current.y * velocityRef.current.y,)
-        if (speed > maxSpeed) {
-            velocityRef.current.x = (velocityRef.current.x / speed) * maxSpeed
-            velocityRef.current.y = (velocityRef.current.y / speed) * maxSpeed
+        const speed = Math.sqrt(
+            velocityRef.current.x * velocityRef.current.x
+            + velocityRef.current.y * velocityRef.current.y,
+        );
+        if (speed > max) {
+            velocityRef.current.x = (velocityRef.current.x / speed) * max;
+            velocityRef.current.y = (velocityRef.current.y / speed) * max;
         }
 
         return {
-            x: position.x + velocityRef.current.x, y: position.y + velocityRef.current.y,
-        }
-    }, [])
+            x: position.x + velocityRef.current.x,
+            y: position.y + velocityRef.current.y,
+        };
+    }, []);
 
     return {
-        resetVelocity, isNeedToStop, getRecalculatedPosition,
-    }
+        resetVelocity,
+        isNeedToStop,
+        getRecalculatedPosition,
+    };
 }
 
-export default useCursorMovePhysics
+export { useCursorMovePhysics };
+export default useCursorMovePhysics;

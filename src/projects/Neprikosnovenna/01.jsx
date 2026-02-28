@@ -1,7 +1,17 @@
 import "./Neprikosnovenna.css";
-import React, {useCallback, useEffect, useMemo, useRef, useState,} from "react";
-
-import {CursorImages, CursorSettings, CursorZoneSettings,} from "./components/cursor/CursorSettingsHandler";
+import styles from "./Neprikosnovenna.module.css";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+import {
+    CursorImages,
+    createCursorSettings,
+    createCursorZoneSettings,
+} from "./components/cursor/CursorSettingsHandler";
 import Cursor from "./components/cursor/Cursor";
 import Background from "./components/background/Background";
 import Button from "./components/button/Button";
@@ -10,7 +20,10 @@ import FlashProvider from "./components/flash/FlashProvider.jsx";
 import useSoundEffect from "./hooks/useSoundEffect.js";
 
 const Zone = {
-    NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
+    NONE: 0,
+    BACK: 1,
+    PORTRAIT: 2,
+    BUTTON: 3,
 };
 
 const WhenYouSoBeautifullyDied = () => {
@@ -30,7 +43,6 @@ const WhenYouSoBeautifullyDied = () => {
         localStorage.setItem("01-isBloody", JSON.stringify(isBloody));
     }, [isBloody]);
 
-    // Выполняем только при первом рендере
     useEffect(() => {
         if (isBloody) {
             portraitRef.current.scrollToEnd();
@@ -38,24 +50,18 @@ const WhenYouSoBeautifullyDied = () => {
         }
     }, []);
 
-    //
-    //
-    //
-
-    const {play: playAudio} = useSoundEffect(useMemo(() => {
-        return "/audio/СимуляцияОргазма.mov"
-    }, []));
-
-    //
-    //
-    //
+    const { play: playAudio } = useSoundEffect(
+        useMemo(() => "/audio/СимуляцияОргазма.mov", []),
+    );
 
     const handleOnButton = () => {
         backgroundRef.current?.hide();
+        buttonRef.current.hover();
     };
 
     const handleOffButton = () => {
         backgroundRef.current?.show();
+        buttonRef.current.reset();
     };
 
     const cursorZoneSettingsRef = useRef(null);
@@ -67,19 +73,22 @@ const WhenYouSoBeautifullyDied = () => {
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.BACK]: {
+            },
+            [Zone.BACK]: {
                 elementId: "Background-0",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.PORTRAIT]: {
+            },
+            [Zone.PORTRAIT]: {
                 elementId: "Portrait",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            }, [Zone.BUTTON]: {
+            },
+            [Zone.BUTTON]: {
                 elementId: "BtnNeprikosnovenna",
                 imgCursor: CursorImages.POINTER,
                 imgCursorClicked: CursorImages.POINTER_CLICKED,
@@ -88,57 +97,66 @@ const WhenYouSoBeautifullyDied = () => {
             },
         };
 
-        cursorZoneSettingsRef.current = new CursorZoneSettings({
-            Zone: Zone, Data: {...ZoneData},
+        cursorZoneSettingsRef.current = createCursorZoneSettings({
+            Zone,
+            Data: { ...ZoneData },
         });
-    }, [])
-
-    //
-    //
-    //
-
-    const handleLeftClickDown = useCallback((currentElementId) => {
-        if (currentElementId === "BtnNeprikosnovenna") {
-            if ((!isClickedRef.current && !isBloody) || (isBloody && (!isClickedRef.current || isVideoEndedRef.current))) {
-                flashProviderRef.current.flashes();
-                playAudio();
-            }
-        }
-
-        if (isBloody) return;
-        if (isVideoEndedRef.current) return;
-
-        if (currentElementId === "BtnNeprikosnovenna") {
-            isClickedRef.current = true;
-            portraitRef.current.show(true);
-            portraitRef.current.play();
-            setIsBloody(true);
-            buttonRef.current.click();
-            buttonRef.current.disable();
-        }
-    }, [playAudio, isBloody]);
-
-    const handleLeftClickUp = useCallback(() => {
     }, []);
 
-    const cursorSettings = useMemo(() => {
-        // Линтер принимает обращение к current внутри фнукций handle* за ошибку, но они не вызываются при рендере => норм
-        return new CursorSettings({
-            imgCursor: CursorImages.DEFAULT, // Начальное изображение курсора
-            startX: null, // Начальная позиция от width по X
-            startY: null, // Начальная позиция от рушпре по Y
-            handleLeftClickDown: handleLeftClickDown, // Функци обработки нажатия
-            handleLeftClickUp: handleLeftClickUp, // Функци обработки отжатия
-            stiffness: 0.4, // Жесткость пружины (скорость реакции)
-            damping: 0.1, // Затухание (плавность остановки)
-            mass: 0.1, // Масса объекта
-            maxSpeed: 25, // Максимальная скорость
-        });
-    }, [handleLeftClickDown, handleLeftClickUp]);
+    const handleLeftClickDown = useCallback(
+        (currentElementId) => {
+            if (currentElementId === "BtnNeprikosnovenna") {
+                if (
+                    (!isClickedRef.current && !isBloody) ||
+                    (isBloody &&
+                        (!isClickedRef.current || isVideoEndedRef.current))
+                ) {
+                    buttonRef.current.click();
+                    flashProviderRef.current.flashes();
+                    playAudio();
+                }
+            }
 
-    //
-    //
-    //
+            if (isBloody) return;
+            if (isVideoEndedRef.current) return;
+
+            if (currentElementId === "BtnNeprikosnovenna") {
+                isClickedRef.current = true;
+                portraitRef.current.show(true);
+                portraitRef.current.play();
+                setIsBloody(true);
+                buttonRef.current.disable();
+            }
+        },
+        [playAudio, isBloody],
+    );
+
+    const handleLeftClickUp = useCallback((currentElementId) => {
+        if (currentElementId === "BtnNeprikosnovenna") {
+            if (
+                (!isClickedRef.current && !isBloody) ||
+                (isBloody && (!isClickedRef.current || isVideoEndedRef.current))
+            ) {
+                buttonRef.current.hover();
+            }
+        }
+    }, []);
+
+    const cursorSettings = useMemo(
+        () =>
+            createCursorSettings({
+                imgCursor: CursorImages.DEFAULT,
+                startX: null,
+                startY: null,
+                handleLeftClickDown,
+                handleLeftClickUp,
+                stiffness: 0.4,
+                damping: 0.1,
+                mass: 0.1,
+                maxSpeed: 25,
+            }),
+        [handleLeftClickDown, handleLeftClickUp],
+    );
 
     const handleVideoEnded = useCallback(() => {
         isVideoEndedRef.current = true;
@@ -151,41 +169,44 @@ const WhenYouSoBeautifullyDied = () => {
         };
     }, [handleVideoEnded]);
 
-    return (<>
-        <Cursor
-            ref={cursorRef}
-            settings={cursorSettings}
-            zoneSettingsRef={cursorZoneSettingsRef}
-        />
-
-        <main>
-            <article className="portrait-container-default">
-                <Button
-                    ref={buttonRef}
-                    id="BtnNeprikosnovenna"
-                    zIndex={4}
-                    text="неприкосновенна"
-                />
-
-                <FlashProvider ref={flashProviderRef} zIndex={3}/>
-
-                <VideoPortrait
-                    ref={portraitRef}
-                    zIndex={1}
-                    settings={videoSettings}
-                />
-            </article>
-
-            <Background
-                ref={backgroundRef}
-                id="Background-1"
-                zIndex={3}
-                classes="bg-blue"
+    return (
+        <>
+            <Cursor
+                ref={cursorRef}
+                settings={cursorSettings}
+                zoneSettingsRef={cursorZoneSettingsRef}
             />
-        </main>
 
-        <Background id="Background-0" classes="bg-white" zIndex={0}/>
-    </>);
+            <main className={styles.main}>
+                <article className={styles["portrait-container-default"]}>
+                    <Button
+                        ref={buttonRef}
+                        id="BtnNeprikosnovenna"
+                        zIndex={4}
+                        text="неприкосновенна"
+                    />
+
+                    <FlashProvider ref={flashProviderRef} zIndex={3} />
+
+                    <VideoPortrait
+                        ref={portraitRef}
+                        zIndex={1}
+                        settings={videoSettings}
+                    />
+                </article>
+
+                <Background
+                    ref={backgroundRef}
+                    id="Background-1"
+                    zIndex={3}
+                    variant="blue"
+                />
+            </main>
+
+            <Background id="Background-0" variant="white" zIndex={0} />
+        </>
+    );
 };
 
+export { WhenYouSoBeautifullyDied };
 export default WhenYouSoBeautifullyDied;

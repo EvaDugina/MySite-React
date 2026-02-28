@@ -1,8 +1,6 @@
-import {useCallback, useEffect, useRef} from "react";
-
+import { useCallback, useEffect, useRef } from "react";
 
 export function useVideoController(settings, videoRef) {
-
     const isPlayingRef = useRef(false);
 
     const init = useCallback(async () => {
@@ -20,30 +18,37 @@ export function useVideoController(settings, videoRef) {
     }, [videoRef]);
 
     const onEnded = useCallback(() => {
-        if (settings.onEnded != null) settings.onEnded();
+        if (settings.onEnded !== null && settings.onEnded !== undefined) {
+            settings.onEnded();
+        }
     }, [settings]);
 
-    useEffect( () => {
-        let videoElement = videoRef.current
+    useEffect(() => {
+        let videoElement = videoRef.current;
         init().then(() => {
             videoElement.addEventListener("ended", onEnded);
         });
         return () => {
-            videoElement.removeEventListener("ended", onEnded)
+            videoElement.removeEventListener("ended", onEnded);
         };
     }, [init, videoRef, onEnded]);
 
-    const show = useCallback((isSmoothly) => {
-        // 3. Плавно показываем видео
-        if (isSmoothly) videoRef.current.classList.add("show-smoothly");
-        videoRef.current.style.opacity = 1;
-    }, [videoRef]);
+    const show = useCallback(
+        (isSmoothly) => {
+            // 3. Плавно показываем видео
+            if (isSmoothly) videoRef.current.classList.add("show-smoothly");
+            videoRef.current.style.opacity = 1;
+        },
+        [videoRef],
+    );
 
-    const hide = useCallback((isSmoothly) => {
-        // 3. Плавно показываем видео
-        if (isSmoothly) videoRef.current.classList.add("show-smoothly");
-        videoRef.current.style.opacity = 0;
-    }, [videoRef]);
+    const hide = useCallback(
+        (isSmoothly) => {
+            if (isSmoothly) videoRef.current.classList.add("show-smoothly");
+            videoRef.current.style.opacity = 0;
+        },
+        [videoRef],
+    );
 
     const play = useCallback(() => {
         if (isPlayingRef.current) return;
@@ -54,7 +59,11 @@ export function useVideoController(settings, videoRef) {
                 isPlayingRef.current = true;
             })
             .catch((error) => {
-                console.error("Ошибка воспроизведения:", error.name, error.message);
+                console.error(
+                    "Ошибка воспроизведения:",
+                    error.name,
+                    error.message,
+                );
             });
     }, [videoRef]);
 
@@ -68,37 +77,46 @@ export function useVideoController(settings, videoRef) {
     //
     //
 
-    const scrollTo = useCallback((time) => {
-        if (videoRef.current.readyState >= 1) {
-            // уже есть метаданные
-            videoRef.current.currentTime = time;
-        } else {
-            videoRef.current.addEventListener("loadedmetadata", () => {
+    const scrollTo = useCallback(
+        (time) => {
+            if (videoRef.current.readyState >= 1) {
+                // уже есть метаданные
                 videoRef.current.currentTime = time;
-            }, { once: true });
-        }
-    }, [videoRef]);
+            } else {
+                videoRef.current.addEventListener(
+                    "loadedmetadata",
+                    () => {
+                        videoRef.current.currentTime = time;
+                    },
+                    { once: true },
+                );
+            }
+        },
+        [videoRef],
+    );
 
     const getVideoDuration = useCallback(() => {
         if (videoRef.current.readyState > 0) {
             return videoRef.current.duration;
         }
         // If not ready, wait for the metadata to be loaded
-        return new Promise(resolve => {
-            videoRef.current.addEventListener('loadedmetadata', () => {
-                resolve(videoRef.current.duration);
-            }, { once: true }); // Use once: true to automatically remove the listener
+        return new Promise((resolve) => {
+            videoRef.current.addEventListener(
+                "loadedmetadata",
+                () => {
+                    resolve(videoRef.current.duration);
+                },
+                { once: true },
+            ); // Use once: true to automatically remove the listener
         });
-    }, [videoRef])
+    }, [videoRef]);
 
-    const scrollToStart = useCallback(() => {
-        scrollTo(0)
-    }, [scrollTo])
+    const scrollToStart = useCallback(() => scrollTo(0), [scrollTo]);
 
     const scrollToEnd = useCallback(async () => {
         const duration = await getVideoDuration();
-        scrollTo(duration)
-    }, [getVideoDuration, scrollTo])
+        scrollTo(duration);
+    }, [getVideoDuration, scrollTo]);
 
     //
     //
@@ -113,7 +131,7 @@ export function useVideoController(settings, videoRef) {
     //
     //
 
-    return {show, hide, play, pause, stop, scrollToEnd, scrollToStart}
+    return { show, hide, play, pause, stop, scrollToEnd, scrollToStart };
 }
 
-export default useVideoController
+export default useVideoController;

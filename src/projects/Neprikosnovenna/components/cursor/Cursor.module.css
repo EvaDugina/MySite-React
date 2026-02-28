@@ -1,0 +1,9 @@
+.cursor {
+    display: block;
+    position: fixed;
+    width: 1.9rem;
+    height: 1.9rem;
+    transform: translate(-26.5%, -9%);
+    will-change: transform;
+    user-select: none;
+}

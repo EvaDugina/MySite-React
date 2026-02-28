@@ -1,11 +1,16 @@
-import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
-import "./Cursor.css";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import './Cursor.css';
+import styles from './Cursor.module.css';
+import useCursor from './hooks/useCursor.js';
 
-import useCursor from "./hooks/useCursor.js";
-
+/**
+ * Кастомный курсор-муха с зонами и физикой движения.
+ * @param {Object} props
+ * @param {Object} props.settings - настройки курсора (createCursorSettings)
+ * @param {React.MutableRefObject} props.zoneSettingsRef - ref с зонами (createCursorZoneSettings)
+ */
 const Cursor = forwardRef((props, ref) => {
-
-    const {settings, zoneSettingsRef} = props
+    const { settings, zoneSettingsRef } = props;
 
     const [src, setSrc] = useState(settings.imgCursor);
     const changeCursorSrc = useCallback((newSrc) => {
@@ -14,23 +19,27 @@ const Cursor = forwardRef((props, ref) => {
     }, []);
 
     const [isHidden, setIsHidden] = useState(true);
-    const hideCursor = useCallback(() => {
-        setIsHidden(true);
-    }, []);
-    const showCursor = useCallback(() => {
-        setIsHidden(false);
-    }, []);
+    const hideCursor = useCallback(() => setIsHidden(true), []);
+    const showCursor = useCallback(() => setIsHidden(false), []);
 
     const handleLeftClickDownRef = useRef(null);
     const handleLeftClickUpRef = useRef(null);
 
     const {
-        position, enableCursor, disableCursor, stopCursor, startCursor, currentZoneDataRef
-    } = useCursor(settings, showCursor, changeCursorSrc, zoneSettingsRef, handleLeftClickDownRef, handleLeftClickUpRef,);
-
-    //
-    //
-    //
+        position,
+        enableCursor,
+        disableCursor,
+        stopCursor,
+        startCursor,
+        currentZoneDataRef,
+    } = useCursor(
+        settings,
+        showCursor,
+        changeCursorSrc,
+        zoneSettingsRef,
+        handleLeftClickDownRef,
+        handleLeftClickUpRef,
+    );
 
     const handleLeftClickDown = useCallback(() => {
         changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
@@ -47,29 +56,32 @@ const Cursor = forwardRef((props, ref) => {
         handleLeftClickUpRef.current = handleLeftClickUp;
     }, [handleLeftClickDown, handleLeftClickUp]);
 
-    //
-    //
-    //
-
     useImperativeHandle(ref, () => ({
         hide: hideCursor,
         show: showCursor,
         disable: disableCursor,
         enable: enableCursor,
         stop: stopCursor,
-        start: startCursor
+        start: startCursor,
     }));
 
-    return (<img
-        id="Cursor"
-        className="cursor ignore-cursor not-allowed z-999"
-        src={src}
-        alt="муха"
-        style={{
-            transform: `translate(-26.5%, -9%) translate3d(${position.x}px, ${position.y}px, 0)`,
-            display: isHidden ? "none" : "block",
-        }}
-    />);
+    const className = [styles.cursor, 'ignore-cursor', 'not-allowed', 'z-999'].join(' ');
+
+    return (
+        <img
+            id="Cursor"
+            className={className}
+            src={src}
+            alt="муха"
+            style={{
+                transform: `translate(-26.5%, -9%) translate3d(${position.x}px, ${position.y}px, 0)`,
+                display: isHidden ? 'none' : 'block',
+            }}
+        />
+    );
 });
 
+Cursor.displayName = 'Cursor';
+
+export { Cursor };
 export default Cursor;
