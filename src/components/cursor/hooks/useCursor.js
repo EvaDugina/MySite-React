@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import useCursorMovePhysics from "./useCursorMovePhysics";
-import useCursorMoveAnimation from "./useCursorMoveAnimation";
-import useCursorZone from "./useCursorZone";
+import useCursorMovePhysics from "./useCursorMovePhysics.js";
+import useCursorMoveAnimation from "./useCursorMoveAnimation.js";
+import useCursorZone from "./useCursorZone.js";
 import useCursorEvents from "./useCursorEvents.js";
 
 /**

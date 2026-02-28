@@ -1,4 +1,4 @@
-import styles from './Portrait.module.scss';
+import styles from "./Portrait.module.scss";
 
 /**
  * Статичный портрет (изображение).
@@ -10,7 +10,7 @@ const ImagePortrait = ({ zIndex }) => (
         <figure className={styles.figure}>
             <img
                 id="Portrait"
-                className={`${styles.portrait} ${styles['portrait--image']} not-allowed z-${zIndex}`}
+                className={`${styles.portrait} ${styles["portrait--image"]} not-allowed z-${zIndex}`}
                 src="/images/НЕПРИКОСНОВЕННА.png"
                 alt="НЕПРИКОСНОВЕННА"
             />
@@ -18,5 +18,4 @@ const ImagePortrait = ({ zIndex }) => (
     </>
 );
 
-export { ImagePortrait };
 export default ImagePortrait;

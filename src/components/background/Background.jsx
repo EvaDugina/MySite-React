@@ -1,6 +1,6 @@
-import './Background.css';
-import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
-import styles from './Background.module.css';
+import "./Background.css";
+import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import styles from "./Background.module.css";
 
 /**
  * Фоновый слой с возможностью скрывать/показывать через ref.
@@ -11,7 +11,7 @@ import styles from './Background.module.css';
  * @param {number} [props.zIndex]
  */
 const Background = forwardRef((props, ref) => {
-    const { id = '', variant = 'white', extraClass = '', zIndex } = props;
+    const { id = "", variant = "white", extraClass = "", zIndex } = props;
 
     const [isHidden, setIsHidden] = useState(false);
     const hide = useCallback(() => setIsHidden(true), []);
@@ -19,27 +19,29 @@ const Background = forwardRef((props, ref) => {
 
     useImperativeHandle(ref, () => ({ hide, show }));
 
-    const modifierClass = variant === 'blue'
-        ? styles['background--blue']
-        : styles['background--white'];
+    const modifierClass =
+        variant === "blue"
+            ? styles["background--blue"]
+            : styles["background--white"];
 
     const className = [
         styles.background,
         modifierClass,
         extraClass,
         `z-${zIndex}`,
-    ].filter(Boolean).join(' ');
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <div
             id={id}
             className={className}
-            style={{ display: isHidden ? 'none' : 'block' }}
+            style={{ display: isHidden ? "none" : "block" }}
         />
     );
 });
 
-Background.displayName = 'Background';
+Background.displayName = "Background";
 
-export { Background };
 export default Background;

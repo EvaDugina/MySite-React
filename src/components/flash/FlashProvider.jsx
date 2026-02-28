@@ -1,6 +1,11 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import Flash from './Flash.jsx';
-import { FlashType } from './FlashSettingsHandler';
+import React, {
+    forwardRef,
+    useCallback,
+    useImperativeHandle,
+    useRef,
+} from "react";
+import Flash from "./Flash.jsx";
+import { FlashType } from "./FlashSettingsHandler";
 
 const FLASH_DURATION = 100;
 
@@ -67,7 +72,6 @@ const FlashProvider = forwardRef((props, ref) => {
     );
 });
 
-FlashProvider.displayName = 'FlashProvider';
+FlashProvider.displayName = "FlashProvider";
 
-export { FlashProvider };
 export default FlashProvider;

@@ -1,5 +1,11 @@
-import styles from './Button.module.scss';
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import styles from "./Button.module.scss";
+import {
+    forwardRef,
+    useCallback,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
 
 const ButtonType = {
     DEFAULT: 0,
@@ -9,10 +15,10 @@ const ButtonType = {
 };
 
 const getModifierClass = (buttonType, stylesMap) => {
-    if (buttonType === ButtonType.ACTIVE) return stylesMap['button--active'];
-    if (buttonType === ButtonType.HOVER) return stylesMap['button--hovered'];
-    if (buttonType === ButtonType.DISABLE) return stylesMap['button--disabled'];
-    return '';
+    if (buttonType === ButtonType.ACTIVE) return stylesMap["button--active"];
+    if (buttonType === ButtonType.HOVER) return stylesMap["button--hovered"];
+    if (buttonType === ButtonType.DISABLE) return stylesMap["button--disabled"];
+    return "";
 };
 
 /**
@@ -59,11 +65,13 @@ const Button = forwardRef((props, ref) => {
     const modifierClass = getModifierClass(buttonType, styles);
     const className = [
         styles.button,
-        styles['button--neprikosnovenna'],
+        styles["button--neprikosnovenna"],
         modifierClass,
-        'not-allowed',
+        "not-allowed",
         `z-${zIndex}`,
-    ].filter(Boolean).join(' ');
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <button
@@ -77,7 +85,6 @@ const Button = forwardRef((props, ref) => {
     );
 });
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
-export { Button };
 export default Button;

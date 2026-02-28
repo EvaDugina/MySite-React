@@ -11,13 +11,13 @@ import {
     CursorImages,
     createCursorSettings,
     createCursorZoneSettings,
-} from "./components/cursor/CursorSettingsHandler";
-import Cursor from "./components/cursor/Cursor";
-import Background from "./components/background/Background";
-import Button from "./components/button/Button";
-import VideoPortrait from "./components/portrait/VideoPortrait.jsx";
-import FlashProvider from "./components/flash/FlashProvider.jsx";
-import useSoundEffect from "./hooks/useSoundEffect.js";
+} from "../components/cursor/CursorSettingsHandler.js";
+import Cursor from "../components/cursor/Cursor.jsx";
+import Background from "../components/background/Background.jsx";
+import Button from "../components/button/Button.jsx";
+import VideoPortrait from "../components/portrait/VideoPortrait.jsx";
+import FlashProvider from "../components/flash/FlashProvider.jsx";
+import useSoundEffect from "../hooks/useSoundEffect.js";
 
 const Zone = {
     NONE: 0,

@@ -5,11 +5,11 @@ import {
     CursorImages,
     createCursorSettings,
     createCursorZoneSettings,
-} from "./components/cursor/CursorSettingsHandler";
-import Cursor from "./components/cursor/Cursor";
-import Background from "./components/background/Background";
-import Button from "./components/button/Button";
-import ImagePortrait from "./components/portrait/ImagePortrait.jsx";
+} from "../components/cursor/CursorSettingsHandler.js";
+import Cursor from "../components/cursor/Cursor.jsx";
+import Background from "../components/background/Background.jsx";
+import Button from "../components/button/Button.jsx";
+import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 
 const Zone = {
     NONE: 0,

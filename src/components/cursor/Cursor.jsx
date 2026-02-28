@@ -1,7 +1,14 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import './Cursor.css';
-import styles from './Cursor.module.css';
-import useCursor from './hooks/useCursor.js';
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
+import "./Cursor.css";
+import styles from "./Cursor.module.css";
+import useCursor from "./hooks/useCursor.js";
 
 /**
  * Кастомный курсор-муха с зонами и физикой движения.
@@ -65,7 +72,12 @@ const Cursor = forwardRef((props, ref) => {
         start: startCursor,
     }));
 
-    const className = [styles.cursor, 'ignore-cursor', 'not-allowed', 'z-999'].join(' ');
+    const className = [
+        styles.cursor,
+        "ignore-cursor",
+        "not-allowed",
+        "z-999",
+    ].join(" ");
 
     return (
         <img
@@ -75,13 +87,12 @@ const Cursor = forwardRef((props, ref) => {
             alt="муха"
             style={{
                 transform: `translate(-26.5%, -9%) translate3d(${position.x}px, ${position.y}px, 0)`,
-                display: isHidden ? 'none' : 'block',
+                display: isHidden ? "none" : "block",
             }}
         />
     );
 });
 
-Cursor.displayName = 'Cursor';
+Cursor.displayName = "Cursor";
 
-export { Cursor };
 export default Cursor;

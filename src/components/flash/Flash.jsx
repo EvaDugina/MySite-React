@@ -81,5 +81,4 @@ const Flash = forwardRef((props, ref) => {
 
 Flash.displayName = "Flash";
 
-export { Flash };
 export default Flash;
