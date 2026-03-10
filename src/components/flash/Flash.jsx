@@ -63,7 +63,9 @@ const Flash = forwardRef((props, ref) => {
     const imageModifier =
         type === FlashType.FRONT
             ? styles["flash__image--type1"]
-            : styles["flash__image--type2"];
+            : type === FlashType.VZGLAD
+                ? styles["flash__image--type-vzglad"]
+                : styles["flash__image--type2"];
 
     return (
         <div

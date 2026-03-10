@@ -1,5 +1,5 @@
 import "./Neprikosnovenna.css";
-import styles from "./Neprikosnovenna.module.css";
+import styles from "./Neprikosnovenna.module.scss";
 import React, {
     useCallback,
     useEffect,
@@ -19,6 +19,7 @@ import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
 import {ImagePortraitType} from "../components/portrait/ImagePortraitSettings.js";
+import {BackgroundType} from "../components/background/BackgroundSettings.js";
 
 const Zone = {
     NONE: 0,
@@ -29,7 +30,8 @@ const Zone = {
 
 const WhenYouSoBeautifullyDied = () => {
     const cursorRef = useRef(null);
-    const backgroundRef = useRef(null);
+    const backgroundSecondaryRef = useRef(null);
+    const backgroundMainRef = useRef(null);
     const buttonRef = useRef(null);
     const portraitRef = useRef(null);
     const flashProviderRef = useRef(null);
@@ -56,12 +58,12 @@ const WhenYouSoBeautifullyDied = () => {
     );
 
     const handleOnButton = () => {
-        backgroundRef.current?.hide();
+        backgroundSecondaryRef.current?.hide();
         buttonRef.current.hover();
     };
 
     const handleOffButton = () => {
-        backgroundRef.current?.show();
+        backgroundSecondaryRef.current?.show();
         buttonRef.current.reset();
     };
 
@@ -107,6 +109,9 @@ const WhenYouSoBeautifullyDied = () => {
     const handleLeftClickDown = useCallback(
         async (currentElementId) => {
             if (currentElementId === "BtnNeprikosnovenna") {
+                if (buttonRef.current.isDisabled())
+                    return
+                flashProviderRef.current.flashes();
                 if (
                     (!isClickedRef.current && !isBloody) ||
                     (isBloody &&
@@ -114,9 +119,6 @@ const WhenYouSoBeautifullyDied = () => {
                 ) {
                     buttonRef.current.click();
                     portraitRef.current.hideVideo();
-                    portraitRef.current.changeImagePortraitType(ImagePortraitType.POLSCHENA);
-                    await flashProviderRef.current.flashes();
-                    portraitRef.current.changeImagePortraitType(ImagePortraitType.DEFAULT);
                     portraitRef.current.showVideo();
                     playAudio();
                 }
@@ -166,6 +168,7 @@ const WhenYouSoBeautifullyDied = () => {
     const handleVideoEnded = useCallback(() => {
         isVideoEndedRef.current = true;
         buttonRef.current.reset();
+        backgroundMainRef.current.changeType(BackgroundType.KETCHUP)
     }, []);
 
     const videoSettings = useMemo(() => {
@@ -201,14 +204,19 @@ const WhenYouSoBeautifullyDied = () => {
                 </article>
 
                 <Background
-                    ref={backgroundRef}
+                    ref={backgroundSecondaryRef}
                     id="Background-1"
                     zIndex={5}
-                    variant="blue"
+                    type={BackgroundType.BLUE}
                 />
             </main>
 
-            <Background id="Background-0" variant="white" zIndex={0} />
+            <Background
+                ref={backgroundMainRef}
+                id="Background-0"
+                type={BackgroundType.WHITE}
+                zIndex={0}
+            />
         </>
     );
 };

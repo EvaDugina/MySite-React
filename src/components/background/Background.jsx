@@ -1,6 +1,7 @@
 import "./Background.css";
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import styles from "./Background.module.css";
+import {BackgroundType} from "./BackgroundSettings.js";
 
 /**
  * Фоновый слой с возможностью скрывать/показывать через ref.
@@ -11,32 +12,29 @@ import styles from "./Background.module.css";
  * @param {number} [props.zIndex]
  */
 const Background = forwardRef((props, ref) => {
-    const { id = "", variant = "white", extraClass = "", zIndex } = props;
+    const { id = "", type = BackgroundType.WHITE, zIndex } = props;
 
     const [isHidden, setIsHidden] = useState(false);
     const hide = useCallback(() => setIsHidden(true), []);
     const show = useCallback(() => setIsHidden(false), []);
 
-    useImperativeHandle(ref, () => ({ hide, show }));
+    const [modifierClass, setModifierClass] = useState(styles[`background--${type}`]);
 
+    const changeType = useCallback((newBackgroundType) => {
+        if (!Object.values(BackgroundType).includes(newBackgroundType)) {
+            const validValues = Object.values(BackgroundType);
+            throw new Error(`Invalid value: ${newBackgroundType}. Expected one of: ${validValues.join(', ')}`);
+        }
+        setModifierClass(styles[`background--${newBackgroundType}`])
+    }, []);
 
-
-    const modifierClass = styles[`background--${variant}`];
-
-    const className = [
-        styles.background,
-        modifierClass,
-        extraClass,
-        `z-${zIndex}`,
-    ]
-        .filter(Boolean)
-        .join(" ");
+    useImperativeHandle(ref, () => ({ hide, show, changeType }));
 
     return (
         <div
             id={id}
             key={`${id}`}
-            className={className}
+            className={`${styles.background} ${modifierClass} z-${zIndex}`}
             style={{display: isHidden ? "none" : "block",}}
         />
     );

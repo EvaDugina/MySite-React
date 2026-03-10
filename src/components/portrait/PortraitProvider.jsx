@@ -20,8 +20,8 @@ const PortraitProvider = forwardRef((props, ref) => {
     const {showVideo, hideVideo, playVideo, pauseVideo, stopVideo, scrollToEndVideo, scrollToStartVideo} = useVideoController(settings, videoRef);
 
     const changeImagePortraitType = useCallback((newImagePortraitType) => {
-        const validValues = Object.values(ImagePortraitType);
         if (!Object.values(ImagePortraitType).includes(newImagePortraitType)) {
+            const validValues = Object.values(ImagePortraitType);
             throw new Error(`Invalid value: ${newImagePortraitType}. Expected one of: ${validValues.join(', ')}`);
         }
         setImagePortraitType(newImagePortraitType);

@@ -9,6 +9,10 @@ import { FlashType } from "./FlashSettings.js";
 
 const FLASH_DURATION = 100;
 
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+}
+
 /**
  * Провайдер нескольких вспышек, последовательный вызов через ref.flashes(n).
  * @param {Object} props
@@ -18,6 +22,7 @@ const FlashProvider = forwardRef((props, ref) => {
     const { zIndex } = props;
 
     const flashFrontRef = useRef(null);
+    const flashVzgladRef = useRef(null);
     const flashPortraitNegativeRef = useRef(null);
     const flashNegativeRef = useRef(null);
 
@@ -35,14 +40,9 @@ const FlashProvider = forwardRef((props, ref) => {
         const flash = async (flashQueue) => {
             if (flashQueue.length <= 0) return;
 
-            const flashRef = flashQueue[0] ?? flashNegativeRef;
-            flashRef.current.flash();
-            await new Promise((resolve) => {
-                setTimeout(() => {
-                    flashQueue.shift();
-                    resolve();
-                }, FLASH_DURATION);
-            });
+            const flashRef = flashQueue[0] ?? flashPortraitNegativeRef;
+            await flashRef.current.flash();
+            flashQueue.shift();
 
             if (flashQueue.length > 0) {
                 await flash(flashQueue);
@@ -50,7 +50,11 @@ const FlashProvider = forwardRef((props, ref) => {
         };
 
         for (let i = 0; i < n; i++) {
-            await flash(generateFlashQueue(flashFrontRef));
+            let random = getRandomInt(2)
+            let ref = null
+            if (random === 0) ref = flashFrontRef;
+            else ref = flashVzgladRef;
+            await flash(generateFlashQueue(ref));
         }
     }, []);
 
@@ -61,6 +65,12 @@ const FlashProvider = forwardRef((props, ref) => {
             <Flash
                 ref={flashFrontRef}
                 type={FlashType.FRONT}
+                zIndex={zIndex}
+                duration={FLASH_DURATION}
+            />
+            <Flash
+                ref={flashVzgladRef}
+                type={FlashType.VZGLAD}
                 zIndex={zIndex}
                 duration={FLASH_DURATION}
             />

@@ -9,15 +9,15 @@ import {
 
 const ButtonType = {
     DEFAULT: 0,
-    HOVER: 1,
+    HOVERED: 1,
     ACTIVE: 2,
-    DISABLE: 3,
+    DISABLED: 3,
 };
 
 const getModifierClass = (buttonType, stylesMap) => {
     if (buttonType === ButtonType.ACTIVE) return stylesMap["button--active"];
-    if (buttonType === ButtonType.HOVER) return stylesMap["button--hovered"];
-    if (buttonType === ButtonType.DISABLE) return stylesMap["button--disabled"];
+    if (buttonType === ButtonType.HOVERED) return stylesMap["button--hovered"];
+    if (buttonType === ButtonType.DISABLED) return stylesMap["button--disabled"];
     return "";
 };
 
@@ -36,6 +36,10 @@ const Button = forwardRef((props, ref) => {
     const buttonTypeRef = useRef(buttonType);
     const isClickAbleRef = useRef(true);
 
+    const isDisabled = useCallback((type) => {
+        return buttonTypeRef.current === ButtonType.DISABLED;
+    }, [])
+
     const reset = useCallback(() => {
         buttonTypeRef.current = ButtonType.DEFAULT;
         setButtonType(buttonTypeRef.current);
@@ -44,7 +48,7 @@ const Button = forwardRef((props, ref) => {
 
     const hover = useCallback(() => {
         if (!isClickAbleRef.current) return;
-        buttonTypeRef.current = ButtonType.HOVER;
+        buttonTypeRef.current = ButtonType.HOVERED;
         setButtonType(buttonTypeRef.current);
     }, []);
 
@@ -55,12 +59,12 @@ const Button = forwardRef((props, ref) => {
     }, []);
 
     const disable = useCallback(() => {
-        buttonTypeRef.current = ButtonType.DISABLE;
+        buttonTypeRef.current = ButtonType.DISABLED;
         setButtonType(buttonTypeRef.current);
         isClickAbleRef.current = false;
     }, []);
 
-    useImperativeHandle(ref, () => ({ reset, hover, click, disable }));
+    useImperativeHandle(ref, () => ({ isDisabled, reset, hover, click, disable }));
 
     const modifierClass = getModifierClass(buttonType, styles);
     const className = [

@@ -63,6 +63,13 @@
     border-radius: 7.5px;
 }
 
+.flash__image--type-vzglad {
+    width: 200%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -41%);
+}
+
 .flash__image--type1 {
     height: 112%;
     top: -4.5%;

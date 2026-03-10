@@ -1,5 +1,5 @@
 import "./Neprikosnovenna.css";
-import styles from "./Neprikosnovenna.module.css";
+import styles from "./Neprikosnovenna.module.scss";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
     CursorImages,
