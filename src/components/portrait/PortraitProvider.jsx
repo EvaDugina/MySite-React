@@ -17,7 +17,15 @@ const PortraitProvider = forwardRef((props, ref) => {
     const videoRef = useRef(null);
 
     const [imagePortraitType, setImagePortraitType] = useState(ImagePortraitType.DEFAULT);
-    const {showVideo, hideVideo, playVideo, pauseVideo, stopVideo, scrollToEndVideo, scrollToStartVideo} = useVideoController(settings, videoRef);
+    const {
+        showVideo,
+        hideVideo,
+        playVideo,
+        pauseVideo,
+        stopVideo,
+        scrollToEndVideo,
+        scrollToStartVideo
+    } = useVideoController(settings, videoRef);
 
     const changeImagePortraitType = useCallback((newImagePortraitType) => {
         if (!Object.values(ImagePortraitType).includes(newImagePortraitType)) {
@@ -28,7 +36,14 @@ const PortraitProvider = forwardRef((props, ref) => {
     }, [])
 
     useImperativeHandle(ref, () => ({
-        showVideo, hideVideo, playVideo, pauseVideo, stopVideo, scrollToEndVideo, scrollToStartVideo, changeImagePortraitType
+        showVideo,
+        hideVideo,
+        playVideo,
+        pauseVideo,
+        stopVideo,
+        scrollToEndVideo,
+        scrollToStartVideo,
+        changeImagePortraitType
     }));
 
     return (<>

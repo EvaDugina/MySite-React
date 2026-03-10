@@ -16,6 +16,6 @@
 }
 
 .background--ketchup {
-    background: url("/images/background/heinz-logo.jpg") repeat;
+    background: url("/public/images/background/heinz-logo.jpg") repeat;
     background-size: 80px auto;
 }

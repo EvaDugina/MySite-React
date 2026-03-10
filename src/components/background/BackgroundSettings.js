@@ -1,5 +1,3 @@
 export const BackgroundType = {
-    WHITE: "white",
-    BLUE: "blue",
-    KETCHUP: "ketchup"
+    WHITE: "white", BLUE: "blue", KETCHUP: "ketchup"
 };

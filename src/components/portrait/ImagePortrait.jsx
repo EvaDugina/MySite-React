@@ -1,5 +1,5 @@
 import styles from "./Portrait.module.scss";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ImagePortraitType, StaticData} from "./ImagePortraitSettings.js";
 
 /**
@@ -16,11 +16,11 @@ const ImagePortrait = ({type = ImagePortraitType.DEFAULT, zIndex}) => {
     }, [type]);
 
     return (<img
-            id="Portrait"
-            className={`${styles.portrait} ${styles["portrait--image"]} not-allowed z-${zIndex}`}
-            src={imagePortraitSrc}
-            alt="НЕПРИКОСНОВЕННА"
-        />);
+        id="Portrait"
+        className={`${styles.portrait} ${styles["portrait--image"]} not-allowed z-${zIndex}`}
+        src={imagePortraitSrc}
+        alt="НЕПРИКОСНОВЕННА"
+    />);
 }
 
 export default ImagePortrait;

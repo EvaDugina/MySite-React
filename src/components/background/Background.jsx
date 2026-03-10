@@ -1,5 +1,5 @@
 import "./Background.css";
-import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import {forwardRef, useCallback, useImperativeHandle, useState} from "react";
 import styles from "./Background.module.css";
 import {BackgroundType} from "./BackgroundSettings.js";
 
@@ -12,7 +12,7 @@ import {BackgroundType} from "./BackgroundSettings.js";
  * @param {number} [props.zIndex]
  */
 const Background = forwardRef((props, ref) => {
-    const { id = "", type = BackgroundType.WHITE, zIndex } = props;
+    const {id = "", type = BackgroundType.WHITE, zIndex} = props;
 
     const [isHidden, setIsHidden] = useState(false);
     const hide = useCallback(() => setIsHidden(true), []);
@@ -28,16 +28,14 @@ const Background = forwardRef((props, ref) => {
         setModifierClass(styles[`background--${newBackgroundType}`])
     }, []);
 
-    useImperativeHandle(ref, () => ({ hide, show, changeType }));
+    useImperativeHandle(ref, () => ({hide, show, changeType}));
 
-    return (
-        <div
+    return (<div
             id={id}
             key={`${id}`}
             className={`${styles.background} ${modifierClass} z-${zIndex}`}
             style={{display: isHidden ? "none" : "block",}}
-        />
-    );
+        />);
 });
 
 Background.displayName = "Background";

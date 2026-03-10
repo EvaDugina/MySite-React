@@ -1,31 +1,17 @@
 import "./Neprikosnovenna.css";
 import styles from "./Neprikosnovenna.module.scss";
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import {
-    CursorImages,
-    createCursorSettings,
-    createCursorZoneSettings,
-} from "../components/cursor/CursorSettings.js";
+import React, {useCallback, useEffect, useMemo, useRef, useState,} from "react";
+import {createCursorSettings, createCursorZoneSettings, CursorImages,} from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";
 import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
-import {ImagePortraitType} from "../components/portrait/ImagePortraitSettings.js";
 import {BackgroundType} from "../components/background/BackgroundSettings.js";
 
 const Zone = {
-    NONE: 0,
-    BACK: 1,
-    PORTRAIT: 2,
-    BUTTON: 3,
+    NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
 };
 
 const WhenYouSoBeautifullyDied = () => {
@@ -72,9 +58,7 @@ const WhenYouSoBeautifullyDied = () => {
     // AUDIO CONTROL
     //
 
-    const { playAudio } = useSoundEffect(
-        useMemo(() => "/audio/СимуляцияОргазма.mov", []),
-    );
+    const {playAudio} = useSoundEffect(useMemo(() => "/audio/СимуляцияОргазма.mov", []),);
 
     //
     // CURSOR CONTROL
@@ -99,22 +83,19 @@ const WhenYouSoBeautifullyDied = () => {
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.BACK]: {
+            }, [Zone.BACK]: {
                 elementId: "Background-0",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.PORTRAIT]: {
+            }, [Zone.PORTRAIT]: {
                 elementId: "Portrait",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.BUTTON]: {
+            }, [Zone.BUTTON]: {
                 elementId: "BtnNeprikosnovenna",
                 imgCursor: CursorImages.POINTER,
                 imgCursorClicked: CursorImages.POINTER_CLICKED,
@@ -124,69 +105,53 @@ const WhenYouSoBeautifullyDied = () => {
         };
 
         cursorZoneSettingsRef.current = createCursorZoneSettings({
-            Zone,
-            Data: { ...ZoneData },
+            Zone, Data: {...ZoneData},
         });
     }, []);
 
-    const handleLeftClickDown = useCallback(
-        async (currentElementId) => {
-            if (currentElementId === "BtnNeprikosnovenna") {
-                if (buttonRef.current.isDisabled())
-                    return
-                if (
-                    (!isClickedRef.current && !isBloody) ||
-                    (isBloody &&
-                        (!isClickedRef.current || isVideoEndedRef.current))
-                ) {
-                    buttonRef.current.click();
-                    portraitRef.current.hideVideo();
-                    portraitRef.current.showVideo();
-                }
-                playAudio();
-                await flashProviderRef.current.flashes();
+    const handleLeftClickDown = useCallback(async (currentElementId) => {
+        if (currentElementId === "BtnNeprikosnovenna") {
+            if (buttonRef.current.isDisabled()) return
+            if ((!isClickedRef.current && !isBloody) || (isBloody && (!isClickedRef.current || isVideoEndedRef.current))) {
+                buttonRef.current.click();
+                portraitRef.current.hideVideo();
+                portraitRef.current.showVideo();
             }
+            playAudio();
+            await flashProviderRef.current.flashes();
+        }
 
-            if (isBloody) return;
-            if (isVideoEndedRef.current) return;
+        if (isBloody) return;
+        if (isVideoEndedRef.current) return;
 
-            if (currentElementId === "BtnNeprikosnovenna") {
-                isClickedRef.current = true;
-                portraitRef.current.showVideo(true);
-                portraitRef.current.playVideo();
-                setIsBloody(true);
-                buttonRef.current.disable();
-            }
-        },
-        [playAudio, isBloody],
-    );
+        if (currentElementId === "BtnNeprikosnovenna") {
+            isClickedRef.current = true;
+            portraitRef.current.showVideo(true);
+            portraitRef.current.playVideo();
+            setIsBloody(true);
+            buttonRef.current.disable();
+        }
+    }, [playAudio, isBloody],);
 
     const handleLeftClickUp = useCallback((currentElementId) => {
         if (currentElementId === "BtnNeprikosnovenna") {
-            if (
-                (!isClickedRef.current && !isBloody) ||
-                (isBloody && (!isClickedRef.current || isVideoEndedRef.current))
-            ) {
+            if ((!isClickedRef.current && !isBloody) || (isBloody && (!isClickedRef.current || isVideoEndedRef.current))) {
                 buttonRef.current.hover();
             }
         }
     }, []);
 
-    const cursorSettings = useMemo(
-        () =>
-            createCursorSettings({
-                imgCursor: CursorImages.DEFAULT,
-                startX: null,
-                startY: null,
-                handleLeftClickDown,
-                handleLeftClickUp,
-                stiffness: 0.4,
-                damping: 0.1,
-                mass: 0.1,
-                maxSpeed: 25,
-            }),
-        [handleLeftClickDown, handleLeftClickUp],
-    );
+    const cursorSettings = useMemo(() => createCursorSettings({
+        imgCursor: CursorImages.DEFAULT,
+        startX: null,
+        startY: null,
+        handleLeftClickDown,
+        handleLeftClickUp,
+        stiffness: 0.4,
+        damping: 0.1,
+        mass: 0.1,
+        maxSpeed: 25,
+    }), [handleLeftClickDown, handleLeftClickUp],);
 
     //
     // FLASH CONTROLL
@@ -201,8 +166,7 @@ const WhenYouSoBeautifullyDied = () => {
         // return await new Promise((resolve) => setTimeout(resolve, 25));
     }, [])
 
-    return (
-        <>
+    return (<>
             <Cursor
                 ref={cursorRef}
                 settings={cursorSettings}
@@ -246,9 +210,8 @@ const WhenYouSoBeautifullyDied = () => {
                 type={BackgroundType.WHITE}
                 zIndex={0}
             />
-        </>
-    );
+        </>);
 };
 
-export { WhenYouSoBeautifullyDied };
+export {WhenYouSoBeautifullyDied};
 export default WhenYouSoBeautifullyDied;

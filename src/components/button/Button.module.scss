@@ -1,32 +1,32 @@
 :root {
-    --color-xlight-grey: rgb(240, 240, 240);
-    --color-light-grey: rgb(220, 220, 220);
+  --color-xlight-grey: rgb(240, 240, 240);
+  --color-light-grey: rgb(220, 220, 220);
 }
 
 .button {
-    background-color: var(--color-xlight-grey);
-    border-radius: 2px;
-    border-width: thin;
+  background-color: var(--color-xlight-grey);
+  border-radius: 2px;
+  border-width: thin;
 
-    &--disabled {
-        opacity: 0.35;
-    }
+  &--disabled {
+    opacity: 0.35;
+  }
 
-    &--hovered {
-        background-color: var(--color-light-grey);
-    }
+  &--hovered {
+    background-color: var(--color-light-grey);
+  }
 
-    &--active {
-        border-width: revert !important;
-        border-color: black !important;
-        background-color: var(--color-light-grey);
-    }
+  &--active {
+    border-width: revert !important;
+    border-color: black !important;
+    background-color: var(--color-light-grey);
+  }
 
-    &--neprikosnovenna {
-        position: absolute;
-        transform: translate(-50%, -50%);
-        top: 75%;
-        left: 50%;
-        font-size: var(--font-size-xsm);
-    }
+  &--neprikosnovenna {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 75%;
+    left: 50%;
+    font-size: var(--font-size-xsm);
+  }
 }

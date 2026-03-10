@@ -1,21 +1,14 @@
 import "./Neprikosnovenna.css";
 import styles from "./Neprikosnovenna.module.scss";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import {
-    CursorImages,
-    createCursorSettings,
-    createCursorZoneSettings,
-} from "../components/cursor/CursorSettings.js";
+import React, {useCallback, useEffect, useMemo, useRef} from "react";
+import {createCursorSettings, createCursorZoneSettings, CursorImages,} from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 
 const Zone = {
-    NONE: 0,
-    BACK: 1,
-    PORTRAIT: 2,
-    BUTTON: 3,
+    NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
 };
 
 const WhenYouSoBeautifullyDied = () => {
@@ -39,22 +32,19 @@ const WhenYouSoBeautifullyDied = () => {
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.BACK]: {
+            }, [Zone.BACK]: {
                 elementId: "Background-0",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.PORTRAIT]: {
+            }, [Zone.PORTRAIT]: {
                 elementId: "Portrait",
                 imgCursor: CursorImages.DEFAULT,
                 imgCursorClicked: CursorImages.DEFAULT,
                 handleOn: null,
                 handleOff: null,
-            },
-            [Zone.BUTTON]: {
+            }, [Zone.BUTTON]: {
                 elementId: "BtnNeprikosnovenna",
                 imgCursor: CursorImages.POINTER,
                 imgCursorClicked: CursorImages.POINTER_CLICKED,
@@ -64,8 +54,7 @@ const WhenYouSoBeautifullyDied = () => {
         };
 
         cursorZoneSettingsRef.current = createCursorZoneSettings({
-            Zone,
-            Data: { ...ZoneData },
+            Zone, Data: {...ZoneData},
         });
     }, []);
 
@@ -81,24 +70,19 @@ const WhenYouSoBeautifullyDied = () => {
         }
     }, []);
 
-    const cursorSettings = useMemo(
-        () =>
-            createCursorSettings({
-                imgCursor: CursorImages.DEFAULT,
-                startX: null,
-                startY: null,
-                handleLeftClickDown,
-                handleLeftClickUp,
-                stiffness: 0.4,
-                damping: 0.1,
-                mass: 0.1,
-                maxSpeed: 25,
-            }),
-        [handleLeftClickDown, handleLeftClickUp],
-    );
+    const cursorSettings = useMemo(() => createCursorSettings({
+        imgCursor: CursorImages.DEFAULT,
+        startX: null,
+        startY: null,
+        handleLeftClickDown,
+        handleLeftClickUp,
+        stiffness: 0.4,
+        damping: 0.1,
+        mass: 0.1,
+        maxSpeed: 25,
+    }), [handleLeftClickDown, handleLeftClickUp],);
 
-    return (
-        <>
+    return (<>
             <Cursor
                 ref={cursorRef}
                 settings={cursorSettings}
@@ -122,15 +106,14 @@ const WhenYouSoBeautifullyDied = () => {
                             text="неприкосновенна"
                         />
 
-                        <ImagePortrait zIndex={2} />
+                        <ImagePortrait zIndex={2}/>
                     </article>
                 </div>
             </main>
 
-            <Background id="Background-0" variant="white" zIndex={0} />
-        </>
-    );
+            <Background id="Background-0" variant="white" zIndex={0}/>
+        </>);
 };
 
-export { WhenYouSoBeautifullyDied };
+export {WhenYouSoBeautifullyDied};
 export default WhenYouSoBeautifullyDied;

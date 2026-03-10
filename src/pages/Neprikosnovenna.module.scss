@@ -1,26 +1,26 @@
 .main {
-    height: 100vh;
-    width: 100vw;
-    overflow-y: hidden !important;
-    overflow-x: hidden !important;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    background-color: white;
+  height: 100vh;
+  width: 100vw;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  background-color: white;
 }
 
 .container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    --center-width: var(--portrait-width);
-    --center-height: var(--portrait-height);
-    --side-width: calc((100vw - var(--center-width)) / 2 - 2px);
-    --side-height: calc((100vh - var(--center-height)) / 2 - 2px);
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  --center-width: var(--portrait-width);
+  --center-height: var(--portrait-height);
+  --side-width: calc((100vw - var(--center-width)) / 2 - 2px);
+  --side-height: calc((100vh - var(--center-height)) / 2 - 2px);
 }
 
 /*
@@ -28,46 +28,33 @@
 */
 
 .portrait-container-default {
-    position: relative;
-    width: var(--portrait-width);
-    height: auto;
-    margin: 0;
-    display: block;
-    align-self: center;
+  position: relative;
+  width: var(--portrait-width);
+  height: auto;
+  margin: 0;
+  display: block;
+  align-self: center;
 }
 
 .portrait__effect {
-    width: 100%;
-    height: auto;
-    position: absolute;
-    top: 0%;
-}
-
-.effect-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-
-    /* Сплошная белая маска делает элемент видимым */
-    /*-webkit-mask-image: linear-gradient(white, white);*/
-    /*mask-image: linear-gradient(white, black);*/
-
-    /* Можно добавить непрозрачность самой маске */
-    -webkit-mask-color: rgba(0, 0, 0, 1); /* Полупрозрачная маска */
+  width: 100%;
+  height: auto;
+  position: absolute;
+  top: 0;
 }
 
 .effect-1 {
-    display: block;
-    width: 200%;
-    transform: translate(-50%, 50%);
-    align-self: center;
-    top: 0%;
-    left: 50%;
+  display: block;
+  width: 200%;
+  transform: translate(-50%, 50%);
+  align-self: center;
+  top: 0;
+  left: 50%;
 }
 
 .center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }

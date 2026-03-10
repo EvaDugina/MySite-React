@@ -1,17 +1,8 @@
 import styles from "./Button.module.scss";
-import {
-    forwardRef,
-    useCallback,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from "react";
+import {forwardRef, useCallback, useImperativeHandle, useRef, useState,} from "react";
 
 const ButtonType = {
-    DEFAULT: 0,
-    HOVERED: 1,
-    ACTIVE: 2,
-    DISABLED: 3,
+    DEFAULT: 0, HOVERED: 1, ACTIVE: 2, DISABLED: 3,
 };
 
 const getModifierClass = (buttonType, stylesMap) => {
@@ -30,13 +21,13 @@ const getModifierClass = (buttonType, stylesMap) => {
  * @param {string} [props.ariaLabel]
  */
 const Button = forwardRef((props, ref) => {
-    const { id, zIndex, text, ariaLabel } = props;
+    const {id, zIndex, text, ariaLabel} = props;
 
     const [buttonType, setButtonType] = useState(ButtonType.DEFAULT);
     const buttonTypeRef = useRef(buttonType);
     const isClickAbleRef = useRef(true);
 
-    const isDisabled = useCallback((type) => {
+    const isDisabled = useCallback(() => {
         return buttonTypeRef.current === ButtonType.DISABLED;
     }, [])
 
@@ -64,29 +55,21 @@ const Button = forwardRef((props, ref) => {
         isClickAbleRef.current = false;
     }, []);
 
-    useImperativeHandle(ref, () => ({ isDisabled, reset, hover, click, disable }));
+    useImperativeHandle(ref, () => ({isDisabled, reset, hover, click, disable}));
 
     const modifierClass = getModifierClass(buttonType, styles);
-    const className = [
-        styles.button,
-        styles["button--neprikosnovenna"],
-        modifierClass,
-        "not-allowed",
-        `z-${zIndex}`,
-    ]
+    const className = [styles.button, styles["button--neprikosnovenna"], modifierClass, "not-allowed", `z-${zIndex}`,]
         .filter(Boolean)
         .join(" ");
 
-    return (
-        <button
+    return (<button
             id={id}
             type="button"
             className={className}
             aria-label={ariaLabel ?? text}
         >
             {text}
-        </button>
-    );
+        </button>);
 });
 
 Button.displayName = "Button";

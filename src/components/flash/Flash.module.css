@@ -25,12 +25,24 @@
 }
 
 @keyframes sharpFlash {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    40% { opacity: 0.8; }
-    60% { opacity: 1; }
-    80% { opacity: 0.4; }
-    100% { opacity: 0; }
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    40% {
+        opacity: 0.8;
+    }
+    60% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 /*
