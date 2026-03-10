@@ -5,7 +5,7 @@ import React, {
     useRef,
 } from "react";
 import Flash from "./Flash.jsx";
-import { FlashType } from "./FlashSettingsHandler";
+import { FlashType } from "./FlashSettings.js";
 
 const FLASH_DURATION = 100;
 
@@ -18,7 +18,8 @@ const FlashProvider = forwardRef((props, ref) => {
     const { zIndex } = props;
 
     const flashFrontRef = useRef(null);
-    const flashDefaultRef = useRef(null);
+    const flashPortraitNegativeRef = useRef(null);
+    const flashNegativeRef = useRef(null);
 
     const generateFlashQueue = (flashRef) => [
         flashRef,
@@ -27,14 +28,14 @@ const FlashProvider = forwardRef((props, ref) => {
         null,
         flashRef,
         flashRef,
-        flashRef,
+        null,
     ];
 
     const flashes = useCallback(async (n = 1) => {
         const flash = async (flashQueue) => {
             if (flashQueue.length <= 0) return;
 
-            const flashRef = flashQueue[0] ?? flashDefaultRef;
+            const flashRef = flashQueue[0] ?? flashNegativeRef;
             flashRef.current.flash();
             await new Promise((resolve) => {
                 setTimeout(() => {
@@ -64,7 +65,14 @@ const FlashProvider = forwardRef((props, ref) => {
                 duration={FLASH_DURATION}
             />
             <Flash
-                ref={flashDefaultRef}
+                ref={flashPortraitNegativeRef}
+                type={FlashType.PORTRAIT_NEGATIVE}
+                zIndex={zIndex}
+                duration={FLASH_DURATION}
+            />
+            <Flash
+                ref={flashNegativeRef}
+                type={FlashType.NEGATIVE}
                 zIndex={zIndex}
                 duration={FLASH_DURATION}
             />

@@ -42,7 +42,7 @@ function useAudio(src, volume = null) {
         }
     }, []);
 
-    return { play, pause, stop };
+    return { playAudio: play, pauseAudio: pause, stopAudio: stop };
 }
 
 export { useAudio };

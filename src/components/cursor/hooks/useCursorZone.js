@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useThrottleCallback } from '@react-hook/throttle';
-import { CursorImages } from '../CursorSettingsHandler.js';
+import { CursorImages } from '../CursorSettings.js';
 
 /**
  * Хук определения зоны под курсором и вызова handleOn/handleOff.

@@ -5,7 +5,7 @@ import {
     CursorImages,
     createCursorSettings,
     createCursorZoneSettings,
-} from "../components/cursor/CursorSettingsHandler.js";
+} from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";

@@ -71,7 +71,7 @@ function useSoundEffects(sources) {
         }
     }, []);
 
-    return { play, isLoaded, error };
+    return { playAudio: play, isLoadedAudio: isLoaded, errorAudio: error };
 }
 
 export { useSoundEffects };

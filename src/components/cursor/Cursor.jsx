@@ -68,7 +68,7 @@ const Cursor = forwardRef((props, ref) => {
         show: showCursor,
         disable: disableCursor,
         enable: enableCursor,
-        stop: stopCursor,
+        stopVideo: stopCursor,
         start: startCursor,
     }));
 

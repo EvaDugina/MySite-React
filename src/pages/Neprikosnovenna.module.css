@@ -23,6 +23,10 @@
     --side-height: calc((100vh - var(--center-height)) / 2 - 2px);
 }
 
+/*
+
+*/
+
 .portrait-container-default {
     position: relative;
     width: var(--portrait-width);
@@ -30,6 +34,35 @@
     margin: 0;
     display: block;
     align-self: center;
+}
+
+.portrait__effect {
+    width: 100%;
+    height: auto;
+    position: absolute;
+    top: 0%;
+}
+
+.effect-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    /* Сплошная белая маска делает элемент видимым */
+    /*-webkit-mask-image: linear-gradient(white, white);*/
+    /*mask-image: linear-gradient(white, black);*/
+
+    /* Можно добавить непрозрачность самой маске */
+    -webkit-mask-color: rgba(0, 0, 0, 1); /* Полупрозрачная маска */
+}
+
+.effect-1 {
+    display: block;
+    width: 200%;
+    transform: translate(-50%, 50%);
+    align-self: center;
+    top: 0%;
+    left: 50%;
 }
 
 .center {

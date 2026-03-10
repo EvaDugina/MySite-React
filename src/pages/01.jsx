@@ -11,13 +11,14 @@ import {
     CursorImages,
     createCursorSettings,
     createCursorZoneSettings,
-} from "../components/cursor/CursorSettingsHandler.js";
+} from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";
-import VideoPortrait from "../components/portrait/VideoPortrait.jsx";
+import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
+import {ImagePortraitType} from "../components/portrait/ImagePortraitSettings.js";
 
 const Zone = {
     NONE: 0,
@@ -45,12 +46,12 @@ const WhenYouSoBeautifullyDied = () => {
 
     useEffect(() => {
         if (isBloody) {
-            portraitRef.current.scrollToEnd();
-            portraitRef.current.show(false);
+            portraitRef.current.scrollToEndVideo();
+            portraitRef.current.showVideo();
         }
     }, []);
 
-    const { play: playAudio } = useSoundEffect(
+    const { playAudio } = useSoundEffect(
         useMemo(() => "/audio/СимуляцияОргазма.mov", []),
     );
 
@@ -104,7 +105,7 @@ const WhenYouSoBeautifullyDied = () => {
     }, []);
 
     const handleLeftClickDown = useCallback(
-        (currentElementId) => {
+        async (currentElementId) => {
             if (currentElementId === "BtnNeprikosnovenna") {
                 if (
                     (!isClickedRef.current && !isBloody) ||
@@ -112,7 +113,11 @@ const WhenYouSoBeautifullyDied = () => {
                         (!isClickedRef.current || isVideoEndedRef.current))
                 ) {
                     buttonRef.current.click();
-                    flashProviderRef.current.flashes();
+                    portraitRef.current.hideVideo();
+                    portraitRef.current.changeImagePortraitType(ImagePortraitType.POLSCHENA);
+                    await flashProviderRef.current.flashes();
+                    portraitRef.current.changeImagePortraitType(ImagePortraitType.DEFAULT);
+                    portraitRef.current.showVideo();
                     playAudio();
                 }
             }
@@ -122,8 +127,8 @@ const WhenYouSoBeautifullyDied = () => {
 
             if (currentElementId === "BtnNeprikosnovenna") {
                 isClickedRef.current = true;
-                portraitRef.current.show(true);
-                portraitRef.current.play();
+                portraitRef.current.showVideo(true);
+                portraitRef.current.playVideo();
                 setIsBloody(true);
                 buttonRef.current.disable();
             }
@@ -182,13 +187,13 @@ const WhenYouSoBeautifullyDied = () => {
                     <Button
                         ref={buttonRef}
                         id="BtnNeprikosnovenna"
-                        zIndex={4}
+                        zIndex={6}
                         text="неприкосновенна"
                     />
 
-                    <FlashProvider ref={flashProviderRef} zIndex={3} />
+                    <FlashProvider ref={flashProviderRef} zIndex={4} />
 
-                    <VideoPortrait
+                    <PortraitProvider
                         ref={portraitRef}
                         zIndex={1}
                         settings={videoSettings}
@@ -198,7 +203,7 @@ const WhenYouSoBeautifullyDied = () => {
                 <Background
                     ref={backgroundRef}
                     id="Background-1"
-                    zIndex={3}
+                    zIndex={5}
                     variant="blue"
                 />
             </main>

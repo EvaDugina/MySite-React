@@ -106,7 +106,7 @@ function useSoundEffect(src, volume = 1) {
         }
     }, [initContext]);
 
-    return { play };
+    return { playAudio: play };
 }
 
 export { useSoundEffect };

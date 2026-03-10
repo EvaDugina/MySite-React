@@ -34,7 +34,7 @@ export function useVideoController(settings, videoRef) {
     }, [init, videoRef, onEnded]);
 
     const show = useCallback(
-        (isSmoothly) => {
+        (isSmoothly= false) => {
             // 3. Плавно показываем видео
             if (isSmoothly) videoRef.current.classList.add("show-smoothly");
             videoRef.current.style.opacity = 1;
@@ -43,7 +43,7 @@ export function useVideoController(settings, videoRef) {
     );
 
     const hide = useCallback(
-        (isSmoothly) => {
+        (isSmoothly= false) => {
             if (isSmoothly) videoRef.current.classList.add("show-smoothly");
             videoRef.current.style.opacity = 0;
         },
@@ -131,7 +131,11 @@ export function useVideoController(settings, videoRef) {
     //
     //
 
-    return { show, hide, play, pause, stop, scrollToEnd, scrollToStart };
+    return {
+        showVideo: show, hideVideo: hide,
+        playVideo: play, pauseVideo: pause, stopVideo: stop,
+        scrollToEndVideo: scrollToEnd, scrollToStartVideo: scrollToStart
+    };
 }
 
 export default useVideoController;

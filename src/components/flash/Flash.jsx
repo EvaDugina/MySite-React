@@ -5,13 +5,7 @@ import React, {
     useState,
 } from "react";
 import styles from "./Flash.module.css";
-import { FlashType } from "./FlashSettingsHandler.js";
-
-const StaticData = {
-    [FlashType.DEFAULT]: { src: "" },
-    [FlashType.FRONT]: { src: "/images/01.jpg" },
-    [FlashType.BEHIND]: { src: "/images/02.jpg" },
-};
+import { FlashType, StaticData } from "./FlashSettings.js";
 
 /**
  * Компонент вспышки (одна картинка или пустой фон). Управление через ref.flash().
@@ -21,7 +15,7 @@ const StaticData = {
  * @param {number} [props.duration]
  */
 const Flash = forwardRef((props, ref) => {
-    const { type = FlashType.DEFAULT, zIndex, duration } = props;
+    const { type = FlashType.PORTRAIT_NEGATIVE, zIndex, duration } = props;
 
     const [isHidden, setIsHidden] = useState(true);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -48,15 +42,19 @@ const Flash = forwardRef((props, ref) => {
         .filter(Boolean)
         .join(" ");
 
-    if (type === FlashType.DEFAULT) {
+    if (type === FlashType.NEGATIVE || type === FlashType.PORTRAIT_NEGATIVE) {
+        const position = type === FlashType.NEGATIVE ? "fixed" : "absolute";
+        const blendMode = type === FlashType.NEGATIVE ? styles["flash__container--blend-color-dodge"] : styles["flash__container--blend-exclusion"];
+        const style = type === FlashType.NEGATIVE ? styles["flash__negative"] : styles["flash__portrait-negative"];
         return (
             <div
                 id={`FlashContainer${type}`}
-                className={`${containerClass} ${styles["flash--blend-exclusion"]} not-allowed`}
+                className={`${containerClass} ${blendMode} not-allowed`}
+                style={{position: position}}
             >
                 <div
-                    id="FlashBack"
-                    className={`${styles.flash__container} ${styles.flash__back} not-allowed`}
+                    id={`Flash${type}`}
+                    className={`${styles.flash__container} ${style} not-allowed`}
                 />
             </div>
         );
@@ -68,7 +66,9 @@ const Flash = forwardRef((props, ref) => {
             : styles["flash__image--type2"];
 
     return (
-        <div id={`FlashContainer${type}`} className={containerClass}>
+        <div
+            id={`FlashContainer${type}`}
+            className={`${containerClass} not-allowed`}>
             <img
                 id={`Flash${type}`}
                 className={`${styles.flash__image} ${imageModifier} not-allowed`}
