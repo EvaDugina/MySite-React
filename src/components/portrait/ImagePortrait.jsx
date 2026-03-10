@@ -1,7 +1,6 @@
 import styles from "./Portrait.module.scss";
 import React from "react";
 import {ImagePortraitType, StaticData} from "./ImagePortraitSettings.js";
-import PortraitProvider from "./PortraitProvider.jsx";
 
 /**
  * Статичный портрет (изображение).

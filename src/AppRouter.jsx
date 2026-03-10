@@ -9,7 +9,7 @@ function AppRouter() {
             <HeadController/>
             <ScrollToTop/>
             <Routes>
-                {routes.map((route, index) => (
+                {routes.map((route) => (
                     <Route key={route.path} path={route.path} element={<route.component/>}/>
                 ))}
                 {/* Маршрут 404 */}

@@ -1,6 +1,5 @@
 import styles from "./Portrait.module.scss";
 import React, {forwardRef} from "react";
-import ImagePortrait from "./ImagePortrait.jsx";
 
 /**
  * Статичный портрет (изображение).
