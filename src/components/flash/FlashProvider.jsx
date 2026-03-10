@@ -25,7 +25,7 @@ const FlashProvider = forwardRef((props, ref) => {
         null,
         flashRef,
         null,
-        null,
+        flashRef,
         flashRef,
         flashRef,
     ];
