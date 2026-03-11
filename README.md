@@ -1,29 +1,30 @@
 # **_[Neprikosnovenna](http://82.202.138.61/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood) Web-Триптих_**
-[Web-инсталляция «Неприкосновенна»](http://82.202.138.61/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood) посвящена снятию оппозиции между руктоворным и сакральным, когда одно проявляется в другом как матрёшка и не может существовать без другого.
 
-<p align="center">
-  <img src=".docs/screenshots/1-01.webp" alt="Скриншот 01 - Неприкосновенна" style="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+Динамическая инсталляция [**_«Неприкосновенна»_**](http://82.202.138.61/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood) посвящена снятию оппозиции между руктоворным и сакральным. Потому как и само сакральное только тогда становится сакральным, когда его хочется украсть, уничтожить, спасти или сохранить. Так или иначе, но до живого всегда хочется дотронуться. 
 
-<p align="center">
-  <img src=".docs/screenshots/1-02.webp" alt="Скриншот 02 - Джоконда неприкосновенна" style="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+<kbd>
+<img src=".docs/screenshots/1-01.webp" alt="Скриншот 01 - Неприкосновенна" align="center">
+</kbd>
 
-<p align="center">
-  <img src=".docs/screenshots/1-06.webp" alt="Скриншот 03 - Джоконда под вспышками" style="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+<kbd>
+<img src=".docs/screenshots/1-02.webp" alt="Скриншот 02 - Джоконда неприкосновенна" align="center">
+</kbd>
 
-<p align="center">
-  <img src=".docs/screenshots/1-04.webp" alt="Скриншот 04 - Джоконда истекающая кровью / Ожившая" style="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+<kbd>
+<img src=".docs/screenshots/1-06.webp" alt="Скриншот 03 - Джоконда под вспышками" align="center">
+</kbd>
 
-<p align="center">
-  <img src=".docs/screenshots/1-05.webp" alt="Скриншот 05 - Джоконда которой не больно" wstyle="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+<kbd>
+<img src=".docs/screenshots/1-04.webp" alt="Скриншот 04 - Джоконда истекающая кровью / Ожившая" align="center">
+</kbd>
 
-<p align="center">
-  <img src=".docs/screenshots/1-08.webp" alt="Скриншот 06 - Кетчуп" style="border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"/>
-</p>
+<kbd>
+<img src=".docs/screenshots/1-05.webp" alt="Скриншот 05 - Джоконда которой не больно" align="center">
+</kbd>
+
+<kbd>
+<img src=".docs/screenshots/1-08.webp" alt="Скриншот 06 - Кетчуп" align="center">
+</kbd>
 
 ---
 ---
