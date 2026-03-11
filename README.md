@@ -1,26 +1,31 @@
-# **MySite-React**
+# **_[Neprikosnovenna](http://82.202.138.61/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood) Web-Триптих_**
+[Web-инсталляция «Неприкосновенна»](http://82.202.138.61/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood) посвящена снятию оппозиции между руктоворным и сакральным, когда одно проявляется в другом как матрёшка и не может существовать без другого.
 
-http://palkhh.xyz/
+![](.docs/screenshots/1-01.png)
 
----
+![](.docs/screenshots/1-02.png)
 
-## CI / CD
+![](.docs/screenshots/1-06.png)
 
-### PROD
+![](.docs/screenshots/1-04.png)
 
-```bash
-docker-compose -f .\docker-compose.prod.yml up --build -d
-```
+![](.docs/screenshots/1-05.png)
 
-### DEV
+![](.docs/screenshots/1-07.png)
 
-```bash
-docker compose -f .\docker-compose.dev.yml up --build
-```
+![](.docs/screenshots/1-08.png)
 
 ---
 
 ## Архитектура проекта
+
+![Static Badge](https://img.shields.io/badge/react19-cyan)
+![Static Badge](https://img.shields.io/badge/vite7-purple)
+![Static Badge](https://img.shields.io/badge/html5-orange)
+![Static Badge](https://img.shields.io/badge/css3-blue)
+![Static Badge](https://img.shields.io/badge/javascript-yellow)
+![Static Badge](https://img.shields.io/badge/nginx-green)
+![Static Badge](https://img.shields.io/badge/docker-grey)
 
 ### Технологический стек
 React 19.2 + Vite 7.2
@@ -65,4 +70,18 @@ Neprikosnovenna/
 └── docker-compose.dev.yml
 ```
 
+---
 
+## CI / CD
+
+### PROD
+
+```bash
+docker-compose -f .\docker-compose.prod.yml up --build -d
+```
+
+### DEV
+
+```bash
+docker compose -f .\docker-compose.dev.yml up --build
+```

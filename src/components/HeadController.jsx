@@ -12,7 +12,7 @@ function HeadController() {
     const location = useLocation();
     const currentRoute = routes.find(route => route.path === location.pathname);
 
-    const title = currentRoute?.title || 'Palkh';
+    const title = currentRoute?.title || '';
     const description = currentRoute?.description || '';
     const keywords = currentRoute?.keywords || '';
     const icon = currentRoute?.icon || null;
