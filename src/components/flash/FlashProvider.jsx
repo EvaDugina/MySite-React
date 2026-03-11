@@ -28,11 +28,12 @@ const FlashProvider = forwardRef((props, ref) => {
 
     const generateFlashQueue = (flashRef) => [
         flashRef,
-        flashRef,
         flashPortraitNegativeRef,
         flashRef,
         flashPortraitNegativeRef,
         flashRef,
+        flashNegativeRef,
+        flashRef
     ];
 
     const flashes = useCallback(async (flashType = null) => {

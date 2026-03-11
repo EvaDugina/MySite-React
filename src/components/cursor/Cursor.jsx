@@ -48,6 +48,10 @@ const Cursor = forwardRef((props, ref) => {
         handleLeftClickUpRef,
     );
 
+    const getPosition = useCallback(() => {
+        return {...position}
+    }, [position])
+
     const handleLeftClickDown = useCallback(() => {
         changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
         settings.handleLeftClickDown?.(currentZoneDataRef.current.elementId);
@@ -70,6 +74,7 @@ const Cursor = forwardRef((props, ref) => {
         enable: enableCursor,
         stopVideo: stopCursor,
         start: startCursor,
+        getPosition: getPosition
     }));
 
     const className = [

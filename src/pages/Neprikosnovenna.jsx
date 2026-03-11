@@ -6,6 +6,10 @@ import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
+import CursorClickTracker from "../components/cursor/CursorClickTracker.jsx";
+import useSoundEffect from "../hooks/useSoundEffect.js";
+import {FlashType} from "../components/flash/FlashSettings.js";
+import FlashProvider from "../components/flash/FlashProvider.jsx";
 
 const Zone = {
     NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
@@ -13,7 +17,20 @@ const Zone = {
 
 const Neprikosnovenna = () => {
     const cursorRef = useRef(null);
+    const articleRef = useRef(null);
+    const cursorTrackerRef = useRef(null);
     const buttonRef = useRef(null);
+    const flashProviderRef = useRef(null);
+
+    //
+    // AUDIO CONTROL
+    //
+
+    const {playAudio} = useSoundEffect(useMemo(() => "/audio/СимуляцияОргазма.mov", []),);
+
+    //
+    // CURSOR CONTROL
+    //
 
     const handleOnButton = () => {
         buttonRef.current.hover();
@@ -40,8 +57,8 @@ const Neprikosnovenna = () => {
                 handleOff: null,
             }, [Zone.PORTRAIT]: {
                 elementId: "Portrait",
-                imgCursor: CursorImages.DEFAULT,
-                imgCursorClicked: CursorImages.DEFAULT,
+                imgCursor: CursorImages.POINTER,
+                imgCursorClicked: CursorImages.POINTER_CLICKED,
                 handleOn: null,
                 handleOff: null,
             }, [Zone.BUTTON]: {
@@ -59,14 +76,29 @@ const Neprikosnovenna = () => {
     }, []);
 
     const handleLeftClickDown = useCallback((currentElementId) => {
+
         if (currentElementId === "BtnNeprikosnovenna") {
+            playAudio();
             buttonRef.current.click();
+            flashProviderRef.current.flashes(FlashType.VZGLAD);
+        } else if (currentElementId === "Portrait") {
+            let cursorPosition = cursorRef.current.getPosition();
+            const articleRect = articleRef.current.getBoundingClientRect();
+            const topValue = articleRef.current.offsetTop;
+            const leftValue = articleRef.current.offsetLeft;
+            let cursorPositionPercents = {
+                x: (cursorPosition.x - leftValue) / articleRect.width * 100,
+                y: (cursorPosition.y - topValue) / articleRect.height * 100,
+            }
+            cursorTrackerRef.current.saveClickPosition(cursorPositionPercents);
         }
     }, []);
 
     const handleLeftClickUp = useCallback((currentElementId) => {
         if (currentElementId === "BtnNeprikosnovenna") {
             buttonRef.current.hover();
+        }  else if (currentElementId === "Portrait") {
+
         }
     }, []);
 
@@ -92,19 +124,25 @@ const Neprikosnovenna = () => {
             <main className={styles.main}>
                 <div className={`${styles.container} z-1`}>
                     <article
-                        className={`${styles["portrait-container-default"]} ${styles.center}`}
+                        ref={articleRef}
+                        className={`${styles["portrait-container-default"]}`}
                     >
-                        <div
-                            className={`${styles["ignore-cursor"]} d-none`}
-                            aria-hidden
-                        />
 
                         <Button
                             ref={buttonRef}
                             id="BtnNeprikosnovenna"
-                            zIndex={3}
+                            zIndex={6}
                             text="неприкосновенна"
                         />
+
+                        <FlashProvider
+                            ref={flashProviderRef}
+                            zIndex={5}
+                        />
+
+                        <CursorClickTracker
+                            ref={cursorTrackerRef}
+                            zIndex={4}/>
 
                         <ImagePortrait zIndex={2}/>
                     </article>

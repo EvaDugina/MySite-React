@@ -6,7 +6,7 @@ services:
             dockerfile: Dockerfile.dev.react
         container_name: react-app
         ports:
-            - "3000:5173" # Локально:3000 → в контейнере:5173
+            - "8080:5173" # Локально:3000 → в контейнере:5173
         volumes:
             - ./src:/app/src
             - ./public:/app/public

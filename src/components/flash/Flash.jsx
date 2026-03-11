@@ -32,13 +32,12 @@ const Flash = forwardRef((props, ref) => {
         .join(" ");
 
     if (type === FlashType.NEGATIVE || type === FlashType.PORTRAIT_NEGATIVE) {
-        const position = type === FlashType.NEGATIVE ? "fixed" : "absolute";
         const blendMode = type === FlashType.NEGATIVE ? styles["flash__container--blend-color-dodge"] : styles["flash__container--blend-exclusion"];
         const style = type === FlashType.NEGATIVE ? styles["flash__negative"] : styles["flash__portrait-negative"];
+        const containerStyle = type === FlashType.NEGATIVE ? styles["flash__container--negative"] : "";
         return (<div
                 id={`FlashContainer${type}`}
-                className={`${containerClass} ${blendMode} not-allowed`}
-                style={{position: position}}
+                className={`${containerClass} ${blendMode} ${containerStyle} not-allowed`}
             >
                 <div
                     id={`Flash${type}`}

@@ -8,6 +8,15 @@
     mix-blend-mode: normal;
 }
 
+.flash__container--negative {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+}
+
 .flash__container--hidden {
     display: none;
 }

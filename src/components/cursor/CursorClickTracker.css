@@ -1,0 +1,85 @@
+.cursor-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.cursor-print {
+    opacity: 1;
+    background-image: url("public/images/cursors/pointer.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    animation-name: cursorBlink;
+    animation-duration: 400ms;
+    animation-delay: 0ms;
+    animation-timing-function: steps(1, end);
+    animation-iteration-count: infinite;
+}
+
+/* Классы для разных скоростей анимации */
+.cursor-speed-slow {
+    animation-duration: 800ms;
+}
+
+.cursor-speed-normal {
+    animation-duration: 400ms;
+}
+
+.cursor-speed-fast {
+    animation-duration: 200ms;
+}
+
+/* Классы для разных задержек */
+.cursor-delay-0 { animation-delay: 0ms; }
+.cursor-delay-1 { animation-delay: 50ms; }
+.cursor-delay-2 { animation-delay: 100ms; }
+.cursor-delay-3 { animation-delay: 150ms; }
+.cursor-delay-4 { animation-delay: 200ms; }
+.cursor-delay-5 { animation-delay: 250ms; }
+.cursor-delay-6 { animation-delay: 300ms; }
+.cursor-delay-7 { animation-delay: 350ms; }
+.cursor-delay-8 { animation-delay: 400ms; }
+.cursor-delay-9 { animation-delay: 450ms; }
+
+.cursor-skip {
+    animation-name: none;
+}
+
+@keyframes cursorBlink {
+    0%, 49.999% {
+        background-image: url("public/images/cursors/pointer_clicked.png");
+    }
+    50%, 100% {
+        background-image: url("public/images/cursors/pointer.png");
+    }
+}
+
+/* Оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+    .cursor-print {
+        will-change: transform;
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    /* Замедляем все анимации на мобильных */
+    .cursor-speed-fast {
+        animation-duration: 300ms;
+    }
+    
+    .cursor-speed-normal {
+        animation-duration: 600ms;
+    }
+    
+    .cursor-speed-slow {
+        animation-duration: 1200ms;
+    }
+}
+
+/* GPU ускорение для десктопа */
+@media (min-width: 769px) {
+    .cursor-print {
+        transform: translateZ(0);
+        will-change: transform, opacity;
+    }
+}
