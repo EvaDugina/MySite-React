@@ -1,15 +1,16 @@
 import "./Neprikosnovenna.css";
 import styles from "./Neprikosnovenna.module.scss";
-import React, {useCallback, useEffect, useMemo, useRef} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {createCursorSettings, createCursorZoneSettings, CursorImages,} from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import Button from "../components/button/Button.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
-import CursorClickTracker from "../components/cursor/CursorClickTracker.jsx";
+// import CursorClickTracker from "../components/cursor/CursorClickTracker.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
 import {FlashType} from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
+import EnhancedCursorTracker from "../components/cursor/EnhancedCursorTracker.jsx";
 
 const Zone = {
     NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
@@ -21,6 +22,8 @@ const Neprikosnovenna = () => {
     const cursorTrackerRef = useRef(null);
     const buttonRef = useRef(null);
     const flashProviderRef = useRef(null);
+
+    const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
 
     //
     // AUDIO CONTROL
@@ -128,6 +131,8 @@ const Neprikosnovenna = () => {
                         className={`${styles["portrait-container-default"]}`}
                     >
 
+                        <ImagePortrait zIndex={2} setIsLoadedCallback={setIsPortraitLoaded}/>
+
                         <Button
                             ref={buttonRef}
                             id="BtnNeprikosnovenna"
@@ -140,11 +145,7 @@ const Neprikosnovenna = () => {
                             zIndex={5}
                         />
 
-                        <CursorClickTracker
-                            ref={cursorTrackerRef}
-                            zIndex={4}/>
-
-                        <ImagePortrait zIndex={2}/>
+                        {isPortraitLoaded && <EnhancedCursorTracker ref={cursorTrackerRef} zIndex={4}/>}
                     </article>
                 </div>
             </main>

@@ -1,5 +1,5 @@
 import styles from "./Portrait.module.scss";
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {ImagePortraitType, StaticData} from "./ImagePortraitSettings.js";
 
 /**
@@ -7,11 +7,19 @@ import {ImagePortraitType, StaticData} from "./ImagePortraitSettings.js";
  * @param {Object} props
  * @param {number} [props.zIndex]
  */
-const ImagePortrait = ({type = ImagePortraitType.DEFAULT, zIndex}) => {
+const ImagePortrait = (props) => {
 
+    const {type = ImagePortraitType.DEFAULT, zIndex, setIsLoadedCallback} = props
+
+    const imageRef = useRef(null)
     const imagePortraitSrc = StaticData[type].src;
 
+    useEffect(() => {
+        setIsLoadedCallback(true)
+    }, [imageRef.current]);
+
     return (<img
+        ref={imageRef}
         id="Portrait"
         className={`${styles.portrait} ${styles["portrait--image"]} not-allowed z-${zIndex}`}
         src={imagePortraitSrc}
