@@ -566,13 +566,14 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       className="fingerprint-container"
       style={{
         zIndex,
-        opacity: isVisible ? 1 : 0,
-        transition: `opacity ${FADE_IN_DURATION}ms ease-in`,
       }}
     >
       <canvas
         ref={webglCanvasRef}
-        style={{ opacity: CANVAS_OPACITY }}
+        style={{
+          opacity: isVisible ? CANVAS_OPACITY : 0,
+          transition: `opacity ${FADE_IN_DURATION}ms ease-in`,
+        }}
         aria-hidden
       />
       <canvas ref={sessionCanvasRef} aria-hidden />
