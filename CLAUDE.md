@@ -29,9 +29,17 @@ docker compose -f docker-compose.dev.yml up --build        # Development
 
 No test framework is configured.
 
+### Backend (Fingerprints API)
+
+```bash
+cd server && npm install && npm run dev   # Express + SQLite on :3001
+```
+
+Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /api/fingerprints`. Stack: Express 5 + better-sqlite3. Vite proxies `/api` to backend.
+
 ## Architecture
 
-**Stack:** React 19.2 + Vite 7.2 + react-router-dom 7.13, SCSS/CSS Modules, Docker + Nginx
+**Stack:** React 19.2 + Vite 7.2 + react-router-dom 7.13, SCSS/CSS Modules, Express 5 + SQLite (backend), Docker + Nginx
 
 **Entry flow:** `index.html` → `src/index.jsx` → `App.jsx` → `AppRouter.jsx` → lazy-loaded pages
 
@@ -46,8 +54,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 - **useCursorMovePhysics** — spring physics engine (stiffness, mass, damping, maxSpeed)
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
 - **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON) with cursor icon/behavior changes
-- **CursorClickTracker** — records click positions on portrait
-- **EnhancedCursorTracker / WebGLCursorTracker** — WebGL-enhanced overlay with fallback detection
+- **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
 
 ### Imperative Component Pattern
 
@@ -57,6 +64,7 @@ Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
 - `PortraitProvider.ref` → `.playVideo()`, `.showVideo()`, `.scrollToEndVideo()`
 - `FlashProvider.ref` → `.flashes(type)` (async flash sequences)
+- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()`
 
 Pages orchestrate complex interaction sequences by calling these imperatively.
 

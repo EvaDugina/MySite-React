@@ -13,6 +13,7 @@
 React 19.2 + Vite 7.2
 react-router-dom 7.13 (SPA routing)
 SCSS/CSS Modules (стилизация)
+Express 5 + better-sqlite3 (Fingerprints API backend)
 Docker + Nginx (production deployment)
 
 ### Архитектурные особенности
@@ -21,6 +22,7 @@ SPA с клиентским роутингом
 Кастомный курсор с физикой движения (spring physics)
 Компонентная архитектура с forwardRef для императивного управления
 Зонная система для курсора (определение элементов под курсором)
+Shared DB для отпечатков курсора (Express + SQLite API, общая для всех пользователей)
 
 ### Структура
 
@@ -45,6 +47,11 @@ Neprikosnovenna/
 │   ├── images/                 # Изображения (~6.5 MB)
 │   ├── videos/                 # Видео (~3.2 MB)
 │   └── audio/                  # Аудио (~20 KB)
+├── server/
+│   ├── index.js                # Express API сервер (3 эндпоинта)
+│   ├── db.js                   # SQLite слой данных (better-sqlite3)
+│   ├── package.json            # Зависимости backend
+│   └── Dockerfile              # Контейнеризация API
 ├── for-docker/
 │   └── nginx.conf              # Конфигурация Nginx
 ├── Dockerfile.prod
