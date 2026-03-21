@@ -10,7 +10,7 @@ import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
 import {FlashType} from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
-import EnhancedCursorTracker from "../components/cursor/EnhancedCursorTracker.jsx";
+import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
 
 const Zone = {
     NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,
@@ -145,7 +145,7 @@ const Neprikosnovenna = () => {
                             zIndex={5}
                         />
 
-                        {isPortraitLoaded && <EnhancedCursorTracker ref={cursorTrackerRef} zIndex={4}/>}
+                        {isPortraitLoaded && <CursorFingerprintTracker ref={cursorTrackerRef} zIndex={4}/>}
                     </article>
                 </div>
             </main>
