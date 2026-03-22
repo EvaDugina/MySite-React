@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { useFingerprintAPI } from "./hooks/useFingerprintAPI.js";
+import { useFingerprintAnimation } from "./hooks/useFingerprintAnimation.js";
 import { FingerprintConfig } from "./CursorFingerprintTrackerSettings.js";
 import "./CursorFingerprintTracker.css";
 
@@ -14,7 +15,7 @@ import "./CursorFingerprintTracker.css";
  * CursorFingerprintTracker — двухслойный рендер отпечатков.
  *
  * Layer 1 (WebGL): все отпечатки из БД, render-once, instanced draw.
- * Layer 2 (2D Canvas): отпечатки текущей сессии (статичные, без анимации).
+ * Layer 2 (2D Canvas): отпечатки текущей сессии с анимацией кликов.
  */
 const CursorFingerprintTracker = forwardRef((props, ref) => {
   const { zIndex } = props;
@@ -27,11 +28,15 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     HOTSPOT_X,
     HOTSPOT_Y,
     IMAGE_URL,
+    IMAGE_CLICKED_URL,
   } = FingerprintConfig;
 
   // API hook
   const { dbFingerprints, isReady, addFingerprint, clearAll } =
     useFingerprintAPI();
+
+  // Animation hook
+  const { startAnimation, stopAnimation } = useFingerprintAnimation();
 
   // Refs
   const webglCanvasRef = useRef(null);
@@ -47,41 +52,43 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   const webglRenderRef = useRef(null);
   const dbFingerprintsRef = useRef([]);
   const lastSpawnTimeRef = useRef(0);
-  const instanceBufferDataRef = useRef(null);
-  const webglImageRef = useRef(null);
 
   // Fade-in
   const [isVisible, setIsVisible] = useState(false);
 
-  // Layer 2 state (refs-only, без React state)
+  // Layer 2 state
   const sessionClicksRef = useRef([]);
+  const [sessionClicks, setSessionClicks] = useState([]);
   const pointerImgRef = useRef(null);
-  const pointerImgLoadedRef = useRef(false);
+  const pointerClickedImgRef = useRef(null);
+  const imagesLoadedRef = useRef(0);
   const sessionCtxRef = useRef(null);
 
-  // Sync dbFingerprints ref
+  // Sync refs
   useEffect(() => {
     dbFingerprintsRef.current = dbFingerprints;
   }, [dbFingerprints]);
 
-  // ===== LAYER 2: Preload image =====
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      pointerImgLoadedRef.current = true;
-    };
-    img.onerror = () => {
-      console.error("CursorFingerprintTracker: Failed to load pointer image:", IMAGE_URL);
-    };
-    img.src = IMAGE_URL;
-    pointerImgRef.current = img;
+    sessionClicksRef.current = sessionClicks;
+  }, [sessionClicks]);
 
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-      img.src = "";
+  // ===== LAYER 2: Preload images =====
+  useEffect(() => {
+    const onLoad = () => {
+      imagesLoadedRef.current++;
     };
-  }, [IMAGE_URL]);
+
+    const img1 = new Image();
+    img1.src = IMAGE_URL;
+    img1.onload = onLoad;
+    pointerImgRef.current = img1;
+
+    const img2 = new Image();
+    img2.src = IMAGE_CLICKED_URL;
+    img2.onload = onLoad;
+    pointerClickedImgRef.current = img2;
+  }, [IMAGE_URL, IMAGE_CLICKED_URL]);
 
   // ===== FADE-IN =====
   useEffect(() => {
@@ -147,10 +154,14 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       }
     };
 
+    // Шейдеры — идентичны WebGLCursorTracker
     // Hotspot shift: сдвигаем квад так, чтобы горячая точка курсора
     // (HOTSPOT_X, HOTSPOT_Y от верхнего-левого угла) совпала с a_offset.
-    const hotspotShiftX = -(-1 + HOTSPOT_X * 2);
-    const hotspotShiftY = -(1 - HOTSPOT_Y * 2);
+    // Квад идёт от -1 до 1, hotspot в этих координатах:
+    // hx = -1 + HOTSPOT_X * 2, hy = 1 - HOTSPOT_Y * 2
+    // Сдвиг = -hotspot: (-hx, -hy)
+    const hotspotShiftX = -(-1 + HOTSPOT_X * 2); // = 1 - HOTSPOT_X * 2 = 0.47
+    const hotspotShiftY = -(1 - HOTSPOT_Y * 2); // = -1 + HOTSPOT_Y * 2 = -0.82
 
     const vertexShaderSource = isWebGL2
       ? `#version 300 es
@@ -243,8 +254,8 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     }
 
     const quadVertices = new Float32Array([
-      -1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0,
-      -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 0.0,
+      -1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, -1.0,
+      1.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 0.0,
     ]);
 
     const quadBuffer = gl.createBuffer();
@@ -294,6 +305,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     textureRef.current = texture;
 
     const image = new Image();
+    image.src = IMAGE_URL;
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
       gl.texImage2D(
@@ -311,11 +323,6 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       textureLoadedRef.current = true;
       webglRenderRef.current?.();
     };
-    image.onerror = () => {
-      console.error("CursorFingerprintTracker: Failed to load texture:", IMAGE_URL);
-    };
-    image.src = IMAGE_URL;
-    webglImageRef.current = image;
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -341,10 +348,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       const sizeNdcX = SPRITE_SIZE / canvasWidth;
       const sizeNdcY = SPRITE_SIZE / canvasHeight;
 
-      if (!instanceBufferDataRef.current || instanceBufferDataRef.current.length < instanceCount * 2) {
-        instanceBufferDataRef.current = new Float32Array(instanceCount * 2);
-      }
-      const instanceData = instanceBufferDataRef.current;
+      const instanceData = new Float32Array(instanceCount * 2);
       for (let i = 0; i < instanceCount; i++) {
         const fp = data[i];
         instanceData[i * 2] = (fp.x / 100) * 2 - 1;
@@ -404,11 +408,6 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      if (webglImageRef.current) {
-        webglImageRef.current.onload = null;
-        webglImageRef.current.onerror = null;
-        webglImageRef.current.src = "";
-      }
       if (gl) {
         if (programRef.current) gl.deleteProgram(programRef.current);
         if (textureRef.current) gl.deleteTexture(textureRef.current);
@@ -421,6 +420,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   }, [SPRITE_SIZE, ALPHA, IMAGE_URL]);
 
   // Layer 1: render при готовности данных + текстуры
+  // Задержка 1с для отладки (гарантирует что текстура и данные загружены)
   useEffect(() => {
     if (!isReady || dbFingerprints.length === 0) return;
 
@@ -462,18 +462,18 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
     return () => {
       window.removeEventListener("resize", resizeSessionCanvas);
-      sessionCtxRef.current = null;
     };
   }, []);
 
-  // Полная перерисовка Layer 2 (вызывается только при resize)
+  // Перерисовка Layer 2
   const redrawSession = useCallback(() => {
     const ctx = sessionCtxRef.current;
     const canvas = sessionCanvasRef.current;
     if (!ctx || !canvas) return;
 
     const pointerImg = pointerImgRef.current;
-    if (!pointerImg || !pointerImgLoadedRef.current) return;
+    const clickedImg = pointerClickedImgRef.current;
+    if (!pointerImg || imagesLoadedRef.current < 2) return;
 
     const displayWidth = canvas.clientWidth;
     const displayHeight = canvas.clientHeight;
@@ -484,58 +484,54 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     const clicks = sessionClicksRef.current;
     for (let i = 0; i < clicks.length; i++) {
       const click = clicks[i];
+      const img = click.isClicked ? clickedImg : pointerImg;
       const px = (click.x / 100) * displayWidth - SPRITE_SIZE * HOTSPOT_X;
       const py = (click.y / 100) * displayHeight - SPRITE_SIZE * HOTSPOT_Y;
-      ctx.drawImage(pointerImg, px, py, SPRITE_SIZE, SPRITE_SIZE);
+      ctx.drawImage(img, px, py, SPRITE_SIZE, SPRITE_SIZE);
     }
-  }, []);
+  }, [ALPHA, SPRITE_SIZE, HOTSPOT_X, HOTSPOT_Y]);
 
-  // Рисует один отпечаток (при добавлении нового клика)
-  const drawSingleFingerprint = useCallback(
-    (click) => {
-      const ctx = sessionCtxRef.current;
-      const canvas = sessionCanvasRef.current;
-      const pointerImg = pointerImgRef.current;
-      if (!ctx || !canvas || !pointerImg || !pointerImgLoadedRef.current)
-        return;
+  // Перерисовка при изменении сессионных кликов
+  useEffect(() => {
+    redrawSession();
+  }, [sessionClicks, redrawSession]);
 
-      const displayWidth = canvas.clientWidth;
-      const displayHeight = canvas.clientHeight;
+  // ===== LAYER 2: Animation =====
+  useEffect(() => {
+    const getCount = () => sessionClicksRef.current.length;
 
-      ctx.globalAlpha = ALPHA;
-      const px = (click.x / 100) * displayWidth - SPRITE_SIZE * HOTSPOT_X;
-      const py = (click.y / 100) * displayHeight - SPRITE_SIZE * HOTSPOT_Y;
-      ctx.drawImage(pointerImg, px, py, SPRITE_SIZE, SPRITE_SIZE);
-    },
-    [],
-  );
+    const setClickState = (index, isClicked) => {
+      setSessionClicks((prev) => {
+        if (index >= prev.length) return prev;
+        const updated = [...prev];
+        updated[index] = { ...updated[index], isClicked };
+        return updated;
+      });
+    };
+
+    startAnimation(getCount, setClickState);
+
+    return () => {
+      stopAnimation();
+    };
+  }, [startAnimation, stopAnimation]);
 
   // ===== Imperative API =====
   const saveClickPosition = useCallback(
     (cursorPosition) => {
-      if (
-        !cursorPosition ||
-        typeof cursorPosition.x !== "number" ||
-        typeof cursorPosition.y !== "number"
-      )
-        return;
-
       const now = Date.now();
       if (now - lastSpawnTimeRef.current < THROTTLE_MS) return;
       lastSpawnTimeRef.current = now;
 
-      const x = Math.max(0, Math.min(100, cursorPosition.x));
-      const y = Math.max(0, Math.min(100, cursorPosition.y));
-      const click = { x, y };
+      const { x, y } = cursorPosition;
 
-      // Layer 2: добавить в ref + нарисовать только новый (без полного redraw)
-      sessionClicksRef.current.push(click);
-      drawSingleFingerprint(click);
+      // Layer 2: добавить в сессию
+      setSessionClicks((prev) => [...prev, { x, y, isClicked: false }]);
 
       // API: сохранить в БД (batched)
       addFingerprint(x, y);
     },
-    [addFingerprint, THROTTLE_MS, drawSingleFingerprint],
+    [addFingerprint, THROTTLE_MS],
   );
 
   const clearAllFingerprints = useCallback(async () => {
@@ -543,7 +539,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     await clearAll();
 
     // Очистить сессию
-    sessionClicksRef.current = [];
+    setSessionClicks([]);
 
     // Очистить Layer 1 (WebGL canvas)
     const gl = glRef.current;
