@@ -28,6 +28,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     CANVAS_OPACITY,
     THROTTLE_MS,
     FADE_IN_DURATION,
+    FADE_IN_EASING,
     HOTSPOT_X,
     HOTSPOT_Y,
     IMAGE_URL,
@@ -588,7 +589,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
         ref={webglCanvasRef}
         style={{
           opacity: isVisible ? CANVAS_OPACITY : 0,
-          transition: `opacity ${FADE_IN_DURATION}ms ease-in`,
+          transition: `opacity ${FADE_IN_DURATION}ms ${FADE_IN_EASING}`,
         }}
         aria-hidden
       />
