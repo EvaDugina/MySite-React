@@ -13,6 +13,7 @@ src/components/cursor/
     CursorFingerprintTrackerSettings.js   # Конфигурация (константы)
     hooks/
         useFingerprintAPI.js              # Fetch-обёртки для REST API
+        useFingerprintAnimation.js        # Анимация кликов Layer 2 (периодический flicker)
 ```
 
 ---
@@ -55,13 +56,13 @@ void main() {
 - Входные: проценты [0..100] относительно контейнера
 - Преобразование в NDC: `x_ndc = (x% / 100) * 2 - 1`, `y_ndc = -((y% / 100) * 2 - 1)`
 
-### Layer 2 — 2D Canvas (динамический, статичный)
+### Layer 2 — 2D Canvas (динамический, с анимацией кликов)
 
-Отрисовывает **отпечатки текущей сессии** пользователя. Без анимации.
+Отрисовывает **отпечатки текущей сессии** пользователя с анимацией.
 
-- **Рендер:** `drawSingleFingerprint()` — рисует один отпечаток при добавлении (без полного redraw)
-- **Полный redraw:** `redrawSession()` вызывается только при resize
-- **Данные:** refs-only (`sessionClicksRef`), без React state — нет re-renders
+- **Рендер:** полный `redrawSession()` при каждом изменении `sessionClicks` (useState)
+- **Анимация:** `useFingerprintAnimation` — периодическая смена спрайта на POINTER_CLICKED (150ms), затем возврат
+- **Данные:** `useState` для `sessionClicks` (с `isClicked` флагом), синхронизация в ref
 - **DPR:** canvas масштабируется через `ctx.scale(dpr, dpr)`
 - **Alpha:** `ctx.globalAlpha = ALPHA`
 - **При перезагрузке:** очищается (данные уже в БД → появятся на Layer 1)
@@ -73,7 +74,7 @@ void main() {
 Основной курсор (`Cursor.jsx`) использует `transform: translate(-26.5%, -9%)` для совмещения горячей точки с позицией мыши. Отпечатки используют те же значения:
 
 - **Layer 1 (WebGL):** uniform `u_hotspotShift` сдвигает квад в вершинном шейдере
-- **Layer 2 (2D Canvas):** `px = ... - SPRITE_SIZE * HOTSPOT_X`, `py = ... - SPRITE_SIZE * HOTSPOT_Y`
+- **Layer 2 (2D Canvas):** `px = ... - spriteSize * HOTSPOT_X`, `py = ... - spriteSize * HOTSPOT_Y` (где `spriteSize = spriteSizePxRef.current`)
 
 Значения вынесены в Settings: `HOTSPOT_X: 0.265`, `HOTSPOT_Y: 0.09`
 
@@ -83,7 +84,7 @@ void main() {
 
 | Константа | Значение | Описание |
 |-----------|----------|----------|
-| SPRITE_SIZE | 30 | Размер отпечатка в CSS px |
+| SPRITE_REM | 1.9 | Размер отпечатка в rem (совпадает с CSS-размером курсора, пересчитывается в px динамически) |
 | ALPHA | 0.05 | Прозрачность каждого отпечатка |
 | CANVAS_OPACITY | 1 | Общая прозрачность WebGL canvas (независимо от ALPHA) |
 | THROTTLE_MS | 150 | Минимальный интервал между кликами |
@@ -160,7 +161,8 @@ cursorTrackerRef.saveClickPosition({ x%, y% })
 | GPU memory (10k) | ~80KB instance buffer + текстура |
 | API read (10k) | ~5ms SQLite + network |
 | API write | batch POST, debounced 500ms |
-| Добавление клика | 1 drawImage (без полного redraw) |
+| Добавление клика | setState + полный redraw Layer 2 |
+| Размер спрайта | динамический (1.9rem → px через getComputedStyle) |
 
 ### Оценка производительности
 
@@ -183,7 +185,7 @@ cursorTrackerRef.saveClickPosition({ x%, y% })
 
 - **Instance buffer:** 8 байт/отпечаток (2 × float32). 10k = 80KB, 100k = 800KB.
 - **JS массив dbFingerprints:** ~40 байт/объект ({x, y}). 10k = ~400KB.
-- **Текстуры:** 2 изображения (pointer.png, pointer_clicked.png) ~30x30px = < 10KB GPU.
+- **Текстуры:** 2 изображения (pointer.png, pointer_clicked.png), размер динамический (1.9rem) = < 10KB GPU.
 - **Session clicks (Layer 2):** ~50 байт/объект ({x, y, isClicked}). 100 кликов = ~5KB.
 - **Суммарно для 10k:** ~600KB (JS + GPU). Для 100k: ~5MB.
 
@@ -193,12 +195,12 @@ cursorTrackerRef.saveClickPosition({ x%, y% })
 - **POST batch:** debounce 500ms. При 6 кликах/сек накапливает ~3 клика → ~100 байт JSON. Минимальная нагрузка.
 - **Нет WebSocket/polling:** данные загружаются один раз, новые отпечатки других пользователей видны только при перезагрузке.
 
-#### Layer 2 — добавление клика
+#### Layer 2 — добавление клика и анимация
 
-- **Инкрементальный рендер:** при добавлении рисуется только 1 новый отпечаток (`drawSingleFingerprint`), без полного redraw.
-- **Refs-only:** данные хранятся в `sessionClicksRef`, без React state → 0 re-renders.
-- **Стоимость добавления:** 1 `push` + 1 `drawImage` ≈ **< 0.1ms** независимо от количества существующих отпечатков.
-- **Полный redraw** (`redrawSession`) вызывается только при resize окна.
+- **Полный redraw** при каждом изменении `sessionClicks` (useState) — включая анимацию (смена `isClicked`).
+- **Анимация:** `useFingerprintAnimation` — каждый тик (~800ms) итерирует все отпечатки, с 30% вероятностью пропуска и случайным отклонением 0-800ms.
+- **Стоимость redraw:** на 100 отпечатков < 1ms, на 1000 — ~3-5ms.
+- **Размер спрайта:** динамический, `SPRITE_REM × root font-size`, пересчитывается при resize.
 
 #### SQLite (Server)
 
@@ -243,7 +245,7 @@ Safari на iOS может принудительно потерять WebGL con
 
 ### GPU fill rate при 10k спрайтов
 
-Каждый спрайт при DPR=3 занимает 90x90 физических пикселей. 10k спрайтов = ~81M пикселей fill rate с alpha blending. На iPhone X (A11 GPU, ~25 Gpix/s) это ~5-8 ms на один render. Render-once, поэтому это разовая стоимость, но при resize выполняется повторно.
+Каждый спрайт при DPR=3 занимает ~75x75–100x100 физических пикселей (зависит от root font-size и SPRITE_REM: 1.9). 10k спрайтов = ~56–100M пикселей fill rate с alpha blending. На iPhone X (A11 GPU, ~25 Gpix/s) это ~5-8 ms на один render. Render-once, поэтому это разовая стоимость, но при resize выполняется повторно.
 
 ### Оценка времени первого render (10k отпечатков)
 
