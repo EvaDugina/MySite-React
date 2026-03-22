@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Neprikosnovenna** (Неприкосновенна) — an interactive web art installation exploring the relationship between the touchable and the sacred. Built as a React 19 SPA with custom physics-based cursor, WebGL effects, and imperative component orchestration.
 
-Language in code/docs/UI is primarily **Russian**.
+Language in code/docs/UI is primarily **Russian**. Пиши только на русском.
 
 ## Commands
 
@@ -44,6 +44,7 @@ Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /a
 **Entry flow:** `index.html` → `src/index.jsx` → `App.jsx` → `AppRouter.jsx` → lazy-loaded pages
 
 **Two pages** defined in `AppRouter.config.js`:
+
 - `/neprikosnovenna` — static portrait with click tracking, audio, flash effects
 - `/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood` — video transformation, persistent "bloody" state via localStorage
 
@@ -59,6 +60,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 ### Imperative Component Pattern
 
 Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
+
 - `Background.ref` → `.show()`, `.hide()`, `.changeType()`
 - `Button.ref` → `.hover()`, `.click()`, `.disable()`
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
