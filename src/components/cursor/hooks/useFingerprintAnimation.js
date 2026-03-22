@@ -1,8 +1,8 @@
 import { useRef, useCallback } from "react";
 
-const BASE_INTERVAL = 1000;
+const BASE_INTERVAL = 800;
 const CLICK_DURATION = 150;
-const MAX_DEVIATION = 1000;
+const MAX_DEVIATION = 800;
 const SKIP_PROBABILITY = 0.3;
 
 /**

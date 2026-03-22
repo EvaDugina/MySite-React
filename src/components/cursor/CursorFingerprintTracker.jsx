@@ -11,6 +11,9 @@ import { useFingerprintAnimation } from "./hooks/useFingerprintAnimation.js";
 import { FingerprintConfig } from "./CursorFingerprintTrackerSettings.js";
 import "./CursorFingerprintTracker.css";
 
+const getSpriteSizePx = (spriteRem) =>
+  spriteRem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
 /**
  * CursorFingerprintTracker — двухслойный рендер отпечатков.
  *
@@ -20,7 +23,7 @@ import "./CursorFingerprintTracker.css";
 const CursorFingerprintTracker = forwardRef((props, ref) => {
   const { zIndex } = props;
   const {
-    SPRITE_SIZE,
+    SPRITE_REM,
     ALPHA,
     CANVAS_OPACITY,
     THROTTLE_MS,
@@ -30,6 +33,9 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     IMAGE_URL,
     IMAGE_CLICKED_URL,
   } = FingerprintConfig;
+
+  // Динамический размер спрайта: rem → px (совпадает с CSS-размером курсора)
+  const spriteSizePxRef = useRef(null);
 
   // API hook
   const { dbFingerprints, isReady, addFingerprint, clearAll } =
@@ -146,12 +152,16 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       const width = Math.floor(displayWidth * dpr);
       const height = Math.floor(displayHeight * dpr);
 
+      // Пересчитать размер спрайта (rem мог измениться при пересечении медиа-запроса)
+      spriteSizePxRef.current = getSpriteSizePx(SPRITE_REM);
+
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
         gl.viewport(0, 0, width, height);
-        webglRenderRef.current?.();
       }
+      // Перерендер нужен всегда: даже если canvas не изменился, font-size мог
+      webglRenderRef.current?.();
     };
 
     // Шейдеры — идентичны WebGLCursorTracker
@@ -345,8 +355,9 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
       const canvasWidth = gl.canvas.width;
       const canvasHeight = gl.canvas.height;
-      const sizeNdcX = SPRITE_SIZE / canvasWidth;
-      const sizeNdcY = SPRITE_SIZE / canvasHeight;
+      const spriteSize = spriteSizePxRef.current;
+      const sizeNdcX = spriteSize / canvasWidth;
+      const sizeNdcY = spriteSize / canvasHeight;
 
       const instanceData = new Float32Array(instanceCount * 2);
       for (let i = 0; i < instanceCount; i++) {
@@ -417,7 +428,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
         if (vaoRef.current && isWebGL2) gl.deleteVertexArray(vaoRef.current);
       }
     };
-  }, [SPRITE_SIZE, ALPHA, IMAGE_URL]);
+  }, [SPRITE_REM, ALPHA, IMAGE_URL]);
 
   // Layer 1: render при готовности данных + текстуры
   // Задержка 1с для отладки (гарантирует что текстура и данные загружены)
@@ -444,14 +455,18 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       const width = Math.floor(canvas.clientWidth * dpr);
       const height = Math.floor(canvas.clientHeight * dpr);
 
+      // Пересчитать размер спрайта (rem мог измениться)
+      spriteSizePxRef.current = getSpriteSizePx(SPRITE_REM);
+
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx.scale(dpr, dpr);
         sessionCtxRef.current = ctx;
-        redrawSession();
       }
+      // Перерисовать всегда: font-size мог измениться без изменения canvas
+      redrawSession();
     };
 
     const ctx = canvas.getContext("2d");
@@ -477,6 +492,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
     const displayWidth = canvas.clientWidth;
     const displayHeight = canvas.clientHeight;
+    const spriteSize = spriteSizePxRef.current;
 
     ctx.clearRect(0, 0, displayWidth, displayHeight);
     ctx.globalAlpha = ALPHA;
@@ -485,11 +501,11 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     for (let i = 0; i < clicks.length; i++) {
       const click = clicks[i];
       const img = click.isClicked ? clickedImg : pointerImg;
-      const px = (click.x / 100) * displayWidth - SPRITE_SIZE * HOTSPOT_X;
-      const py = (click.y / 100) * displayHeight - SPRITE_SIZE * HOTSPOT_Y;
-      ctx.drawImage(img, px, py, SPRITE_SIZE, SPRITE_SIZE);
+      const px = (click.x / 100) * displayWidth - spriteSize * HOTSPOT_X;
+      const py = (click.y / 100) * displayHeight - spriteSize * HOTSPOT_Y;
+      ctx.drawImage(img, px, py, spriteSize, spriteSize);
     }
-  }, [ALPHA, SPRITE_SIZE, HOTSPOT_X, HOTSPOT_Y]);
+  }, [ALPHA, HOTSPOT_X, HOTSPOT_Y]);
 
   // Перерисовка при изменении сессионных кликов
   useEffect(() => {

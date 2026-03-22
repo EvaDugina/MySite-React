@@ -1,7 +1,7 @@
 import { CursorImages } from "./CursorSettings.js";
 
 export const FingerprintConfig = {
-  SPRITE_SIZE: 30,
+  SPRITE_REM: 1.9,
   ALPHA: 0.05,
   CANVAS_OPACITY: 1,
   THROTTLE_MS: 150,
