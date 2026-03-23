@@ -57,7 +57,7 @@ const Neprikosnovenna = () => {
   //
 
   const handleTrackerReady = useCallback((count) => {
-    if (count > 0) {
+    if (count > 20) {
       dbHasFingerprintsRef.current = true;
       fadeInTimerRef.current = setTimeout(() => {
         setIsObezzhiritVisible(true);
@@ -74,8 +74,8 @@ const Neprikosnovenna = () => {
   }, []);
 
   const handleOnButton = () => {
+    // playAudio();
     buttonRef.current.hover();
-    flashProviderRef.current.flashes(FlashType.VZGLAD);
   };
 
   const handleOffButton = () => {
@@ -138,7 +138,6 @@ const Neprikosnovenna = () => {
 
   const handleLeftClickDown = useCallback((currentElementId) => {
     if (currentElementId === "BtnNeprikosnovenna") {
-      playAudio();
       buttonRef.current.click();
     } else if (currentElementId === "BtnObezzhirit") {
       obezzhiritRef.current.click();
@@ -146,6 +145,7 @@ const Neprikosnovenna = () => {
       setIsObezzhiritVisible(false);
       dbHasFingerprintsRef.current = false;
     } else if (currentElementId === "Portrait") {
+      flashProviderRef.current.flashes(FlashType.VZGLAD);
       let cursorPosition = cursorRef.current.getPosition();
       const articleRect = articleRef.current.getBoundingClientRect();
       const topValue = articleRef.current.offsetTop;

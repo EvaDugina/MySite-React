@@ -21,6 +21,7 @@ function getRandomInt(max) {
 const FlashProvider = forwardRef((props, ref) => {
   const { zIndex, onFlashStart, onFlashEnd } = props;
 
+  const isFlashPlayingRef = useRef(false);
   const flashFrontRef = useRef(null);
   const flashVzgladRef = useRef(null);
   const flashPortraitNegativeRef = useRef(null);
@@ -36,6 +37,7 @@ const FlashProvider = forwardRef((props, ref) => {
   ];
 
   const flashes = useCallback(async (flashType = null) => {
+    if (isFlashPlayingRef.current) return;
     const flash = async (flashQueue) => {
       if (flashQueue.length <= 0) return;
 
@@ -51,12 +53,14 @@ const FlashProvider = forwardRef((props, ref) => {
         await flash(flashQueue);
       }
     };
+
+    isFlashPlayingRef.current = true;
     if (flashType === null)
       ref = getRandomInt(2) === 0 ? flashFrontRef : flashVzgladRef;
     else if (flashType === FlashType.FRONT) ref = flashFrontRef;
     else ref = flashVzgladRef;
-
     await flash(generateFlashQueue(ref));
+    isFlashPlayingRef.current = false;
   }, []);
 
   useImperativeHandle(ref, () => ({ flashes }));
