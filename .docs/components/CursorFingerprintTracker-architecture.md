@@ -99,7 +99,11 @@ void main() {
 
 ```js
 // Props
-{ zIndex: number }
+{ zIndex: number, onReady: (count: number) => void }
+
+// onReady вызывается когда данные из БД загружены,
+// count — количество отпечатков в БД на момент загрузки.
+// Используется страницей для управления видимостью кнопки «обезжирить».
 
 // Ref API (forwardRef + useImperativeHandle)
 ref.saveClickPosition({ x, y })    // добавить отпечаток (проценты 0-100)
