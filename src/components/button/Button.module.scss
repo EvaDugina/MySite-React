@@ -29,4 +29,12 @@
     left: 50%;
     font-size: var(--font-size-xsm);
   }
+
+  &--obezzhirit {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 29%;
+    left: 49%;
+    font-size: var(--font-size-xsm);
+  }
 }

@@ -21,7 +21,7 @@ const getSpriteSizePx = (spriteRem) =>
  * Layer 2 (2D Canvas): отпечатки текущей сессии с анимацией кликов.
  */
 const CursorFingerprintTracker = forwardRef((props, ref) => {
-  const { zIndex } = props;
+  const { zIndex, onReady } = props;
   const {
     SPRITE_REM,
     ALPHA,
@@ -79,6 +79,10 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   useEffect(() => {
     sessionClicksRef.current = sessionClicks;
   }, [sessionClicks]);
+
+  useEffect(() => {
+    if (isReady && onReady) onReady(dbFingerprints.length);
+  }, [isReady]);
 
   // ===== LAYER 2: Preload images =====
   useEffect(() => {

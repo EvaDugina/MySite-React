@@ -21,7 +21,7 @@ const getModifierClass = (buttonType, stylesMap) => {
  * @param {string} [props.ariaLabel]
  */
 const Button = forwardRef((props, ref) => {
-    const {id, zIndex, text, ariaLabel} = props;
+    const {id, zIndex, text, ariaLabel, variant} = props;
 
     const [buttonType, setButtonType] = useState(ButtonType.DEFAULT);
     const buttonTypeRef = useRef(buttonType);
@@ -58,7 +58,7 @@ const Button = forwardRef((props, ref) => {
     useImperativeHandle(ref, () => ({isDisabled, reset, hover, click, disable}));
 
     const modifierClass = getModifierClass(buttonType, styles);
-    const className = [styles.button, styles["button--neprikosnovenna"], modifierClass, "not-allowed", `z-${zIndex}`,]
+    const className = [styles.button, variant ? styles[`button--${variant}`] : null, modifierClass, "not-allowed", `z-${zIndex}`,]
         .filter(Boolean)
         .join(" ");
 
