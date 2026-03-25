@@ -1,4 +1,4 @@
-import React, {forwardRef, useCallback, useImperativeHandle, useState, memo} from "react";
+import React, {forwardRef, useCallback, useImperativeHandle, useRef, memo} from "react";
 import styles from "./Flash.module.css";
 import {FlashType, StaticData} from "./FlashSettings.js";
 
@@ -7,28 +7,30 @@ import {FlashType, StaticData} from "./FlashSettings.js";
  * @param {Object} props
  * @param {number} [props.type]
  * @param {number} [props.zIndex]
- * @param {number} [props.duration]
  */
 const Flash = forwardRef((props, ref) => {
-    const {type = FlashType.PORTRAIT_NEGATIVE, zIndex, duration} = props;
+    const {type = FlashType.PORTRAIT_NEGATIVE, zIndex} = props;
 
-    const [isHidden, setIsHidden] = useState(true);
-    const [isAnimate, setIsAnimate] = useState(false);
+    const containerRef = useRef(null);
 
-    const flash = useCallback(async () => {
-        setIsHidden(false);
-        setIsAnimate(true);
-
-        await new Promise((resolve) => setTimeout(resolve, duration));
-
-        setIsAnimate(false);
-        setIsHidden(true);
-    }, [duration]);
+    const flash = useCallback(() => {
+        return new Promise((resolve) => {
+            const container = containerRef.current;
+            container.classList.remove(styles["flash__container--animation"]);
+            container.classList.remove(styles["flash__container--hidden"]);
+            void container.offsetHeight;
+            container.classList.add(styles["flash__container--animation"]);
+            container.addEventListener("animationend", () => {
+                container.classList.remove(styles["flash__container--animation"]);
+                container.classList.add(styles["flash__container--hidden"]);
+                resolve();
+            }, { once: true });
+        });
+    }, []);
 
     useImperativeHandle(ref, () => ({flash}));
 
-    const containerClass = [styles.flash__container, isAnimate && styles["flash__container--animation"], isHidden && styles["flash__container--hidden"], "ignore-cursor", `z-${zIndex}`,]
-        .filter(Boolean)
+    const containerClass = [styles.flash__container, styles["flash__container--hidden"], "ignore-cursor", `z-${zIndex}`]
         .join(" ");
 
     if (type === FlashType.NEGATIVE || type === FlashType.PORTRAIT_NEGATIVE) {
@@ -36,6 +38,7 @@ const Flash = forwardRef((props, ref) => {
         const style = type === FlashType.NEGATIVE ? styles["flash__negative"] : styles["flash__portrait-negative"];
         const containerStyle = type === FlashType.NEGATIVE ? styles["flash__container--negative"] : "";
         return (<div
+                ref={containerRef}
                 id={`FlashContainer${type}`}
                 className={`${containerClass} ${blendMode} ${containerStyle} not-allowed`}
             >
@@ -49,6 +52,7 @@ const Flash = forwardRef((props, ref) => {
     const imageModifier = type === FlashType.FRONT ? styles["flash__image--type1"] : type === FlashType.VZGLAD ? styles["flash__image--type-vzglad"] : styles["flash__image--type2"];
 
     return (<div
+            ref={containerRef}
             id={`FlashContainer${type}`}
             className={`${containerClass} not-allowed`}>
             <img

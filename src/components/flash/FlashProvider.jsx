@@ -7,8 +7,6 @@ import React, {
 import Flash from "./Flash.jsx";
 import { FlashType } from "./FlashSettings.js";
 
-const FLASH_DURATION = 150;
-
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
@@ -31,7 +29,6 @@ const FlashProvider = forwardRef((props, ref) => {
     flashRef,
     flashPortraitNegativeRef,
     flashRef,
-    flashPortraitNegativeRef,
     flashRef,
     flashRef,
   ];
@@ -67,30 +64,14 @@ const FlashProvider = forwardRef((props, ref) => {
 
   return (
     <>
-      <Flash
-        ref={flashFrontRef}
-        type={FlashType.FRONT}
-        zIndex={zIndex}
-        duration={FLASH_DURATION}
-      />
-      <Flash
-        ref={flashVzgladRef}
-        type={FlashType.VZGLAD}
-        zIndex={zIndex}
-        duration={FLASH_DURATION}
-      />
+      <Flash ref={flashFrontRef} type={FlashType.FRONT} zIndex={zIndex} />
+      <Flash ref={flashVzgladRef} type={FlashType.VZGLAD} zIndex={zIndex} />
       <Flash
         ref={flashPortraitNegativeRef}
         type={FlashType.PORTRAIT_NEGATIVE}
         zIndex={zIndex}
-        duration={FLASH_DURATION}
       />
-      <Flash
-        ref={flashNegativeRef}
-        type={FlashType.NEGATIVE}
-        zIndex={zIndex}
-        duration={FLASH_DURATION}
-      />
+      <Flash ref={flashNegativeRef} type={FlashType.NEGATIVE} zIndex={zIndex} />
     </>
   );
 });

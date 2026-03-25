@@ -22,7 +22,7 @@
 }
 
 .flash__container--blend-exclusion {
-  mix-blend-mode: exclusion;
+  mix-blend-mode: difference;
 }
 
 .flash__container--blend-color-dodge {
@@ -30,7 +30,7 @@
 }
 
 .flash__container--animation {
-  animation: sharpFlash 200ms cubic-bezier(0.4, 0, 0.6, 1);
+  animation: sharpFlash 200ms cubic-bezier(0.4, 0, 0.9, 1);
 }
 
 @keyframes sharpFlash {
