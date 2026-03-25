@@ -48,9 +48,9 @@ const Neprikosnovenna = () => {
   // AUDIO CONTROL
   //
 
-  // const { playAudio } = useSoundEffect(
-  //   useMemo(() => "/audio/СимуляцияОргазма.mov", []),
-  // );
+  const { playAudio } = useSoundEffect(
+    useMemo(() => "/audio/СимуляцияОргазма.mov", []),
+  );
 
   //
   // CURSOR CONTROL
@@ -74,7 +74,6 @@ const Neprikosnovenna = () => {
   }, []);
 
   const handleOnButton = () => {
-    // playAudio();
     buttonRef.current.hover();
   };
 
@@ -145,6 +144,7 @@ const Neprikosnovenna = () => {
       setIsObezzhiritVisible(false);
       dbHasFingerprintsRef.current = false;
     } else if (currentElementId === "Portrait") {
+      playAudio();
       flashProviderRef.current.flashes(FlashType.VZGLAD);
       let cursorPosition = cursorRef.current.getPosition();
       const articleRect = articleRef.current.getBoundingClientRect();
