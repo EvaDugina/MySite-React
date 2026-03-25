@@ -40,6 +40,7 @@ const Neprikosnovenna = () => {
   const flashProviderRef = useRef(null);
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
+  const [isClickedOnPortrait, setIisClickedOnPortrait] = useState(false);
   const [isObezzhiritVisible, setIsObezzhiritVisible] = useState(false);
   const dbHasFingerprintsRef = useRef(null);
   const fadeInTimerRef = useRef(null);
@@ -135,33 +136,37 @@ const Neprikosnovenna = () => {
     });
   }, []);
 
-  const handleLeftClickDown = useCallback((currentElementId) => {
-    if (currentElementId === "BtnNeprikosnovenna") {
-      buttonRef.current.click();
-    } else if (currentElementId === "BtnObezzhirit") {
-      obezzhiritRef.current.click();
-      cursorTrackerRef.current.clearAllFingerprints();
-      setIsObezzhiritVisible(false);
-      dbHasFingerprintsRef.current = false;
-    } else if (currentElementId === "Portrait") {
-      playAudio();
-      flashProviderRef.current.flashes(FlashType.VZGLAD);
-      let cursorPosition = cursorRef.current.getPosition();
-      const articleRect = articleRef.current.getBoundingClientRect();
-      const topValue = articleRef.current.offsetTop;
-      const leftValue = articleRef.current.offsetLeft;
-      let cursorPositionPercents = {
-        x: ((cursorPosition.x - leftValue) / articleRect.width) * 100,
-        y: ((cursorPosition.y - topValue) / articleRect.height) * 100,
-      };
-      cursorTrackerRef.current.saveClickPosition(cursorPositionPercents);
+  const handleLeftClickDown = useCallback(
+    (currentElementId) => {
+      if (currentElementId === "BtnNeprikosnovenna") {
+        buttonRef.current.click();
+      } else if (currentElementId === "BtnObezzhirit") {
+        obezzhiritRef.current.click();
+        cursorTrackerRef.current.clearAllFingerprints();
+        setIsObezzhiritVisible(false);
+        dbHasFingerprintsRef.current = false;
+      } else if (currentElementId === "Portrait") {
+        if (!isClickedOnPortrait) setIisClickedOnPortrait(true);
+        playAudio();
+        flashProviderRef.current.flashes(FlashType.VZGLAD);
+        let cursorPosition = cursorRef.current.getPosition();
+        const articleRect = articleRef.current.getBoundingClientRect();
+        const topValue = articleRef.current.offsetTop;
+        const leftValue = articleRef.current.offsetLeft;
+        let cursorPositionPercents = {
+          x: ((cursorPosition.x - leftValue) / articleRect.width) * 100,
+          y: ((cursorPosition.y - topValue) / articleRect.height) * 100,
+        };
+        cursorTrackerRef.current.saveClickPosition(cursorPositionPercents);
 
-      if (dbHasFingerprintsRef.current === false) {
-        setIsObezzhiritVisible(true);
-        dbHasFingerprintsRef.current = true;
+        if (dbHasFingerprintsRef.current === false) {
+          setIsObezzhiritVisible(true);
+          dbHasFingerprintsRef.current = true;
+        }
       }
-    }
-  }, []);
+    },
+    [isClickedOnPortrait],
+  );
 
   const handleLeftClickUp = useCallback((currentElementId) => {
     if (currentElementId === "BtnNeprikosnovenna") {
@@ -218,7 +223,7 @@ const Neprikosnovenna = () => {
 
             <FlashProvider ref={flashProviderRef} zIndex={5} />
 
-            {isObezzhiritVisible && (
+            {/* {isObezzhiritVisible && (
               <Button
                 ref={obezzhiritRef}
                 id="BtnObezzhirit"
@@ -226,13 +231,14 @@ const Neprikosnovenna = () => {
                 zIndex={6}
                 text="обезжирить"
               />
-            )}
+            )} */}
 
             {isPortraitLoaded && (
               <CursorFingerprintTracker
                 ref={cursorTrackerRef}
                 zIndex={4}
                 onReady={handleTrackerReady}
+                startFadeIn={isClickedOnPortrait}
               />
             )}
 

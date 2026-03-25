@@ -35,7 +35,7 @@ No test framework is configured.
 cd server && npm install && npm run dev   # Express + SQLite on :3001
 ```
 
-Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /api/fingerprints`. Stack: Express 5 + better-sqlite3. Vite proxies `/api` to backend.
+Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /api/fingerprints`. Stack: Express 5 + better-sqlite3. In dev Vite proxies `/api` to backend; in prod Nginx proxies `/api` to the `api` container.
 
 ## Architecture
 
@@ -66,7 +66,7 @@ Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
 - `PortraitProvider.ref` → `.playVideo()`, `.showVideo()`, `.scrollToEndVideo()`
 - `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls)
-- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()` — props: `onReady(count)` callback when DB data loaded
+- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()` — props: `onReady(count)` callback when DB data loaded, `startFadeIn` controls WebGL layer fade-in start
 
 Pages orchestrate complex interaction sequences by calling these imperatively.
 
@@ -86,4 +86,9 @@ Each component has a `*Settings.js` file defining configuration objects/factorie
 
 ## Deployment
 
-Production uses multi-stage Docker: `node:20-alpine` builder → `nginx:alpine` runner on port 8080. Nginx config at `for-docker/nginx.conf` with SPA fallback, security headers, gzip, and 1-year immutable cache for static assets. Container runs as non-root user.
+Production uses two Docker containers orchestrated by `docker-compose.prod.yml`:
+
+- **frontend** — multi-stage build (`node:20-alpine` builder → `nginx:alpine`) on port 8080. Non-root user. Nginx config at `for-docker/nginx.conf` with SPA fallback, `/api` proxy to backend, security headers, gzip, 1-year immutable cache.
+- **api** — `node:20-alpine`, Express + SQLite on port 3001 (internal only, not exposed). Non-root `node` user. Named volume `neprikosnovenna-sqlite` for DB persistence. Healthcheck on `/api/fingerprints`.
+
+Frontend depends on api with `condition: service_healthy`.

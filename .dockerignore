@@ -1,15 +1,34 @@
-.git
-.vscode
-.env
-.ai
-.docs
-.idea
+# Зависимости — устанавливаются внутри образа
+node_modules/
 
+# Git-история и редакторы
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Данные SQLite — монтируются через volume
+server/data/
+
+# Документация и AI-конфиги
+*.md
+.docs/
+.ai/
+.claude/
+
+# Переменные окружения — секреты не должны попадать в образ
+.env
+.env.*
+.env.local
+.env.production
+
+# Артефакты сборки (пересобираются внутри образа)
+dist/
+
+# Системные файлы
 .DS_Store
 
-node_modules
-dist
-
+# Логи
 *.log
 npm-debug.log*
 yarn-debug.log*

@@ -1,0 +1,38 @@
+services:
+
+    frontend:
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        container_name: neprikosnovenna-frontend
+        ports:
+            - "8080:8080"
+        restart: unless-stopped
+        depends_on:
+            api:
+                condition: service_healthy
+        networks:
+            - neprikosnovenna-net
+
+    api:
+        build:
+            context: ./server
+            dockerfile: Dockerfile
+        container_name: neprikosnovenna-api
+        restart: unless-stopped
+        environment:
+            - PORT=3001
+            - DB_DIR=/app/data
+        volumes:
+            - sqlite-data:/app/data
+        networks:
+            - neprikosnovenna-net
+
+volumes:
+    sqlite-data:
+        name: neprikosnovenna-sqlite
+
+networks:
+    neprikosnovenna-net:
+        name: neprikosnovenna-net
+        driver: bridge

@@ -21,7 +21,7 @@ const getSpriteSizePx = (spriteRem) =>
  * Layer 2 (2D Canvas): отпечатки текущей сессии с анимацией кликов.
  */
 const CursorFingerprintTracker = forwardRef((props, ref) => {
-  const { zIndex, onReady } = props;
+  const { zIndex, onReady, startFadeIn } = props;
   const {
     SPRITE_REM,
     ALPHA,
@@ -103,10 +103,11 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
   // ===== FADE-IN =====
   useEffect(() => {
+    if (!startFadeIn) return;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setIsVisible(true));
     });
-  }, []);
+  }, [startFadeIn]);
 
   // ===== LAYER 1: WebGL init (render-once) =====
   useEffect(() => {
