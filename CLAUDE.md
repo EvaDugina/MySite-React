@@ -2,29 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Язык
+
+Language in code/docs/UI is primarily **Russian**. Пиши **только на русском** — код, комментарии, документация, сообщения коммитов, ответы в чате.
+
 ## Project
 
 **Neprikosnovenna** (Неприкосновенна) — an interactive web art installation exploring the relationship between the touchable and the sacred. Built as a React 19 SPA with custom physics-based cursor, WebGL effects, and imperative component orchestration.
 
-Language in code/docs/UI is primarily **Russian**. Пиши только на русском.
-
 ## Commands
+
+> ⚠️ **Все команды запускаются и проверяются исключительно внутри Docker-контейнера.** Не запускай `npm run *` напрямую в хост-системе.
 
 ```bash
 # Development
-npm run dev          # Vite dev server
+docker compose -f docker-compose.dev.yml up --build  # Vite dev server
 
-# Build & preview
-npm run build        # Production build (vite build)
-npm run preview      # Preview production build
-npm run prod         # Build + preview
+# Build, preview, prod and lint only inside docker:
+docker compose -f docker-compose.dev.yml run --rm app npm run build
+docker compose -f docker-compose.dev.yml run --rm app npm run preview
+docker compose -f docker-compose.dev.yml run --rm app npm run lint
 
-# Lint
-npm run lint         # ESLint (flat config)
-
-# Docker
-docker-compose -f docker-compose.prod.yml up --build -d   # Production (nginx on :8080)
-docker compose -f docker-compose.dev.yml up --build        # Development
+# Production
+docker-compose -f docker-compose.prod.yml up --build -d   # (nginx on :8080)
 ```
 
 No test framework is configured.

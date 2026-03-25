@@ -48,9 +48,9 @@ const Neprikosnovenna = () => {
   // AUDIO CONTROL
   //
 
-  const { playAudio } = useSoundEffect(
-    useMemo(() => "/audio/СимуляцияОргазма.mov", []),
-  );
+  // const { playAudio } = useSoundEffect(
+  //   useMemo(() => "/audio/СимуляцияОргазма.mov", []),
+  // );
 
   //
   // CURSOR CONTROL
@@ -203,6 +203,7 @@ const Neprikosnovenna = () => {
             className={`${styles["portrait-container-default"]}`}
           >
             <ImagePortrait
+              id="Painting"
               zIndex={2}
               setIsLoadedCallback={setIsPortraitLoaded}
             />
@@ -234,6 +235,20 @@ const Neprikosnovenna = () => {
                 onReady={handleTrackerReady}
               />
             )}
+
+            <div
+              id="Portrait"
+              className="z-3"
+              style={{
+                position: "absolute",
+                width: "68%",
+                height: "76%",
+                top: "50.5%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "transparent",
+              }}
+            ></div>
           </article>
         </div>
       </main>
