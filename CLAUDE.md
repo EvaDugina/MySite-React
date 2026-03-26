@@ -66,7 +66,7 @@ Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
 - `PortraitProvider.ref` → `.showVideo()`, `.hideVideo()`, `.playVideo()`, `.pauseVideo()`, `.stopVideo()`, `.scrollToEndVideo()`, `.scrollToStartVideo()`, `.changeImagePortraitType()`
 - `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls) — props: `zIndex`, `onFlashStart`, `onFlashEnd`
-- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()`, `.getSessionClickCount()` — props: `onReady(count)` callback when DB data loaded, `startFadeIn` controls WebGL layer fade-in start
+- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()`, `.getSessionClickCount()` — props: `onReady(count)` callback when DB data loaded, `onFadeInComplete` callback when fade-in transition ends, `startFadeIn` controls WebGL layer fade-in start
 
 Pages orchestrate complex interaction sequences by calling these imperatively.
 
