@@ -45,7 +45,7 @@ Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /a
 
 **Two pages** defined in `AppRouter.config.js`:
 
-- `/neprikosnovenna` — static portrait with click tracking, audio, flash effects, "обезжирить" button (clears all fingerprints, appears after 20+ DB fingerprints or first session click)
+- `/neprikosnovenna` — static portrait with click tracking, audio, flash effects
 - `/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood` — video transformation, persistent "bloody" state via localStorage
 
 ### Cursor System (`src/components/cursor/`)
@@ -54,7 +54,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 
 - **useCursorMovePhysics** — spring physics engine (stiffness, mass, damping, maxSpeed)
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
-- **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON, OBEZZHIRIT) with cursor icon/behavior changes
+- **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
 
 ### Imperative Component Pattern
@@ -62,7 +62,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 
 - `Background.ref` → `.show()`, `.hide()`, `.changeType()`
-- `Button.ref` → `.hover()`, `.click()`, `.disable()` — props: `variant` (`"neprikosnovenna"` | `"obezzhirit"`)
+- `Button.ref` → `.hover()`, `.click()`, `.disable()`, `.reset()`, `.isDisabled()` — props: `variant` (`"neprikosnovenna"`), `isHoverAble` (default true), `isClickAble` (default true)
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
 - `PortraitProvider.ref` → `.playVideo()`, `.showVideo()`, `.scrollToEndVideo()`
 - `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls)

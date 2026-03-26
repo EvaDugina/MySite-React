@@ -1,15 +1,24 @@
 import styles from "./Button.module.scss";
-import {forwardRef, useCallback, useImperativeHandle, useRef, useState,} from "react";
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
 const ButtonType = {
-    DEFAULT: 0, HOVERED: 1, ACTIVE: 2, DISABLED: 3,
+  DEFAULT: 0,
+  HOVERED: 1,
+  ACTIVE: 2,
+  DISABLED: 3,
 };
 
 const getModifierClass = (buttonType, stylesMap) => {
-    if (buttonType === ButtonType.ACTIVE) return stylesMap["button--active"];
-    if (buttonType === ButtonType.HOVERED) return stylesMap["button--hovered"];
-    if (buttonType === ButtonType.DISABLED) return stylesMap["button--disabled"];
-    return "";
+  if (buttonType === ButtonType.ACTIVE) return stylesMap["button--active"];
+  if (buttonType === ButtonType.HOVERED) return stylesMap["button--hovered"];
+  if (buttonType === ButtonType.DISABLED) return stylesMap["button--disabled"];
+  return "";
 };
 
 /**
@@ -19,57 +28,86 @@ const getModifierClass = (buttonType, stylesMap) => {
  * @param {number} [props.zIndex]
  * @param {string} [props.text]
  * @param {string} [props.ariaLabel]
+ * @param {string} [props.variant]
+ * @param {boolean} [props.isHoverAble=true] — разрешён ли hover
+ * @param {boolean} [props.isClickAble=true] — разрешён ли click
  */
 const Button = forwardRef((props, ref) => {
-    const {id, zIndex, text, ariaLabel, variant} = props;
+  const {
+    id,
+    zIndex,
+    text,
+    ariaLabel,
+    variant,
+    isHoverAble = true,
+    isClickAble = true,
+  } = props;
 
-    const [buttonType, setButtonType] = useState(ButtonType.DEFAULT);
-    const buttonTypeRef = useRef(buttonType);
-    const isClickAbleRef = useRef(true);
+  const [buttonType, setButtonType] = useState(ButtonType.DEFAULT);
+  const buttonTypeRef = useRef(buttonType);
+  const canClicked = useRef(true);
+  const isClickAbleRef = useRef(isClickAble);
+  const isHoverAbleRef = useRef(isHoverAble);
 
-    const isDisabled = useCallback(() => {
-        return buttonTypeRef.current === ButtonType.DISABLED;
-    }, [])
+  const isDisabled = useCallback(() => {
+    return buttonTypeRef.current === ButtonType.DISABLED;
+  }, []);
 
-    const reset = useCallback(() => {
-        buttonTypeRef.current = ButtonType.DEFAULT;
-        setButtonType(buttonTypeRef.current);
-        isClickAbleRef.current = true;
-    }, []);
+  const reset = useCallback(() => {
+    buttonTypeRef.current = ButtonType.DEFAULT;
+    setButtonType(buttonTypeRef.current);
+    canClicked.current = true;
+  }, []);
 
-    const hover = useCallback(() => {
-        if (!isClickAbleRef.current) return;
-        buttonTypeRef.current = ButtonType.HOVERED;
-        setButtonType(buttonTypeRef.current);
-    }, []);
+  const hover = useCallback(() => {
+    if (!isHoverAbleRef.current) return;
+    if (!canClicked.current) return;
+    buttonTypeRef.current = ButtonType.HOVERED;
+    setButtonType(buttonTypeRef.current);
+  }, []);
 
-    const click = useCallback(() => {
-        if (!isClickAbleRef.current) return;
-        buttonTypeRef.current = ButtonType.ACTIVE;
-        setButtonType(buttonTypeRef.current);
-    }, []);
+  const click = useCallback(() => {
+    if (!isClickAbleRef.current) return;
+    if (!canClicked.current) return;
+    buttonTypeRef.current = ButtonType.ACTIVE;
+    setButtonType(buttonTypeRef.current);
+  }, []);
 
-    const disable = useCallback(() => {
-        buttonTypeRef.current = ButtonType.DISABLED;
-        setButtonType(buttonTypeRef.current);
-        isClickAbleRef.current = false;
-    }, []);
+  const disable = useCallback(() => {
+    buttonTypeRef.current = ButtonType.DISABLED;
+    setButtonType(buttonTypeRef.current);
+    canClicked.current = false;
+  }, []);
 
-    useImperativeHandle(ref, () => ({isDisabled, reset, hover, click, disable}));
+  useImperativeHandle(ref, () => ({
+    isDisabled,
+    reset,
+    hover,
+    click,
+    disable,
+  }));
 
-    const modifierClass = getModifierClass(buttonType, styles);
-    const className = [styles.button, variant ? styles[`button--${variant}`] : null, modifierClass, "not-allowed", `z-${zIndex}`,]
-        .filter(Boolean)
-        .join(" ");
+  const modifierClass = getModifierClass(buttonType, styles);
+  const className = [
+    styles.button,
+    variant ? styles[`button--${variant}`] : null,
+    modifierClass,
+    "not-allowed",
+    `z-${zIndex}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-    return (<button
-            id={id}
-            type="button"
-            className={className}
-            aria-label={ariaLabel ?? text}
-        >
-            {text}
-        </button>);
+  return (
+    <button
+      id={id}
+      type="button"
+      className={className}
+      aria-label={ariaLabel ?? text}
+    >
+      {text}
+    </button>
+  );
 });
 
 Button.displayName = "Button";
