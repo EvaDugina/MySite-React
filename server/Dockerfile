@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-alpine3.21
 
 WORKDIR /app
 
@@ -12,22 +12,25 @@ RUN npm ci --omit=dev
 # 3. Копируем исходный код
 COPY . .
 
+# su-exec для переключения на non-root пользователя в entrypoint
+RUN apk add --no-cache su-exec
+
 # Создаём директорию для SQLite базы данных
 RUN mkdir -p /app/data
 
+ENV NODE_ENV=production
 ENV DB_DIR=/app/data
 ENV PORT=3001
 
 EXPOSE 3001
 
-# Переключаемся на встроенного non-root пользователя node (uid=1000)
-# Директорию /app/data делаем доступной для этого пользователя
-RUN chown -R node:node /app/data
-
-USER node
+# Entrypoint: исправляет права на /app/data и переключается на node
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Healthcheck: проверяем что Express отвечает на /api/fingerprints
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget -qO- http://localhost:3001/api/fingerprints || exit 1
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "index.js"]

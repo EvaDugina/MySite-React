@@ -14,7 +14,8 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - API_URL=http://api:3001
         depends_on:
-            - api
+            api:
+                condition: service_healthy
 
     api:
         build:
@@ -27,3 +28,9 @@ services:
             - ./server/data:/app/data
         environment:
             - PORT=3001
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/fingerprints"]
+            interval: 10s
+            timeout: 5s
+            start_period: 10s
+            retries: 3

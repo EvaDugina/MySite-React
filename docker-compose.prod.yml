@@ -8,6 +8,11 @@ services:
         ports:
             - "8080:8080"
         restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 128M
         depends_on:
             api:
                 condition: service_healthy
@@ -20,6 +25,11 @@ services:
             dockerfile: Dockerfile
         container_name: neprikosnovenna-api
         restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 256M
         environment:
             - PORT=3001
             - DB_DIR=/app/data

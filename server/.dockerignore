@@ -8,6 +8,13 @@ data/
 *.log
 npm-debug.log*
 
+# Документация
+*.md
+
+# Git
+.git/
+.gitignore
+
 # Переменные окружения
 .env
 .env.*
