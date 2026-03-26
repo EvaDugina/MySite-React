@@ -54,7 +54,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 
 - **useCursorMovePhysics** — spring physics engine (stiffness, mass, damping, maxSpeed)
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
-- **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON) with cursor icon/behavior changes
+- **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON, OBEZZHIRIT) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
 
 ### Imperative Component Pattern
@@ -62,11 +62,11 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 
 - `Background.ref` → `.show()`, `.hide()`, `.changeType()`
-- `Button.ref` → `.hover()`, `.click()`, `.disable()`, `.reset()`, `.isDisabled()` — props: `variant` (`"neprikosnovenna"`), `isHoverAble` (default true), `isClickAble` (default true)
+- `Button.ref` → `.hover()`, `.click()`, `.disable()`, `.reset()`, `.isDisabled()` — props: `variant` (`"neprikosnovenna"` | `"obeszhirit"`), `isHoverAble` (default true), `isClickAble` (default true)
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
 - `PortraitProvider.ref` → `.playVideo()`, `.showVideo()`, `.scrollToEndVideo()`
 - `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls)
-- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()` — props: `onReady(count)` callback when DB data loaded, `startFadeIn` controls WebGL layer fade-in start
+- `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()`, `.getSessionClickCount()` — props: `onReady(count)` callback when DB data loaded, `startFadeIn` controls WebGL layer fade-in start
 
 Pages orchestrate complex interaction sequences by calling these imperatively.
 

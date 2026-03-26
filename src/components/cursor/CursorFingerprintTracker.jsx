@@ -581,6 +581,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     saveClickPosition,
     clearAllFingerprints,
+    getSessionClickCount: () => sessionClicksRef.current.length,
   }));
 
   return (

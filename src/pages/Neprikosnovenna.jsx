@@ -22,12 +22,14 @@ import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
+import { FingerprintConfig } from "../components/cursor/CursorFingerprintTrackerSettings.js";
 
 const Zone = {
   NONE: 0,
   BACK: 1,
   PORTRAIT: 2,
   BUTTON: 3,
+  OBEZZHIRIT: 4,
 };
 
 const Neprikosnovenna = () => {
@@ -42,6 +44,10 @@ const Neprikosnovenna = () => {
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
   const [isClickedOnPortrait, setIisClickedOnPortrait] = useState(false);
+  const [isObezzhiritVisible, setIsObezzhiritVisible] = useState(false);
+  const isObezzhiritVisibleRef = useRef(false);
+  const dbHasFingerprintsRef = useRef(false);
+  const fadeInTimerRef = useRef(null);
 
   // const isVideoEndedRef = useRef(false);
 
@@ -74,6 +80,37 @@ const Neprikosnovenna = () => {
   // }, [handleVideoEnded]);
 
   //
+  // ОБЕЗЖИРИТЬ — логика появления
+  //
+
+  const showObezzhirit = useCallback(() => {
+    isObezzhiritVisibleRef.current = true;
+    setIsObezzhiritVisible(true);
+  }, []);
+
+  const hideObezzhirit = useCallback(() => {
+    isObezzhiritVisibleRef.current = false;
+    setIsObezzhiritVisible(false);
+  }, []);
+
+  const handleTrackerReady = useCallback((count) => {
+    if (count > 0) {
+      dbHasFingerprintsRef.current = true;
+      fadeInTimerRef.current = setTimeout(() => {
+        showObezzhirit();
+      }, FingerprintConfig.FADE_IN_DURATION);
+    } else {
+      dbHasFingerprintsRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (fadeInTimerRef.current) clearTimeout(fadeInTimerRef.current);
+    };
+  }, []);
+
+  //
   // CURSOR CONTROL
   //
 
@@ -83,6 +120,14 @@ const Neprikosnovenna = () => {
 
   const handleOffButton = () => {
     // buttonRef.current.reset();
+  };
+
+  const handleOnObezzhirit = () => {
+    buttonObeszhiritRef.current?.hover();
+  };
+
+  const handleOffObezzhirit = () => {
+    buttonObeszhiritRef.current?.reset();
   };
 
   const cursorZoneSettingsRef = useRef(null);
@@ -116,6 +161,13 @@ const Neprikosnovenna = () => {
         handleOn: handleOnButton,
         handleOff: handleOffButton,
       },
+      [Zone.OBEZZHIRIT]: {
+        elementId: "BtnObeszhirit",
+        imgCursor: CursorImages.POINTER,
+        imgCursorClicked: CursorImages.POINTER_CLICKED,
+        handleOn: handleOnObezzhirit,
+        handleOff: handleOffObezzhirit,
+      },
     };
 
     cursorZoneSettingsRef.current = createCursorZoneSettings({
@@ -132,6 +184,11 @@ const Neprikosnovenna = () => {
           backgroundSecondaryRef.current.hide();
           buttonRef.current.disable();
         }
+      } else if (currentElementId === "BtnObeszhirit") {
+        buttonObeszhiritRef.current.click();
+        cursorTrackerRef.current.clearAllFingerprints();
+        hideObezzhirit();
+        dbHasFingerprintsRef.current = false;
       } else if (currentElementId === "Portrait") {
         if (!isClickedOnPortrait) setIisClickedOnPortrait(true);
         playAudio();
@@ -145,6 +202,13 @@ const Neprikosnovenna = () => {
           y: ((cursorPosition.y - topValue) / articleRect.height) * 100,
         };
         cursorTrackerRef.current.saveClickPosition(cursorPositionPercents);
+
+        if (!dbHasFingerprintsRef.current && !isObezzhiritVisibleRef.current) {
+          const count = cursorTrackerRef.current.getSessionClickCount();
+          if (count >= 30) {
+            showObezzhirit();
+          }
+        }
       }
     },
     [isClickedOnPortrait],
@@ -200,13 +264,15 @@ const Neprikosnovenna = () => {
                 setIsLoadedCallback={setIsPortraitLoaded}
             /> */}
 
-            {/* <Button
-              ref={buttonObeszhiritRef}
-              id="BtnObeszhirit"
-              variant="obeszhirit"
-              zIndex={8}
-              text="обезжирить"
-            /> */}
+            {isObezzhiritVisible && (
+              <Button
+                ref={buttonObeszhiritRef}
+                id="BtnObeszhirit"
+                variant="obeszhirit"
+                zIndex={8}
+                text="обезжирить"
+              />
+            )}
 
             <Button
               ref={buttonRef}
@@ -222,6 +288,7 @@ const Neprikosnovenna = () => {
               <CursorFingerprintTracker
                 ref={cursorTrackerRef}
                 zIndex={5}
+                onReady={handleTrackerReady}
                 startFadeIn={isClickedOnPortrait}
               />
             )}
