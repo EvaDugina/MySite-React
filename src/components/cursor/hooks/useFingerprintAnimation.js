@@ -6,11 +6,12 @@ const MAX_DEVIATION = 800;
 const SKIP_PROBABILITY = 0.3;
 
 /**
- * Хук анимации отпечатков для Layer 2.
- * На каждом тике каждому отпечатку:
- * - 60% шанс пропустить
- * - рандомное отклонение от базового интервала
- * - кратковременная смена на CLICKED, затем возврат
+ * Layer 2 fingerprint click animation hook.
+ * On each tick, for each fingerprint:
+ * - 30% chance to skip
+ * - random deviation from base interval
+ * - brief switch to CLICKED sprite, then revert
+ * @returns {{ startAnimation: (getClicksCount: Function, setClickState: Function) => void, stopAnimation: () => void }}
  */
 export function useFingerprintAnimation() {
   const intervalRef = useRef(null);

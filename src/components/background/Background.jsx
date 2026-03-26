@@ -4,11 +4,11 @@ import styles from "./Background.module.css";
 import {BackgroundType} from "./BackgroundSettings.js";
 
 /**
- * Фоновый слой с возможностью скрывать/показывать через ref.
+ * Background layer with show/hide control via ref.
  * @param {Object} props
  * @param {string} [props.id]
  * @param {string} [props.variant] - 'white' | 'blue'
- * @param {string} [props.extraClass] - дополнительные глобальные классы (например d-none)
+ * @param {string} [props.extraClass] - additional global classes (e.g. d-none)
  * @param {number} [props.zIndex]
  */
 const Background = forwardRef((props, ref) => {

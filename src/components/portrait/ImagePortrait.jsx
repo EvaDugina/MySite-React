@@ -3,9 +3,12 @@ import React, { useEffect, useRef } from "react";
 import { ImagePortraitType, StaticData } from "./ImagePortraitSettings.js";
 
 /**
- * Статичный портрет (изображение).
+ * Static portrait image.
  * @param {Object} props
+ * @param {string} [props.id]
+ * @param {number} [props.type] - ImagePortraitType value
  * @param {number} [props.zIndex]
+ * @param {Function} [props.setIsLoadedCallback] - called when image is loaded
  */
 const ImagePortrait = (props) => {
   const {

@@ -15,10 +15,15 @@ const getSpriteSizePx = (spriteRem) =>
   spriteRem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
 /**
- * CursorFingerprintTracker — двухслойный рендер отпечатков.
+ * Two-layer fingerprint renderer over the portrait.
  *
- * Layer 1 (WebGL): все отпечатки из БД, render-once, instanced draw.
- * Layer 2 (2D Canvas): отпечатки текущей сессии с анимацией кликов.
+ * Layer 1 (WebGL): all DB fingerprints, render-once, instanced draw.
+ * Layer 2 (2D Canvas): current session fingerprints with click animation.
+ *
+ * @param {Object} props
+ * @param {number} [props.zIndex]
+ * @param {Function} [props.onReady] - called with fingerprint count when DB data is loaded
+ * @param {boolean} [props.startFadeIn] - triggers CSS fade-in for WebGL canvas
  */
 const CursorFingerprintTracker = forwardRef((props, ref) => {
   const { zIndex, onReady, startFadeIn } = props;

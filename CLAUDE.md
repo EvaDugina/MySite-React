@@ -54,18 +54,18 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 
 - **useCursorMovePhysics** — spring physics engine (stiffness, mass, damping, maxSpeed)
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
-- **useCursorZone** — zone detection mapping elements to zones (NONE, BACK, PORTRAIT, BUTTON, OBEZZHIRIT) with cursor icon/behavior changes
+- **useCursorZone** — zone detection mapping elements to zones (NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3, OBEZZHIRIT: 4) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
 
 ### Imperative Component Pattern
 
 Core components expose imperative APIs via `forwardRef` + `useImperativeHandle`:
 
-- `Background.ref` → `.show()`, `.hide()`, `.changeType()`
+- `Background.ref` → `.show()`, `.hide()`, `.changeType()` — props: `variant` (`'white'` | `'blue'`), `extraClass`, `zIndex`
 - `Button.ref` → `.hover()`, `.click()`, `.disable()`, `.reset()`, `.isDisabled()` — props: `variant` (`"neprikosnovenna"` | `"obeszhirit"`), `isHoverAble` (default true), `isClickAble` (default true)
 - `Cursor.ref` → `.getPosition()`, `.hide()`, `.show()`
-- `PortraitProvider.ref` → `.playVideo()`, `.showVideo()`, `.scrollToEndVideo()`
-- `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls)
+- `PortraitProvider.ref` → `.showVideo()`, `.hideVideo()`, `.playVideo()`, `.pauseVideo()`, `.stopVideo()`, `.scrollToEndVideo()`, `.scrollToStartVideo()`, `.changeImagePortraitType()`
+- `FlashProvider.ref` → `.flashes(type)` (async flash sequences, guarded against concurrent calls) — props: `zIndex`, `onFlashStart`, `onFlashEnd`
 - `CursorFingerprintTracker.ref` → `.saveClickPosition()`, `.clearAllFingerprints()`, `.getSessionClickCount()` — props: `onReady(count)` callback when DB data loaded, `startFadeIn` controls WebGL layer fade-in start
 
 Pages orchestrate complex interaction sequences by calling these imperatively.

@@ -5,14 +5,14 @@ import useCursorZone from "./useCursorZone.js";
 import useCursorEvents from "./useCursorEvents.js";
 
 /**
- * Хук кастомного курсора: инициализация, движение, зоны, клики.
- * @param {Object} settings - объект createCursorSettings()
+ * Custom cursor hook: initialization, movement, zones, clicks.
+ * @param {Object} settings - config from createCursorSettings()
  * @param {Function} showCursor
  * @param {Function} changeCursorSrc
- * @param {React.MutableRefObject} zoneSettingsRef - ref с объектом createCursorZoneSettings()
+ * @param {React.MutableRefObject} zoneSettingsRef - ref with config from createCursorZoneSettings()
  * @param {React.MutableRefObject} handleLeftClickDownRef
  * @param {React.MutableRefObject} handleLeftClickUpRef
- * @returns {{ position: { x, y }, stopCursor: Function, startCursor: Function, currentZoneDataRef: React.MutableRefObject }}
+ * @returns {{ position: { x: number, y: number }, stopCursor: Function, startCursor: Function, currentZoneDataRef: React.MutableRefObject }}
  */
 export function useCursor(
     settings,

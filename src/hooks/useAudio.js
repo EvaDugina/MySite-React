@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 /**
- * Хук воспроизведения одного аудиофайла через HTMLAudioElement.
- * @param {string} src - URL аудио
- * @param {number|null} [volume=null] - громкость (0–1)
- * @returns {{ play: () => void, pause: () => void, stop: () => void }}
+ * Single audio file playback hook via HTMLAudioElement.
+ * @param {string} src - audio URL
+ * @param {number|null} [volume=null] - volume (0–1)
+ * @returns {{ playAudio: () => void, pauseAudio: () => void, stopAudio: () => void }}
  */
 function useAudio(src, volume = null) {
     const audioRef = useRef(null);

@@ -6,10 +6,12 @@ import {ImagePortraitType} from "./ImagePortraitSettings.js";
 import VideoPortrait from "./VideoPortrait.jsx";
 
 /**
- * Портрет с видео и постером, управление через ref (show, hide, play, pause, stop, scrollToEnd).
+ * Portrait with video and poster, controlled via ref.
  * @param {Object} props
+ * @param {string} [props.id]
  * @param {Object} [props.settings]
  * @param {number} [props.zIndex]
+ * @param {Function} [props.setIsLoadedCallback] - called when portrait image is loaded
  */
 const PortraitProvider = forwardRef((props, ref) => {
     const {id, settings, zIndex, setIsLoadedCallback} = props;

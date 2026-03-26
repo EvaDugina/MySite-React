@@ -3,11 +3,12 @@ import { useCallback, useEffect, useRef } from 'react';
 const EPS = 0.1;
 
 /**
- * Хук расчёта физики движения курсора (пружина, затухание, ограничение скорости).
+ * Spring physics hook for cursor movement (stiffness, damping, speed clamping).
  * @param {number} stiffness
  * @param {number} mass
  * @param {number} damping
  * @param {number} maxSpeed
+ * @returns {{ resetVelocity: Function, isNeedToStop: Function, getRecalculatedPosition: Function }}
  */
 function useCursorMovePhysics(stiffness, mass, damping, maxSpeed) {
     const velocityRef = useRef({ x: 0, y: 0 });

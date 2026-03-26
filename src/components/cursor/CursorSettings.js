@@ -27,6 +27,7 @@ const CursorConfig = {
 };
 
 /**
+ * Creates cursor configuration object.
  * @param {Object} options
  * @returns {Object} cursor settings
  */
@@ -59,6 +60,7 @@ export function createCursorSettings({
 }
 
 /**
+ * Creates zone detection configuration (maps element IDs to cursor behaviors).
  * @param {Object} config
  * @returns {Object} zone settings with Zone and Data
  */

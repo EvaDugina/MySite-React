@@ -11,10 +11,10 @@ import styles from "./Cursor.module.css";
 import useCursor from "./hooks/useCursor.js";
 
 /**
- * Кастомный курсор-муха с зонами и физикой движения.
+ * Custom physics-based cursor with zone detection.
  * @param {Object} props
- * @param {Object} props.settings - настройки курсора (createCursorSettings)
- * @param {React.MutableRefObject} props.zoneSettingsRef - ref с зонами (createCursorZoneSettings)
+ * @param {Object} props.settings - cursor config from createCursorSettings()
+ * @param {React.MutableRefObject} props.zoneSettingsRef - ref with zone config from createCursorZoneSettings()
  */
 const Cursor = forwardRef((props, ref) => {
     const { settings, zoneSettingsRef } = props;

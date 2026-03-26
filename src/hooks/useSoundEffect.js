@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef } from "react";
 const MAX_LOAD_RETRIES = 5;
 
 /**
- * Хук для воспроизведения звукового эффекта через Web Audio API.
- * @param {string} src - URL аудиофайла
- * @param {number} [volume=1] - громкость (0–1)
- * @returns {{ play: () => void, error?: string }}
+ * Sound effect playback hook via Web Audio API.
+ * @param {string} src - audio file URL
+ * @param {number} [volume=1] - volume (0–1)
+ * @returns {{ playAudio: () => void }}
  */
 function useSoundEffect(src, volume = 1) {
   const audioContextRef = useRef(null);

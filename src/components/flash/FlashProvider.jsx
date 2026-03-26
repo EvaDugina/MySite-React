@@ -12,9 +12,11 @@ function getRandomInt(max) {
 }
 
 /**
- * Провайдер нескольких вспышек, последовательный вызов через ref.flashes(n).
+ * Provider for sequential flash sequences, triggered via ref.flashes(type).
  * @param {Object} props
  * @param {number} [props.zIndex]
+ * @param {Function} [props.onFlashStart] - called when flash sequence starts
+ * @param {Function} [props.onFlashEnd] - called when flash sequence ends
  */
 const FlashProvider = forwardRef((props, ref) => {
   const { zIndex, onFlashStart, onFlashEnd } = props;

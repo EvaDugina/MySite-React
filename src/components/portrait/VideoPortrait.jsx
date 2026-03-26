@@ -2,8 +2,9 @@ import styles from "./Portrait.module.scss";
 import React, {forwardRef} from "react";
 
 /**
- * Статичный портрет (изображение).
+ * Video portrait with poster.
  * @param {Object} props
+ * @param {string} [props.id]
  * @param {number} [props.zIndex]
  */
 const VideoPortrait = forwardRef((props, ref) => {

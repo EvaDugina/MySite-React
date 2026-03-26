@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 
 /**
- * Хук анимации движения курсора через requestAnimationFrame.
+ * Cursor movement animation hook using requestAnimationFrame.
  * @param {React.MutableRefObject<(() => void) | null>} updatePositionRef
  * @returns {{ startAnimation: () => void, continueAnimation: () => void, stopAnimation: () => void }}
  */

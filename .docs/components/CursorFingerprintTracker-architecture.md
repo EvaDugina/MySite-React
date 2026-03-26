@@ -85,13 +85,15 @@ void main() {
 | Константа | Значение | Описание |
 |-----------|----------|----------|
 | SPRITE_REM | 1.9 | Размер отпечатка в rem (совпадает с CSS-размером курсора, пересчитывается в px динамически) |
-| ALPHA | 0.05 | Прозрачность каждого отпечатка |
+| ALPHA | 0.15 | Прозрачность каждого отпечатка |
 | CANVAS_OPACITY | 1 | Общая прозрачность WebGL canvas (независимо от ALPHA) |
 | THROTTLE_MS | 150 | Минимальный интервал между кликами |
 | FADE_IN_DURATION | 60000 | Длительность проявления Layer 1 (ms) |
 | HOTSPOT_X | 0.265 | Горячая точка курсора по X |
 | HOTSPOT_Y | 0.09 | Горячая точка курсора по Y |
 | IMAGE_URL | pointer.png | Текстура отпечатка |
+| IMAGE_CLICKED_URL | pointer_clicked.png | Текстура отпечатка при клике |
+| FADE_IN_EASING | cubic-bezier(0.2, 0, 0.8, 1) | Easing проявления Layer 1 |
 
 ---
 
@@ -99,14 +101,16 @@ void main() {
 
 ```js
 // Props
-{ zIndex: number, onReady: (count: number) => void }
+{ zIndex: number, onReady: (count: number) => void, startFadeIn: boolean }
 
 // onReady вызывается когда данные из БД загружены,
 // count — количество отпечатков в БД на момент загрузки.
+// startFadeIn управляет началом CSS fade-in для WebGL canvas.
 
 // Ref API (forwardRef + useImperativeHandle)
 ref.saveClickPosition({ x, y })    // добавить отпечаток (проценты 0-100)
 ref.clearAllFingerprints()          // очистить БД + оба canvas
+ref.getSessionClickCount()          // количество кликов текущей сессии
 ```
 
 Drop-in замена для EnhancedCursorTracker — тот же контракт ref'а.
@@ -201,7 +205,7 @@ cursorTrackerRef.saveClickPosition({ x%, y% })
 #### Layer 2 — добавление клика и анимация
 
 - **Полный redraw** при каждом изменении `sessionClicks` (useState) — включая анимацию (смена `isClicked`).
-- **Анимация:** `useFingerprintAnimation` — каждый тик (~800ms) итерирует все отпечатки, с 30% вероятностью пропуска и случайным отклонением 0-800ms.
+- **Анимация:** `useFingerprintAnimation` — каждый тик (~800ms) итерирует все отпечатки, с 30% вероятностью пропуска и случайным отклонением 0–800ms.
 - **Стоимость redraw:** на 100 отпечатков < 1ms, на 1000 — ~3-5ms.
 - **Размер спрайта:** динамический, `SPRITE_REM × root font-size`, пересчитывается при resize.
 
@@ -268,10 +272,16 @@ Safari на iOS может принудительно потерять WebGL con
 ## Взаимодействие с Neprikosnovenna.jsx
 
 ```jsx
-// Строка ~148
-{isPortraitLoaded && <CursorFingerprintTracker ref={cursorTrackerRef} zIndex={4}/>}
+{isPortraitLoaded && (
+  <CursorFingerprintTracker
+    ref={cursorTrackerRef}
+    zIndex={5}
+    onReady={handleTrackerReady}
+    startFadeIn={isClickedOnPortrait}
+  />
+)}
 
-// Строка ~96 (в handleLeftClickDown)
+// в handleLeftClickDown
 cursorTrackerRef.current.saveClickPosition(cursorPositionPercents)
 ```
 
@@ -280,8 +290,9 @@ cursorTrackerRef.current.saveClickPosition(cursorPositionPercents)
 | zIndex | Компонент |
 |--------|-----------|
 | 999 | Cursor (муха) |
-| 6 | Button |
-| 5 | FlashProvider |
-| 4 | CursorFingerprintTracker |
+| 8 | Button (obeszhirit) |
+| 7 | Button (neprikosnovenna) |
+| 6 | FlashProvider, Background (secondary) |
+| 5 | CursorFingerprintTracker |
 | 2 | ImagePortrait |
 | 0 | Background |

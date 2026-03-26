@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 /**
- * Хук обработки событий указателя (клик вниз/вверх) для кастомного курсора.
+ * Pointer event handler hook (click down/up) for the custom cursor.
  * @param {React.MutableRefObject<(() => void) | null>} updatePositionRef
  * @param {React.MutableRefObject<((event: PointerEvent) => void) | null>} handleLeftClickDownRef
  * @param {React.MutableRefObject<((event: PointerEvent) => void) | null>} handleLeftClickUpRef

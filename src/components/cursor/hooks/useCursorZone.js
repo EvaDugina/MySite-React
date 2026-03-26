@@ -3,7 +3,7 @@ import { useThrottleCallback } from '@react-hook/throttle';
 import { CursorImages } from '../CursorSettings.js';
 
 /**
- * Хук определения зоны под курсором и вызова handleOn/handleOff.
+ * Zone detection hook — determines which zone the cursor is over and triggers handleOn/handleOff.
  * @param {() => { x: number, y: number }} getPosition
  * @param {React.MutableRefObject<{ Zone: Object, Data: Object } | null>} zoneSettingsRef
  * @param {(src: string) => void} changeCursorSrc

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
- * Хук воспроизведения нескольких звуков (случайный или по индексу) через Web Audio API.
- * @param {string[]} sources - массив URL аудиофайлов
- * @returns {{ play: (index?: number | null) => void, isLoaded: boolean, error: string | null }}
+ * Multi-sound playback hook (random or by index) via Web Audio API.
+ * @param {string[]} sources - array of audio file URLs
+ * @returns {{ playAudio: (index?: number | null) => void, isLoadedAudio: boolean, errorAudio: string | null }}
  */
 function useSoundEffects(sources) {
     const audioContextRef = useRef(null);

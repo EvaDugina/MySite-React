@@ -22,15 +22,15 @@ const getModifierClass = (buttonType, stylesMap) => {
 };
 
 /**
- * Кнопка с состояниями (hover, active, disabled), управление через ref.
+ * Button with states (hover, active, disabled), controlled via ref.
  * @param {Object} props
  * @param {string} [props.id]
  * @param {number} [props.zIndex]
  * @param {string} [props.text]
  * @param {string} [props.ariaLabel]
- * @param {string} [props.variant]
- * @param {boolean} [props.isHoverAble=true] — разрешён ли hover
- * @param {boolean} [props.isClickAble=true] — разрешён ли click
+ * @param {string} [props.variant] - 'neprikosnovenna' | 'obeszhirit'
+ * @param {boolean} [props.isHoverAble=true] - whether hover is allowed
+ * @param {boolean} [props.isClickAble=true] - whether click is allowed
  */
 const Button = forwardRef((props, ref) => {
   const {

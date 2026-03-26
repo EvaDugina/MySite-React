@@ -3,7 +3,7 @@ import styles from "./Flash.module.css";
 import {FlashType, StaticData} from "./FlashSettings.js";
 
 /**
- * Компонент вспышки (одна картинка или пустой фон). Управление через ref.flash().
+ * Single flash component (image or blank). Controlled via ref.flash().
  * @param {Object} props
  * @param {number} [props.type]
  * @param {number} [props.zIndex]
