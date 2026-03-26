@@ -90,7 +90,7 @@ const Button = forwardRef((props, ref) => {
   const modifierClass = getModifierClass(buttonType, styles);
   const className = [
     styles.button,
-    variant ? styles[`button--${variant}`] : null,
+    variant ? styles[`button__${variant}`] : null,
     modifierClass,
     "not-allowed",
     `z-${zIndex}`,

@@ -22,12 +22,20 @@
     background-color: var(--color-light-grey);
   }
 
-  &--neprikosnovenna {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    top: 75%;
-    left: 50%;
-    font-size: var(--font-size-xsm);
-  }
+}
 
+.button__neprikosnovenna {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 75%;
+  left: 50%;
+  font-size: var(--font-size-xsm);
+}
+
+.button__obeszhirit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 101%;
+  left: 50%;
+  font-size: var(--font-size-xsm);
 }

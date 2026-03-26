@@ -36,7 +36,6 @@ const AndIAmTheOnlyOne = () => {
     useEffect(() => {
         if (isBloody) {
             backgroundSecondaryRef.current.changeType(BackgroundType.KETCHUP);
-            portraitRef.current.c
             portraitRef.current.scrollToEndVideo();
             portraitRef.current.showVideo();
         }
@@ -189,7 +188,8 @@ const AndIAmTheOnlyOne = () => {
                     <Button
                         ref={buttonRef}
                         id="BtnNeprikosnovenna"
-                        zIndex={6}
+                        variant="neprikosnovenna"
+                        zIndex={7}
                         text="неприкосновенна"
                     />
 

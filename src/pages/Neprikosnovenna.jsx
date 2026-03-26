@@ -16,8 +16,8 @@ import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import {BackgroundType} from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
+// import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
-// import CursorClickTracker from "../components/cursor/CursorClickTracker.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
@@ -34,12 +34,16 @@ const Neprikosnovenna = () => {
   const cursorRef = useRef(null);
   const articleRef = useRef(null);
   const cursorTrackerRef = useRef(null);
+  const buttonObeszhiritRef = useRef(null);
   const buttonRef = useRef(null);
+  // const portraitRef = useRef(null);
   const flashProviderRef = useRef(null);
-  const backgroundRef = useRef(null);
+  const backgroundSecondaryRef = useRef(null);
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
   const [isClickedOnPortrait, setIisClickedOnPortrait] = useState(false);
+
+  // const isVideoEndedRef = useRef(false);
 
   //
   // AUDIO CONTROL
@@ -48,6 +52,26 @@ const Neprikosnovenna = () => {
   const { playAudio } = useSoundEffect(
     useMemo(() => "/audio/СимуляцияОргазма.mov", []),
   );
+
+  //
+  // VIDEO CONTROLL
+  //
+
+  // useEffect(() => {
+  //   portraitRef.current.showVideo(false);
+  // }, [])
+
+  // const handleVideoEnded = useCallback(() => {
+  //     isVideoEndedRef.current = true;
+  //     buttonRef.current.reset();
+  //     backgroundSecondaryRef.current.changeType(BackgroundType.KETCHUP)
+  // }, []);
+
+  // const videoSettings = useMemo(() => {
+  //     return {
+  //         onEnded: handleVideoEnded,
+  //     };
+  // }, [handleVideoEnded]);
 
   //
   // CURSOR CONTROL
@@ -104,7 +128,8 @@ const Neprikosnovenna = () => {
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
         if (!buttonRef.current.isDisabled()){
-          backgroundRef.current.hide();
+          // portraitRef.current.playVideo();
+          backgroundSecondaryRef.current.hide();
           buttonRef.current.disable();
         }
       } else if (currentElementId === "Portrait") {
@@ -157,7 +182,6 @@ const Neprikosnovenna = () => {
       />
 
       <main className={styles.main}>
-        <div className={`${styles.container} z-1`}>
           <article
             ref={articleRef}
             className={`${styles["portrait-container-default"]}`}
@@ -168,6 +192,22 @@ const Neprikosnovenna = () => {
               setIsLoadedCallback={setIsPortraitLoaded}
             />
 
+            {/* <PortraitProvider
+                id="Painting"
+                ref={portraitRef}
+                zIndex={2}
+                settings={videoSettings}
+                setIsLoadedCallback={setIsPortraitLoaded}
+            /> */}
+
+            {/* <Button
+              ref={buttonObeszhiritRef}
+              id="BtnObeszhirit"
+              variant="obeszhirit"
+              zIndex={8}
+              text="обезжирить"
+            /> */}
+
             <Button
               ref={buttonRef}
               id="BtnNeprikosnovenna"
@@ -176,21 +216,19 @@ const Neprikosnovenna = () => {
               text="неприкосновенна"
             />
 
-            <Background id="Background-1" ref={backgroundRef} type={BackgroundType.BLUE} zIndex={6} />
-
-            <FlashProvider ref={flashProviderRef} zIndex={5} />
+            <FlashProvider ref={flashProviderRef} zIndex={6} />
 
             {isPortraitLoaded && (
               <CursorFingerprintTracker
                 ref={cursorTrackerRef}
-                zIndex={4}
+                zIndex={5}
                 startFadeIn={isClickedOnPortrait}
               />
             )}
 
             <div
               id="Portrait"
-              className="z-3"
+              className="z-4"
               style={{
                 position: "absolute",
                 width: "68%",
@@ -202,8 +240,9 @@ const Neprikosnovenna = () => {
               }}
             ></div>
           </article>
-        </div>
-      </main>
+
+          <Background id="Background-1" ref={backgroundSecondaryRef} type={BackgroundType.BLUE} zIndex={6} />
+        </main>
 
       <Background id="Background-0" type={BackgroundType.WHITE} zIndex={0} />
     </>

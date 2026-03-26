@@ -131,6 +131,14 @@ body,
     z-index: 7;
 }
 
+.z-8 {
+    z-index: 8;
+}
+
+.z-9 {
+    z-index: 9;
+}
+
 .z-998 {
     z-index: 998;
 }

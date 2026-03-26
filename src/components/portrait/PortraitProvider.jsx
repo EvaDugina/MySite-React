@@ -1,5 +1,5 @@
 import styles from "./Portrait.module.scss";
-import React, {forwardRef, useCallback, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, useEffect, useCallback, useImperativeHandle, useRef, useState} from "react";
 import useVideoController from "./hooks/useVideoController.js";
 import ImagePortrait from "./ImagePortrait.jsx";
 import {ImagePortraitType} from "./ImagePortraitSettings.js";
@@ -12,7 +12,7 @@ import VideoPortrait from "./VideoPortrait.jsx";
  * @param {number} [props.zIndex]
  */
 const PortraitProvider = forwardRef((props, ref) => {
-    const {id, settings, zIndex} = props;
+    const {id, settings, zIndex, setIsLoadedCallback} = props;
 
     const videoRef = useRef(null);
 
@@ -26,6 +26,10 @@ const PortraitProvider = forwardRef((props, ref) => {
         scrollToEndVideo,
         scrollToStartVideo
     } = useVideoController(settings, videoRef);
+
+      useEffect(() => {
+        setIsLoadedCallback?.(true);
+      }, [videoRef.current]);
 
     const changeImagePortraitType = useCallback((newImagePortraitType) => {
         if (!Object.values(ImagePortraitType).includes(newImagePortraitType)) {
