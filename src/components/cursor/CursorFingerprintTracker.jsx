@@ -442,18 +442,9 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   }, [SPRITE_REM, ALPHA, IMAGE_URL]);
 
   // Layer 1: render при готовности данных + текстуры
-  // Задержка 1с для отладки (гарантирует что текстура и данные загружены)
   useEffect(() => {
     if (!isReady || dbFingerprints.length === 0) return;
-
-    const timerId = setTimeout(() => {
-      webglRenderRef.current?.();
-      console.log(
-        `Layer 1: rendering ${dbFingerprints.length} fingerprints from DB`,
-      );
-    }, 1000);
-
-    return () => clearTimeout(timerId);
+    webglRenderRef.current?.();
   }, [isReady, dbFingerprints]);
 
   // ===== LAYER 2: 2D Canvas setup =====
@@ -553,7 +544,9 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       const { x, y } = cursorPosition;
 
       // Layer 2: добавить в сессию
-      setSessionClicks((prev) => [...prev, { x, y, isClicked: false }]);
+      const newClick = { x, y, isClicked: false };
+      sessionClicksRef.current = [...sessionClicksRef.current, newClick];
+      setSessionClicks(sessionClicksRef.current);
 
       // API: сохранить в БД (batched)
       addFingerprint(x, y);
@@ -566,6 +559,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     await clearAll();
 
     // Очистить сессию
+    sessionClicksRef.current = [];
     setSessionClicks([]);
 
     // Очистить Layer 1 (WebGL canvas)

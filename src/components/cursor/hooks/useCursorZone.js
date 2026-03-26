@@ -65,7 +65,16 @@ export function useCursorZone(getPosition, zoneSettingsRef, changeCursorSrc) {
         handleOnZone?.(elementZoneRef.current);
     }, [getPosition, handleOnZone, handleOffZone]);
 
-    const throttledUpdateCurrentZone = useThrottleCallback(updateCurrentZone, 50);
+    const updateCurrentZoneRef = useRef(null);
+    useEffect(() => {
+        updateCurrentZoneRef.current = updateCurrentZone;
+    }, [updateCurrentZone]);
+
+    const stableUpdateCurrentZone = useCallback(() => {
+        updateCurrentZoneRef.current?.();
+    }, []);
+
+    const throttledUpdateCurrentZone = useThrottleCallback(stableUpdateCurrentZone, 50);
 
     useEffect(() => {
         document.addEventListener('pointermove', throttledUpdateCurrentZone);

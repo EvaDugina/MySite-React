@@ -48,9 +48,14 @@ const Cursor = forwardRef((props, ref) => {
         handleLeftClickUpRef,
     );
 
+    const positionRef = useRef(position);
+    useEffect(() => {
+        positionRef.current = position;
+    }, [position]);
+
     const getPosition = useCallback(() => {
-        return {...position}
-    }, [position])
+        return { ...positionRef.current }
+    }, [])
 
     const handleLeftClickDown = useCallback(() => {
         changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
