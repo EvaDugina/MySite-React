@@ -8,10 +8,10 @@ import React, {forwardRef} from "react";
  */
 const VideoPortrait = forwardRef((props, ref) => {
 
-    const {zIndex} = props;
+    const {id, zIndex} = props;
 
     return (<video
-        id="Portrait"
+        id={id}
         ref={ref}
         className={`${styles.portrait} ${styles["portrait--video"]} not-allowed z-${zIndex}`}
         poster="/images/НЕПРИКОСНОВЕННА.webp"

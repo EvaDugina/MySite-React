@@ -19,7 +19,7 @@ const ImagePortrait = (props) => {
   const imagePortraitSrc = StaticData[type].src;
 
   useEffect(() => {
-    setIsLoadedCallback(true);
+    setIsLoadedCallback?.(true);
   }, [imageRef.current]);
 
   return (

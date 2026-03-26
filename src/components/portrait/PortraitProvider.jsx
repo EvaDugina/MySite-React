@@ -12,7 +12,7 @@ import VideoPortrait from "./VideoPortrait.jsx";
  * @param {number} [props.zIndex]
  */
 const PortraitProvider = forwardRef((props, ref) => {
-    const {settings, zIndex} = props;
+    const {id, settings, zIndex} = props;
 
     const videoRef = useRef(null);
 
@@ -49,10 +49,12 @@ const PortraitProvider = forwardRef((props, ref) => {
     return (<>
         <figure className={styles.figure}>
             <VideoPortrait
+                id={id}
                 ref={videoRef}
                 zIndex={zIndex + 1}
             />
             <ImagePortrait
+                id={id}
                 type={imagePortraitType}
                 zIndex={zIndex}
             />

@@ -14,6 +14,7 @@ import {
 } from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
+import {BackgroundType} from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 // import CursorClickTracker from "../components/cursor/CursorClickTracker.jsx";
@@ -35,13 +36,10 @@ const Neprikosnovenna = () => {
   const cursorTrackerRef = useRef(null);
   const buttonRef = useRef(null);
   const flashProviderRef = useRef(null);
+  const backgroundRef = useRef(null);
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
   const [isClickedOnPortrait, setIisClickedOnPortrait] = useState(false);
-
-  useEffect(() => {
-    buttonRef.current.disable();
-  }, []);
 
   //
   // AUDIO CONTROL
@@ -105,7 +103,10 @@ const Neprikosnovenna = () => {
   const handleLeftClickDown = useCallback(
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
-        buttonRef.current.click();
+        if (!buttonRef.current.isDisabled()){
+          backgroundRef.current.hide();
+          buttonRef.current.disable();
+        }
       } else if (currentElementId === "Portrait") {
         if (!isClickedOnPortrait) setIisClickedOnPortrait(true);
         playAudio();
@@ -171,11 +172,11 @@ const Neprikosnovenna = () => {
               ref={buttonRef}
               id="BtnNeprikosnovenna"
               variant="neprikosnovenna"
-              zIndex={6}
+              zIndex={7}
               text="неприкосновенна"
-              isHoverAble={false}
-              isClickAble={false}
             />
+
+            <Background id="Background-1" ref={backgroundRef} type={BackgroundType.BLUE} zIndex={6} />
 
             <FlashProvider ref={flashProviderRef} zIndex={5} />
 
@@ -204,7 +205,7 @@ const Neprikosnovenna = () => {
         </div>
       </main>
 
-      <Background id="Background-0" variant="white" zIndex={0} />
+      <Background id="Background-0" type={BackgroundType.WHITE} zIndex={0} />
     </>
   );
 };
