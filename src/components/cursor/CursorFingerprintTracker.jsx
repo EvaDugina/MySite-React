@@ -385,8 +385,8 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
       const instanceCount = data.length;
       if (instanceCount === 0) return;
 
-      const canvasWidth = gl.canvas.width;
-      const canvasHeight = gl.canvas.height;
+      const canvasWidth = gl.canvas.clientWidth;
+      const canvasHeight = gl.canvas.clientHeight;
       const spriteSize = spriteSizePxRef.current;
       const sizeNdcX = spriteSize / canvasWidth;
       const sizeNdcY = spriteSize / canvasHeight;
