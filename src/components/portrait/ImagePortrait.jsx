@@ -1,5 +1,5 @@
 import styles from "./Portrait.module.scss";
-import React, { useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import { ImagePortraitType, StaticData } from "./ImagePortraitSettings.js";
 
 /**
@@ -18,20 +18,19 @@ const ImagePortrait = (props) => {
     setIsLoadedCallback,
   } = props;
 
-  const imageRef = useRef(null);
   const imagePortraitSrc = StaticData[type].src;
 
-  useEffect(() => {
+  const handleLoad = useCallback(() => {
     setIsLoadedCallback?.(true);
-  }, [imageRef.current]);
+  }, [setIsLoadedCallback]);
 
   return (
     <img
-      ref={imageRef}
       id={id}
       className={`${styles.portrait} ${styles["portrait--image"]} not-allowed z-${zIndex}`}
       src={imagePortraitSrc}
       alt="НЕПРИКОСНОВЕННА"
+      onLoad={handleLoad}
     />
   );
 };

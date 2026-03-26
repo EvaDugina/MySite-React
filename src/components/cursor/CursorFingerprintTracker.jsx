@@ -23,10 +23,11 @@ const getSpriteSizePx = (spriteRem) =>
  * @param {Object} props
  * @param {number} [props.zIndex]
  * @param {Function} [props.onReady] - called with fingerprint count when DB data is loaded
+ * @param {Function} [props.onFadeInComplete] - called when WebGL canvas fade-in transition ends
  * @param {boolean} [props.startFadeIn] - triggers CSS fade-in for WebGL canvas
  */
 const CursorFingerprintTracker = forwardRef((props, ref) => {
-  const { zIndex, onReady, startFadeIn } = props;
+  const { zIndex, onReady, onFadeInComplete, startFadeIn } = props;
   const {
     SPRITE_REM,
     ALPHA,
@@ -55,6 +56,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   const sessionCanvasRef = useRef(null);
   const glRef = useRef(null);
   const programRef = useRef(null);
+  const uniformLocsRef = useRef(null);
   const instanceBufferRef = useRef(null);
   const textureRef = useRef(null);
   const vaoRef = useRef(null);
@@ -87,7 +89,7 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (isReady && onReady) onReady(dbFingerprints.length);
-  }, [isReady]);
+  }, [isReady, onReady, dbFingerprints.length]);
 
   // ===== LAYER 2: Preload images =====
   useEffect(() => {
@@ -107,12 +109,25 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
   }, [IMAGE_URL, IMAGE_CLICKED_URL]);
 
   // ===== FADE-IN =====
+  const fadeInTimerRef = useRef(null);
+
   useEffect(() => {
     if (!startFadeIn) return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setIsVisible(true));
+    let raf1, raf2;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        setIsVisible(true);
+        fadeInTimerRef.current = setTimeout(() => {
+          onFadeInComplete?.();
+        }, FADE_IN_DURATION);
+      });
     });
-  }, [startFadeIn]);
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      if (fadeInTimerRef.current) clearTimeout(fadeInTimerRef.current);
+    };
+  }, [startFadeIn, onFadeInComplete, FADE_IN_DURATION]);
 
   // ===== LAYER 1: WebGL init (render-once) =====
   useEffect(() => {
@@ -267,6 +282,12 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
     }
 
     programRef.current = program;
+    uniformLocsRef.current = {
+      size: gl.getUniformLocation(program, "u_size"),
+      alpha: gl.getUniformLocation(program, "u_alpha"),
+      texture: gl.getUniformLocation(program, "u_texture"),
+      hotspot: gl.getUniformLocation(program, "u_hotspotShift"),
+    };
 
     if (isWebGL2) {
       const vao = gl.createVertexArray();
@@ -382,15 +403,11 @@ const CursorFingerprintTracker = forwardRef((props, ref) => {
 
       gl.useProgram(program);
 
-      const sizeLoc = gl.getUniformLocation(program, "u_size");
-      const alphaLoc = gl.getUniformLocation(program, "u_alpha");
-      const textureLoc = gl.getUniformLocation(program, "u_texture");
-      const hotspotLoc = gl.getUniformLocation(program, "u_hotspotShift");
-
-      gl.uniform2f(sizeLoc, sizeNdcX, sizeNdcY);
-      gl.uniform1f(alphaLoc, ALPHA);
-      gl.uniform1i(textureLoc, 0);
-      gl.uniform2f(hotspotLoc, hotspotShiftX, hotspotShiftY);
+      const locs = uniformLocsRef.current;
+      gl.uniform2f(locs.size, sizeNdcX, sizeNdcY);
+      gl.uniform1f(locs.alpha, ALPHA);
+      gl.uniform1i(locs.texture, 0);
+      gl.uniform2f(locs.hotspot, hotspotShiftX, hotspotShiftY);
 
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureRef.current);

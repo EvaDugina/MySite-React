@@ -14,15 +14,15 @@ import {
 } from "../components/cursor/CursorSettings.js";
 import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
-import {BackgroundType} from "../components/background/BackgroundSettings.js";
+import { BackgroundType } from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
-// import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
+
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
-import { FingerprintConfig } from "../components/cursor/CursorFingerprintTrackerSettings.js";
+
 
 const Zone = {
   NONE: 0,
@@ -38,46 +38,20 @@ const Neprikosnovenna = () => {
   const cursorTrackerRef = useRef(null);
   const buttonObeszhiritRef = useRef(null);
   const buttonRef = useRef(null);
-  // const portraitRef = useRef(null);
   const flashProviderRef = useRef(null);
   const backgroundSecondaryRef = useRef(null);
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
-  const [isClickedOnPortrait, setIisClickedOnPortrait] = useState(false);
+  const [isClickedOnPortrait, setIsClickedOnPortrait] = useState(false);
   const [isObezzhiritVisible, setIsObezzhiritVisible] = useState(false);
   const isObezzhiritVisibleRef = useRef(false);
   const dbHasFingerprintsRef = useRef(false);
-  const fadeInTimerRef = useRef(null);
-
-  // const isVideoEndedRef = useRef(false);
 
   //
   // AUDIO CONTROL
   //
 
-  const { playAudio } = useSoundEffect(
-    useMemo(() => "/audio/СимуляцияОргазма.mov", []),
-  );
-
-  //
-  // VIDEO CONTROLL
-  //
-
-  // useEffect(() => {
-  //   portraitRef.current.showVideo(false);
-  // }, [])
-
-  // const handleVideoEnded = useCallback(() => {
-  //     isVideoEndedRef.current = true;
-  //     buttonRef.current.reset();
-  //     backgroundSecondaryRef.current.changeType(BackgroundType.KETCHUP)
-  // }, []);
-
-  // const videoSettings = useMemo(() => {
-  //     return {
-  //         onEnded: handleVideoEnded,
-  //     };
-  // }, [handleVideoEnded]);
+  const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov");
 
   //
   // ОБЕЗЖИРИТЬ — логика появления
@@ -94,33 +68,21 @@ const Neprikosnovenna = () => {
   }, []);
 
   const handleTrackerReady = useCallback((count) => {
-    if (count > 0) {
-      dbHasFingerprintsRef.current = true;
-      fadeInTimerRef.current = setTimeout(() => {
-        showObezzhirit();
-      }, FingerprintConfig.FADE_IN_DURATION);
-    } else {
-      dbHasFingerprintsRef.current = false;
-    }
+    dbHasFingerprintsRef.current = count > 0;
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (fadeInTimerRef.current) clearTimeout(fadeInTimerRef.current);
-    };
-  }, []);
+  const handleFadeInComplete = useCallback(() => {
+    if (dbHasFingerprintsRef.current && !isObezzhiritVisibleRef.current) {
+      showObezzhirit();
+    }
+  }, [showObezzhirit]);
 
   //
   // CURSOR CONTROL
   //
 
-  const handleOnButton = () => {
-    // buttonRef.current.hover();
-  };
-
-  const handleOffButton = () => {
-    // buttonRef.current.reset();
-  };
+  const handleOnButton = () => {};
+  const handleOffButton = () => {};
 
   const handleOnObezzhirit = () => {
     buttonObeszhiritRef.current?.hover();
@@ -179,8 +141,7 @@ const Neprikosnovenna = () => {
   const handleLeftClickDown = useCallback(
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
-        if (!buttonRef.current.isDisabled()){
-          // portraitRef.current.playVideo();
+        if (!buttonRef.current.isDisabled()) {
           backgroundSecondaryRef.current.hide();
           buttonRef.current.disable();
         }
@@ -190,7 +151,7 @@ const Neprikosnovenna = () => {
         hideObezzhirit();
         dbHasFingerprintsRef.current = false;
       } else if (currentElementId === "Portrait") {
-        if (!isClickedOnPortrait) setIisClickedOnPortrait(true);
+        if (!isClickedOnPortrait) setIsClickedOnPortrait(true);
         playAudio();
         flashProviderRef.current.flashes(FlashType.VZGLAD);
         let cursorPosition = cursorRef.current.getPosition();
@@ -256,14 +217,6 @@ const Neprikosnovenna = () => {
               setIsLoadedCallback={setIsPortraitLoaded}
             />
 
-            {/* <PortraitProvider
-                id="Painting"
-                ref={portraitRef}
-                zIndex={2}
-                settings={videoSettings}
-                setIsLoadedCallback={setIsPortraitLoaded}
-            /> */}
-
             {isObezzhiritVisible && (
               <Button
                 ref={buttonObeszhiritRef}
@@ -289,6 +242,7 @@ const Neprikosnovenna = () => {
                 ref={cursorTrackerRef}
                 zIndex={5}
                 onReady={handleTrackerReady}
+                onFadeInComplete={handleFadeInComplete}
                 startFadeIn={isClickedOnPortrait}
               />
             )}
