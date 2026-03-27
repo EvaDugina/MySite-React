@@ -30,7 +30,7 @@ docker compose -f docker-compose.dev.yml up --build
 
 | Сервис | Образ | Порт | Описание |
 |--------|-------|------|----------|
-| `react-app` | `Dockerfile.dev.react` | 8080 → 5173 | Vite dev server с HMR |
+| `frontend` | `Dockerfile.dev.react` | 8080 → 5173 | Vite dev server с HMR |
 | `api` | `server/Dockerfile` | 3001 → 3001 | Express + SQLite |
 
 ### Особенности
@@ -45,7 +45,7 @@ docker compose -f docker-compose.dev.yml up --build
 ```
 Браузер → localhost:8080
               ↓
-         Vite dev server (контейнер react-app:5173)
+         Vite dev server (контейнер frontend:5173)
               ↓ proxy /api
          Express API (контейнер api:3001)
               ↓

@@ -18,11 +18,11 @@ import { BackgroundType } from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
 
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
-import useSoundEffect from "../hooks/useSoundEffect.js";
+// import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
-
+import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
 
 const Zone = {
   NONE: 0,
@@ -40,6 +40,7 @@ const Neprikosnovenna = () => {
   const buttonRef = useRef(null);
   const flashProviderRef = useRef(null);
   const backgroundSecondaryRef = useRef(null);
+  const pointerDeviceRef = useRef("d");
 
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
   const [isClickedOnPortrait, setIsClickedOnPortrait] = useState(false);
@@ -51,7 +52,7 @@ const Neprikosnovenna = () => {
   // AUDIO CONTROL
   //
 
-  const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov");
+  // const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov");
 
   //
   // ОБЕЗЖИРИТЬ — логика появления
@@ -138,6 +139,36 @@ const Neprikosnovenna = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const handlePointerEvent = (event) => {
+      pointerDeviceRef.current = event.pointerType === "touch" ? "m" : "d";
+    };
+
+    window.addEventListener("pointermove", handlePointerEvent, { passive: true });
+    window.addEventListener("pointerdown", handlePointerEvent, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerEvent);
+      window.removeEventListener("pointerdown", handlePointerEvent);
+    };
+  }, []);
+
+  const getPublicTrackerArticleRect = useCallback(() => {
+    return articleRef.current?.getBoundingClientRect() ?? null;
+  }, []);
+
+  const getPublicTrackerCursorPosition = useCallback(() => {
+    return cursorRef.current?.getPosition() ?? null;
+  }, []);
+
+  const getPublicTrackerIsCursorReady = useCallback(() => {
+    return cursorRef.current?.getIsReady?.() === true;
+  }, []);
+
+  const getPublicTrackerPointerDevice = useCallback(() => {
+    return pointerDeviceRef.current;
+  }, []);
+
   const handleLeftClickDown = useCallback(
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
@@ -152,7 +183,7 @@ const Neprikosnovenna = () => {
         dbHasFingerprintsRef.current = false;
       } else if (currentElementId === "Portrait") {
         if (!isClickedOnPortrait) setIsClickedOnPortrait(true);
-        playAudio();
+        // playAudio();
         flashProviderRef.current.flashes(FlashType.VZGLAD);
         let cursorPosition = cursorRef.current.getPosition();
         const articleRect = articleRef.current.getBoundingClientRect();
@@ -213,8 +244,24 @@ const Neprikosnovenna = () => {
           >
             <ImagePortrait
               id="Painting"
-              zIndex={2}
+              zIndex={1}
               setIsLoadedCallback={setIsPortraitLoaded}
+            />
+
+            <CursorPublicTracker
+              getArticleRect={getPublicTrackerArticleRect}
+              getCursorPosition={getPublicTrackerCursorPosition}
+              getIsCursorReady={getPublicTrackerIsCursorReady}
+              getPointerDevice={getPublicTrackerPointerDevice}
+              zIndex={9}
+            />
+
+            <Button
+              ref={buttonRef}
+              id="BtnNeprikosnovenna"
+              variant="neprikosnovenna"
+              zIndex={8}
+              text="неприкосновенна"
             />
 
             {isObezzhiritVisible && (
@@ -222,25 +269,17 @@ const Neprikosnovenna = () => {
                 ref={buttonObeszhiritRef}
                 id="BtnObeszhirit"
                 variant="obeszhirit"
-                zIndex={8}
+                zIndex={7}
                 text="обезжирить"
               />
             )}
 
-            <Button
-              ref={buttonRef}
-              id="BtnNeprikosnovenna"
-              variant="neprikosnovenna"
-              zIndex={7}
-              text="неприкосновенна"
-            />
-
-            <FlashProvider ref={flashProviderRef} zIndex={6} />
+            <FlashProvider ref={flashProviderRef} zIndex={4} />
 
             {isPortraitLoaded && (
               <CursorFingerprintTracker
                 ref={cursorTrackerRef}
-                zIndex={5}
+                zIndex={3}
                 onReady={handleTrackerReady}
                 onFadeInComplete={handleFadeInComplete}
                 startFadeIn={isClickedOnPortrait}
@@ -249,7 +288,7 @@ const Neprikosnovenna = () => {
 
             <div
               id="Portrait"
-              className="z-4"
+              className="z-2"
               style={{
                 position: "absolute",
                 width: "68%",

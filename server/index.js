@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { getAll, addBatch, getCount, clear, close } from './db.js'
+import { setupWebSocket, closeWebSocket } from './websocket.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -63,16 +64,19 @@ app.delete('/api/fingerprints', (req, res) => {
     res.json({ cleared: true })
 })
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Fingerprints API running on port ${PORT}`)
 })
+setupWebSocket(server)
 
 process.on('SIGINT', () => {
+    closeWebSocket()
     close()
     process.exit(0)
 })
 
 process.on('SIGTERM', () => {
+    closeWebSocket()
     close()
     process.exit(0)
 })

@@ -38,6 +38,7 @@ const Cursor = forwardRef((props, ref) => {
         disableCursor,
         stopCursor,
         startCursor,
+        getIsCursorReady,
         currentZoneDataRef,
     } = useCursor(
         settings,
@@ -79,7 +80,8 @@ const Cursor = forwardRef((props, ref) => {
         enable: enableCursor,
         stopVideo: stopCursor,
         start: startCursor,
-        getPosition: getPosition
+        getPosition: getPosition,
+        getIsReady: getIsCursorReady
     }));
 
     const className = [

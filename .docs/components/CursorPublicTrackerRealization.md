@@ -40,22 +40,38 @@
 
 ```
 setupWebSocket(httpServer):
-  - new WebSocketServer({ noServer: true })
-  - httpServer.on('upgrade') → проверка url === '/ws' → handleUpgrade
-  - clients = new Map<uuid, { id, x, y, device, lastSeen, ws, msgCount, msgWindowStart }>
+  - new WebSocketServer({ noServer: true, maxPayload: 256 })
+  - httpServer.on('upgrade') → проверка url === '/ws'
+    → если clients.size >= MAX_CONNECTIONS (100) → socket.destroy(), return
+    → иначе handleUpgrade
+  - clients = new Map<uuid, { id, x, y, device, lastSeen, ws, isAlive, msgCount, msgWindowStart }>
 
   on connection:
-    - id = crypto.randomUUID()
+    - id = crypto.randomUUID() (полный UUID на сервере, id.slice(0,8) в батче)
     - clients.set(id, ...)
 
   on message:
-    - rate limit: max 30 msg/sec на клиента
-    - JSON.parse → валидация t/x/y/d → обновить clients.get(id)
+    - проверить message.length < 128 до JSON.parse
+    - rate limit: max 30 msg/sec на клиента (скользящее окно 1 сек)
+    - JSON.parse → валидация:
+      - t === "p"
+      - typeof x === "number" && Number.isFinite(x) && x >= -200 && x <= 200
+      - typeof y === "number" && Number.isFinite(y) && y >= -200 && y <= 200
+      - d === "d" || d === "m"
+    - обновить clients.get(id)
 
   on close/error:
     - clients.delete(id)
 
+  on pong:
+    - client.isAlive = true
+
+  ping/pong (setInterval 30s):
+    - для каждого клиента: если !isAlive → ws.terminate()
+    - иначе isAlive = false, ws.ping()
+
   broadcast (setInterval 66ms ≈ 15Hz):
+    - запускать интервал при первом подключении, останавливать при последнем отключении
     - удалить stale: mobile > 2s, desktop > 5s
     - каждому клиенту отправить до 8 ДРУГИХ курсоров (самые свежие по lastSeen)
 
@@ -96,14 +112,20 @@ export const PublicCursorConfig = {
 usePublicCursors():
   Состояние (refs, не state — без ре-рендеров на каждый батч):
     - wsRef, cursorsRef (Map<id, {targetX, targetY, displayX, displayY, device}>)
-    - reconnectDelayRef, lastSendTimeRef
+    - reconnectDelayRef, lastSendTimeRef, mountedRef, connectedAtRef
 
   connect():
+    - если !mountedRef.current → return (guard от reconnect после unmount)
     - URL: ws(s)://${location.host}/ws
-    - onopen: сброс reconnect delay
+    - onopen: connectedAtRef = Date.now(), сброс reconnect delay
     - onmessage: парсинг батча → обновление cursorsRef → вызов onUpdate callback
       (onUpdate триггерит setState только при изменении набора cursor IDs)
-    - onclose: exponential backoff reconnect
+    - onerror: () => {} (no-op, onclose всегда следует за onerror)
+    - onclose(event):
+      - если event.code === 1000 (нормальное закрытие) → не переподключаться
+      - если !mountedRef.current → return
+      - сбрасывать backoff только если соединение жило > 5 сек
+      - exponential backoff reconnect
 
   sendPosition(x, y, device):
     - throttle 50ms
@@ -111,8 +133,10 @@ usePublicCursors():
 
   Tab visibility:
     - document.hidden → не отправляем позицию (сервер удалит по TTL)
+    - при возврате из hidden → немедленно отправить текущую позицию
 
   Cleanup:
+    - mountedRef.current = false
     - ws.close(), clearTimeout reconnect
 
   return { cursorsRef, sendPosition, setOnUpdate }
@@ -123,36 +147,55 @@ usePublicCursors():
 ```
 Props: { articleRef, cursorRef }
 
-  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  // Определение устройства по типу взаимодействия, а не по capabilities
+  lastPointerTypeRef = useRef('mouse')
+  // Слушать pointermove/pointerdown → lastPointerTypeRef = event.pointerType
 
   usePublicCursors() → { cursorsRef, sendPosition, setOnUpdate }
 
-  [visibleIds, setVisibleIds] = useState([])
+  [visibleIds, setVisibleIds] = useState([])   // активные курсоры
+  [fadingOutIds, setFadingOutIds] = useState([]) // курсоры в процессе исчезновения
   cursorElementsRef = Map<id, DOM element>
+  articleRectRef = useRef(null)  // кэшированный rect, обновляется по resize
+
+  // Кэширование articleRef.getBoundingClientRect()
+  useEffect: ResizeObserver на articleRef → обновить articleRectRef.current
 
   onUpdate callback:
     - сравнить текущие IDs с новыми
-    - если изменились → setVisibleIds([...cursorsRef.current.keys()])
+    - новые IDs → добавить в visibleIds
+    - исчезнувшие IDs → переместить из visibleIds в fadingOutIds,
+      установить opacity 0, setTimeout(FADE_OUT_DURATION) → удалить из fadingOutIds
 
-  rAF loop (animate):
-    1. Прочитать articleRef.getBoundingClientRect() → centerX, centerY
-    2. Для каждого курсора:
+  rAF loop (animate) — ТОЛЬКО рендер чужих курсоров:
+    1. if (!articleRectRef.current) return (null guard)
+    2. rect = articleRectRef.current, centerX/centerY из rect
+    3. Для каждого курсора (visibleIds + fadingOutIds):
        - lerp: displayX += (targetX - displayX) * LERP_FACTOR
        - screenX = centerX + (displayX / 100) * rect.width
        - el.style.transform = translate(-26.5%, -9%) translate3d(screenX, screenY, 0)
-    3. Отправить свою позицию:
-       - pos = cursorRef.current.getPosition()
-       - x = ((pos.x - centerX) / rect.width) * 100
-       - y = ((pos.y - centerY) / rect.height) * 100
-       - sendPosition(x, y, isMobile ? 'mobile' : 'desktop')
 
-  Fade in/out:
+  // Отправка своей позиции — ОТДЕЛЬНЫЙ setInterval(THROTTLE_MS):
+  useEffect: setInterval(50ms):
+    - if (document.hidden || !articleRectRef.current) return
+    - pos = cursorRef.current.getPosition()
+    - rect = articleRectRef.current
+    - centerX = rect.left + rect.width / 2
+    - centerY = rect.top + rect.height / 2
+    - x = ((pos.x - centerX) / rect.width) * 100
+    - y = ((pos.y - centerY) / rect.height) * 100
+    - device = lastPointerTypeRef.current === 'touch' ? 'm' : 'd'
+    - sendPosition(x, y, device)
+
+  Fade in:
     - Новый курсор: opacity 0 → OPACITY (CSS transition 300ms)
-    - Исчезнувший: opacity → 0 (transition 500ms), удалить после transitionend
 
   JSX:
     <div style={{ position: fixed, inset: 0, pointerEvents: none, zIndex: 998 }}>
-      {visibleIds.map(id => <img key={id} ref={...} src={POINTER} className={styles.publicCursor} />)}
+      {[...visibleIds, ...fadingOutIds].map(id =>
+        <img key={id} ref={el => { if (el) cursorElementsRef.current.set(id, el); else cursorElementsRef.current.delete(id) }}
+             src={POINTER} className={styles.publicCursor} />
+      )}
     </div>
 ```
 
@@ -241,16 +284,12 @@ location /ws {
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_read_timeout 86400s;
-    proxy_send_timeout 86400s;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
 }
 ```
 
-CSP: добавить `ws: wss:` в `connect-src`:
-```diff
-- connect-src 'self';
-+ connect-src 'self' ws: wss:;
-```
+CSP: изменений **не требуется** — `connect-src 'self'` уже разрешает ws:// и wss:// к тому же origin.
 
 ---
 
@@ -265,7 +304,7 @@ CSP: добавить `ws: wss:` в `connect-src`:
 7. `src/components/cursor/CursorPublicTracker.jsx` — компонент
 8. `src/pages/Neprikosnovenna.jsx` — интеграция
 9. `vite.config.js` — WS прокси
-10. `for-docker/nginx.conf` — WS location + CSP
+10. `for-docker/nginx.conf` — WS location (без изменения CSP)
 
 ---
 
@@ -278,3 +317,5 @@ CSP: добавить `ws: wss:` в `connect-src`:
 5. Проверить мобильный: DevTools → toggle device toolbar → коснуться экрана → в десктопной вкладке появляется курсор, исчезает через 2 сек
 6. Проверить reconnect: остановить/запустить api контейнер → WebSocket автоматически переподключается
 7. Проверить prod: `docker compose -f docker-compose.prod.yml up --build` → WebSocket работает через nginx
+8. Проверить CSP не изменён: WebSocket работает с `connect-src 'self'`
+9. DevTools → Performance → убедиться что нет layout thrashing в rAF

@@ -31,6 +31,7 @@ export function useCursor(
 
     const isStoppedRef = useRef(true);
     const isTargetNotInitRef = useRef(false);
+    const isTargetInitializedRef = useRef(false);
     const targetRef = useRef({ x: null, y: null });
     const windowSizeRef = useRef({
         width: null,
@@ -38,6 +39,9 @@ export function useCursor(
     });
 
     const updatePositionRef = useRef(null);
+    const getIsCursorReady = useCallback(() => {
+        return isTargetInitializedRef.current;
+    }, []);
 
     //
     // INITIALIZATION HOOKS
@@ -194,6 +198,7 @@ export function useCursor(
         // Инициализация на месте указателя
         if (isTargetNotInitRef.current) {
             isTargetNotInitRef.current = false;
+            isTargetInitializedRef.current = true;
             positionRef.current = { ...targetRef.current };
             setPosition(positionRef.current);
             showCursor();
@@ -238,6 +243,7 @@ export function useCursor(
         position,
         stopCursor,
         startCursor,
+        getIsCursorReady,
         currentZoneDataRef,
     };
 }

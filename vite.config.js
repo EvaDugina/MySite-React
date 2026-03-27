@@ -10,6 +10,11 @@ export default defineConfig({
         target: process.env.API_URL || 'http://localhost:3001',
         changeOrigin: true,
       },
+      '/ws': {
+        target: process.env.API_URL || 'http://localhost:3001',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })
