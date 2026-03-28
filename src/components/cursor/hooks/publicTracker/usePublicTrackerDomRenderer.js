@@ -12,10 +12,39 @@ export function usePublicTrackerDomRenderer({
     instanceDataByKeyRef,
 }) {
     const rafIdRef = useRef(null)
+    const enterAnimationFrameByKeyRef = useRef(new Map())
     const cursorElementsRef = useRef(new Map())
     const refCallbacksRef = useRef(new Map())
     const hotspotTranslateXPercent = -(HOTSPOT_X * 100)
     const hotspotTranslateYPercent = -(HOTSPOT_Y * 100)
+
+    const cancelEnterAnimation = useCallback((instanceKey) => {
+        const rafId = enterAnimationFrameByKeyRef.current.get(instanceKey)
+        if (!rafId) return
+        cancelAnimationFrame(rafId)
+        enterAnimationFrameByKeyRef.current.delete(instanceKey)
+    }, [])
+
+    const queueEnterAnimation = useCallback((instanceKey, el) => {
+        cancelEnterAnimation(instanceKey)
+
+        el.classList.remove(styles.publicCursorFadeOut)
+        el.classList.remove(styles.publicCursorVisible)
+        el.classList.remove(styles.publicCursorFadeIn)
+
+        const rafId = requestAnimationFrame(() => {
+            enterAnimationFrameByKeyRef.current.delete(instanceKey)
+
+            const currentEl = cursorElementsRef.current.get(instanceKey)
+            const data = instanceDataByKeyRef.current.get(instanceKey)
+            if (!currentEl || !data || !data.enterPending) return
+
+            currentEl.classList.add(styles.publicCursorFadeIn)
+            data.enterPending = false
+        })
+
+        enterAnimationFrameByKeyRef.current.set(instanceKey, rafId)
+    }, [cancelEnterAnimation, instanceDataByKeyRef])
 
     useEffect(() => {
         const activeKeys = new Set(renderItems.map(item => item.instanceKey))
@@ -25,7 +54,11 @@ export function usePublicTrackerDomRenderer({
         for (const key of [...cursorElementsRef.current.keys()]) {
             if (!activeKeys.has(key)) cursorElementsRef.current.delete(key)
         }
-    }, [renderItems])
+        for (const key of [...enterAnimationFrameByKeyRef.current.keys()]) {
+            if (activeKeys.has(key)) continue
+            cancelEnterAnimation(key)
+        }
+    }, [cancelEnterAnimation, renderItems])
 
     useEffect(() => {
         const animate = () => {
@@ -83,14 +116,13 @@ export function usePublicTrackerDomRenderer({
             if (!el || !data) continue
 
             if (data.enterPending) {
-                el.classList.remove(styles.publicCursorFadeOut)
-                void el.offsetWidth
-                el.classList.add(styles.publicCursorFadeIn)
-                data.enterPending = false
+                queueEnterAnimation(item.instanceKey, el)
                 continue
             }
 
             if (data.fadePending) {
+                cancelEnterAnimation(item.instanceKey)
+                el.classList.add(styles.publicCursorVisible)
                 el.classList.remove(styles.publicCursorFadeIn)
                 void el.offsetWidth
                 el.classList.add(styles.publicCursorFadeOut)
@@ -99,12 +131,16 @@ export function usePublicTrackerDomRenderer({
             }
 
             if (data.phase === 'fading') {
+                cancelEnterAnimation(item.instanceKey)
+                el.classList.add(styles.publicCursorVisible)
                 el.classList.add(styles.publicCursorFadeOut)
             } else {
+                cancelEnterAnimation(item.instanceKey)
                 el.classList.remove(styles.publicCursorFadeOut)
+                el.classList.add(styles.publicCursorVisible)
             }
         }
-    }, [instanceDataByKeyRef, renderItems])
+    }, [cancelEnterAnimation, instanceDataByKeyRef, queueEnterAnimation, renderItems])
 
     const getRefCallback = useCallback((instanceKey) => {
         const existing = refCallbacksRef.current.get(instanceKey)
@@ -112,6 +148,7 @@ export function usePublicTrackerDomRenderer({
 
         const callback = (el) => {
             if (!el) {
+                cancelEnterAnimation(instanceKey)
                 cursorElementsRef.current.delete(instanceKey)
                 return
             }
@@ -120,17 +157,26 @@ export function usePublicTrackerDomRenderer({
             const data = instanceDataByKeyRef.current.get(instanceKey)
             if (!data) return
             el.classList.remove(styles.publicCursorFadeIn, styles.publicCursorFadeOut)
-            if (data.phase === 'fading') {
+            if (data.enterPending) {
+                queueEnterAnimation(instanceKey, el)
+            } else if (data.phase === 'fading') {
+                el.classList.add(styles.publicCursorVisible)
                 el.classList.add(styles.publicCursorFadeOut)
+            } else if (data.phase === 'active') {
+                el.classList.add(styles.publicCursorVisible)
             }
         }
 
         refCallbacksRef.current.set(instanceKey, callback)
         return callback
-    }, [instanceDataByKeyRef])
+    }, [cancelEnterAnimation, instanceDataByKeyRef, queueEnterAnimation])
 
     useEffect(() => {
         return () => {
+            for (const [, enterRafId] of enterAnimationFrameByKeyRef.current) {
+                cancelAnimationFrame(enterRafId)
+            }
+            enterAnimationFrameByKeyRef.current.clear()
             cursorElementsRef.current.clear()
             refCallbacksRef.current.clear()
         }

@@ -16,13 +16,17 @@
     will-change: transform, opacity, filter;
 }
 
+.publicCursorVisible {
+    opacity: 1;
+}
+
 .publicCursorFadeIn {
-    animation: publicCursorFadeIn 300ms cubic-bezier(.25,.1,.25,1) forwards;
+    animation: publicCursorFadeIn 2000ms cubic-bezier(.25,.1,.25,1) forwards;
 }
 
 .publicCursorFadeOut {
     animation:
-        publicCursorPreFadeFlash 300ms ease-out forwards,
+        publicCursorPreFadeFlash 5000ms cubic-bezier(0,.41,.4,1.01) forwards,
         publicCursorFadeOutOpacity var(--public-cursor-fade-out-duration, 5000ms) cubic-bezier(0,.41,.4,1.01) 300ms forwards;
 }
 
@@ -40,7 +44,7 @@
         filter: brightness(1) blur(0);
     }
     35% {
-        filter: brightness(2) blur(0.75px);
+        filter: brightness(1.5) blur(0.75px);
     }
     100% {
         filter: brightness(1) blur(0);
