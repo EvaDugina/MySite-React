@@ -46,6 +46,7 @@ const CursorPublicTracker = ({
     const activeInstanceByCidRef = useRef(new Map())
     const instanceDataByKeyRef = useRef(new Map())
     const skippedSendsRef = useRef(0)
+    const readySkippedSendsRef = useRef(0)
     const lastValidSendAtRef = useRef(0)
     const hotspotTranslateXPercent = -(HOTSPOT_X * 100)
     const hotspotTranslateYPercent = -(HOTSPOT_Y * 100)
@@ -93,7 +94,16 @@ const CursorPublicTracker = ({
 
     const sendCurrentPosition = useCallback((reason) => {
         if (document.hidden) return
-        if (typeof getIsCursorReady === 'function' && !getIsCursorReady()) return
+        if (typeof getIsCursorReady === 'function' && !getIsCursorReady()) {
+            readySkippedSendsRef.current += 1
+            logPublic('skip send (cursor not ready)', {
+                reason,
+                cid: clientId,
+                skippedSends: readySkippedSendsRef.current,
+                lastValidSendAt: lastValidSendAtRef.current,
+            })
+            return
+        }
 
         const payload = getPayloadForSend()
         if (!payload) {

@@ -27,7 +27,7 @@ docker compose -f docker-compose.dev.yml run --rm app npm run lint
 docker-compose -f docker-compose.prod.yml up --build -d   # (nginx on :8080)
 ```
 
-No test framework is configured.
+Backend has lightweight unit tests based on built-in `node:test` for `server/realtime/*.test.js`.
 
 ### Backend (Fingerprints API)
 
@@ -35,11 +35,16 @@ No test framework is configured.
 cd server && npm install && npm run dev   # Express + SQLite on :3001
 ```
 
-Minimal REST API (`server/`) for shared fingerprint storage: `GET/POST/DELETE /api/fingerprints`. Stack: Express 5 + better-sqlite3. In dev Vite proxies `/api` to backend; in prod Nginx proxies `/api` to the `api` container.
+Backend (`server/`) includes:
+- REST API for shared fingerprint storage: `GET/POST/DELETE /api/fingerprints`
+- WebSocket realtime channel for public cursors: `GET /ws` (upgrade)
+
+Stack: Express 5 + better-sqlite3 + ws.
+In dev Vite proxies `/api` and `/ws` to backend; in prod Nginx proxies `/api` and `/ws` to the `api` container.
 
 ## Architecture
 
-**Stack:** React 19.2 + Vite 7.2 + react-router-dom 7.13, SCSS/CSS Modules, Express 5 + SQLite (backend), Docker + Nginx
+**Stack:** React 19.2 + Vite 7.2 + react-router-dom 7.13, SCSS/CSS Modules, Express 5 + SQLite + ws (backend), Docker + Nginx
 
 **Entry flow:** `index.html` → `src/index.jsx` → `App.jsx` → `AppRouter.jsx` → lazy-loaded pages
 
@@ -56,6 +61,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
 - **useCursorZone** — zone detection mapping elements to zones (NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3, OBEZZHIRIT: 4) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
+- **CursorPublicTracker** — realtime public cursors over WebSocket (`/ws`), with server-side batching, stale TTL cleanup, and client-side interpolation/fade
 
 ### Imperative Component Pattern
 
@@ -88,7 +94,7 @@ Each component has a `*Settings.js` file defining configuration objects/factorie
 
 Production uses two Docker containers orchestrated by `docker-compose.prod.yml`:
 
-- **frontend** — multi-stage build (`node:20-alpine` builder → `nginx:alpine`) on port 8080. Non-root user. Nginx config at `for-docker/nginx.conf` with SPA fallback, `/api` proxy to backend, security headers, gzip, 1-year immutable cache.
+- **frontend** — multi-stage build (`node:20-alpine` builder → `nginx:alpine`) on port 8080. Non-root user. Nginx config at `for-docker/nginx.conf` with SPA fallback, `/api` and `/ws` proxy to backend, security headers, gzip, 1-year immutable cache.
 - **api** — `node:20-alpine`, Express + SQLite on port 3001 (internal only, not exposed). Non-root `node` user. Named volume `neprikosnovenna-sqlite` for DB persistence. Healthcheck on `/api/fingerprints`.
 
 Frontend depends on api with `condition: service_healthy`.

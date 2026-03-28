@@ -1,202 +1,114 @@
-# Fingerprints API Server — Архитектура
+# Архитектура backend-сервера
 
-Минимальный REST API сервер для хранения отпечатков курсора. Общая БД для всех пользователей.
+## Назначение
 
----
+`server/` обслуживает две подсистемы:
 
-## Структура файлов
+1. REST API для хранения отпечатков курсора в SQLite.
+2. WebSocket realtime-канал `/ws` для публичных курсоров других пользователей.
 
-```
+## Структура `server/`
+
+```text
 server/
-    index.js          # Express сервер (HTTP endpoints)
-    db.js             # SQLite слой данных (better-sqlite3)
-    package.json      # Зависимости
-    Dockerfile        # Контейнеризация
+  index.js                  # composition root Express + WS bootstrap
+  db.js                     # SQLite слой (fingerprints)
+  websocket.js              # тонкий facade: setupWebSocket/closeWebSocket
+  realtime/
+    config.js               # лимиты/тайминги/пути WS
+    runtime.js              # orchestration: transport, broadcast, ping, cleanup
+    transport.js            # upgrade guard + binding ws events
+    protocol.js             # strict v2 parse/validate/serialize
+    registry.js             # состояние connections/sessions
+    presence.js             # применение позиции (x,y,d,lastSeen,hasPosition)
+    broadcast.js            # snapshot + batch delivery + stale cleanup
+    liveness.js             # ping/pong sweep
+    logger.js               # debug logger
+    *.test.js               # unit tests на node:test
 ```
 
----
+## Технологии
 
-## Стек
+- Express 5
+- better-sqlite3
+- ws
+- Node.js 20
+- Docker (dev/prod)
 
-- **Express 5** — HTTP сервер
-- **better-sqlite3** — синхронный SQLite-драйвер (самый быстрый для Node.js)
-- **cors** — CORS middleware
-- **Node.js 20** (Alpine в Docker)
+## HTTP API (`/api/fingerprints`)
 
----
+### `GET /api/fingerprints`
+- Возвращает все отпечатки.
 
-## API Endpoints
+### `POST /api/fingerprints`
+- Принимает `{ fingerprints: [{x, y}, ...] }`.
+- Валидация: `x` и `y` в диапазоне `[0, 100]`.
+- Batch insert внутри транзакции.
 
-### GET /api/fingerprints
+### `DELETE /api/fingerprints`
+- Удаляет все отпечатки.
 
-Возвращает все отпечатки из БД.
+## WebSocket API (`/ws`)
 
-```json
-// Response
-{ "fingerprints": [{ "x": 45.2, "y": 67.8 }, ...] }
-```
+### Протокол (strict v2)
 
-### POST /api/fingerprints
+Inbound:
 
-Batch-добавление отпечатков. Все вставки в одной транзакции.
+- `hello`: `{"t":"hello","cid":"...","sid":"..."}`
+- `p`: `{"t":"p","x":12.5,"y":-3.2,"d":"d"}` (`d` или `m`)
+- `bye`: `{"t":"bye"}`
 
-```json
-// Request
-{ "fingerprints": [{ "x": 45.2, "y": 67.8 }, { "x": 12.1, "y": 33.4 }] }
+Outbound:
 
-// Response
-{ "added": 2, "total": 1523 }
-```
+- `b`: `{"t":"b","c":[[cid,sid,x,y,d], ...]}`
 
-**Валидация:**
-- `fingerprints` — непустой массив
-- Каждый элемент: `x` и `y` — числа в диапазоне [0, 100]
+Legacy-форматы (например 4-элементные cursor entry) сервером считаются невалидными.
 
-### DELETE /api/fingerprints
+### Доставка cursor batch
 
-Очистка всех отпечатков.
+- Источники курсоров: только клиенты с `hasPosition=true`.
+- Получатели: любой **identified** клиент (после валидного `hello`) с открытым websocket.
+- В batched delivery сохраняется ограничение `MAX_CURSORS_PER_CLIENT`.
+- Если активных курсоров нет, identified-клиент получает `c: []` (нужно для корректного stale-удаления на клиенте).
 
-```json
-// Response
-{ "cleared": true }
-```
+### Lifecycle и очистка
 
----
+- Состояние клиента: `connection opened -> identified(hello) -> positioned(p)`.
+- Cleanup path единый для причин: `bye`, `stale`, `dead`, `close`, `error`, `shutdown`.
+- Stale TTL:
+  - mobile: 2s
+  - desktop: 5s
+  - old-lineage grace: 1.2s
+- Broadcast loop: ~15Hz (`66ms`).
+- Ping/pong loop: `30s`.
 
-## База данных (SQLite)
+## Интеграция с frontend
 
-### Схема
+Dev (`vite.config.js`):
 
-```sql
-CREATE TABLE fingerprints (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x REAL NOT NULL,
-    y REAL NOT NULL
-);
-```
+- proxy `/api` -> backend
+- proxy `/ws` -> backend (`ws: true`)
 
-Минимальный формат: только координаты в процентах. Без timestamp, без user info.
+Prod (`for-docker/nginx.conf`):
 
-### Оптимизации
+- proxy `/api` -> `api:3001`
+- proxy `/ws` -> `api:3001` (upgrade headers)
 
-- **WAL mode** (`journal_mode = WAL`) — параллельное чтение и запись
-- **NORMAL synchronous** — баланс скорости и надёжности
-- **Prepared statements** — `stmtGetAll`, `stmtInsert`, `stmtCount` создаются один раз
-- **Batch insert в транзакции** — `db.transaction()` для атомарной вставки массива
+## Graceful shutdown
 
-### Путь к файлу БД
+В `index.js` на `SIGINT/SIGTERM` вызываются:
 
-- Локально: `server/fingerprints.db` (рядом с index.js)
-- Docker: `/app/data/fingerprints.db` (через `DB_DIR=/app/data`)
+1. `closeWebSocket()`
+2. `close()` (закрытие SQLite)
 
----
+## Проверка
 
-## Функции db.js
-
-| Функция | Описание |
-|---------|----------|
-| `getAll()` | `SELECT x, y FROM fingerprints` — все записи |
-| `addBatch(fingerprints)` | INSERT массива в одной транзакции |
-| `getCount()` | `SELECT COUNT(*) FROM fingerprints` |
-| `clear()` | `DELETE FROM fingerprints` |
-| `close()` | Закрытие соединения с БД |
-
----
-
-## Docker
-
-### Dockerfile
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install --production
-COPY . .
-RUN mkdir -p /app/data
-ENV DB_DIR=/app/data
-EXPOSE 3001
-CMD ["node", "index.js"]
-```
-
-### docker-compose.dev.yml (сервис api)
-
-```yaml
-api:
-    build:
-        context: ./server
-        dockerfile: Dockerfile
-    container_name: fingerprints-api
-    ports:
-        - "3001:3001"
-    volumes:
-        - ./server/data:/app/data    # Персистентное хранение БД
-    environment:
-        - PORT=3001
-```
-
----
-
-## Интеграция с Frontend
-
-### Vite Proxy (vite.config.js)
-
-```js
-server: {
-    proxy: {
-        '/api': {
-            target: process.env.API_URL || 'http://localhost:3001',
-            changeOrigin: true,
-        },
-    },
-}
-```
-
-- Локально: proxy на `http://localhost:3001`
-- Docker: proxy на `http://api:3001` (через env `API_URL`)
-
-### Клиентский хук (useFingerprintAPI.js)
-
-- `GET /api/fingerprints` — при монтировании компонента
-- `POST /api/fingerprints` — debounced batch (500ms)
-- `DELETE /api/fingerprints` — при вызове `clearAllFingerprints()`
-
----
-
-## Graceful Shutdown
-
-Сервер корректно закрывает соединение с SQLite при SIGINT/SIGTERM:
-
-```js
-process.on('SIGINT', () => { close(); process.exit(0) })
-process.on('SIGTERM', () => { close(); process.exit(0) })
-```
-
----
-
-## Производительность
-
-| Операция | Скорость |
-|----------|----------|
-| SELECT ALL (10k записей) | < 5ms |
-| Batch INSERT (100 записей) | < 1ms |
-| COUNT | < 0.1ms |
-| DELETE ALL | < 1ms |
-
----
-
-## Запуск
+Внутри контейнера `api`:
 
 ```bash
-# Локально
-cd server && npm install && npm run dev
-
-# Docker
-docker compose -f docker-compose.dev.yml up --build -d
-
-# Отладка — очистка БД
-curl -X DELETE http://localhost:3001/api/fingerprints
-
-# Или из DevTools Console
-fetch('/api/fingerprints', { method: 'DELETE' })
+node --test /app/realtime/protocol.test.js \
+  /app/realtime/registry.test.js \
+  /app/realtime/broadcast.test.js \
+  /app/realtime/liveness.test.js
 ```
+
