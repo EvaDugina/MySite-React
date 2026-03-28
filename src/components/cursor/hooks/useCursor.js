@@ -139,6 +139,9 @@ export function useCursor(
     //
 
     const init = useCallback(() => {
+        isTargetNotInitRef.current = false;
+        isTargetInitializedRef.current = false;
+
         windowSizeRef.current = {
             width: window.innerWidth,
             height: window.innerHeight,
@@ -156,6 +159,7 @@ export function useCursor(
             };
             setPosition(positionRef.current);
             showCursor();
+            isTargetInitializedRef.current = true;
         } else {
             isTargetNotInitRef.current = true;
         }
@@ -168,6 +172,8 @@ export function useCursor(
     }, [settings, showCursor, startCursor, enableCursor, onBlur, onResize]);
 
     const destroy = useCallback(() => {
+        isTargetNotInitRef.current = false;
+        isTargetInitializedRef.current = false;
         stopCursor();
         disableCursor();
         window.removeEventListener("blur", onBlur);
@@ -198,10 +204,10 @@ export function useCursor(
         // Инициализация на месте указателя
         if (isTargetNotInitRef.current) {
             isTargetNotInitRef.current = false;
-            isTargetInitializedRef.current = true;
             positionRef.current = { ...targetRef.current };
             setPosition(positionRef.current);
             showCursor();
+            isTargetInitializedRef.current = true;
         }
 
         // Оптимизация. Условие остановки анимации, когда курсор неподвижен

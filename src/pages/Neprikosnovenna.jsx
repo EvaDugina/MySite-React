@@ -157,6 +157,10 @@ const Neprikosnovenna = () => {
     return articleRef.current?.getBoundingClientRect() ?? null;
   }, []);
 
+  const getPublicTrackerArticleElement = useCallback(() => {
+    return articleRef.current ?? null;
+  }, []);
+
   const getPublicTrackerCursorPosition = useCallback(() => {
     return cursorRef.current?.getPosition() ?? null;
   }, []);
@@ -250,6 +254,7 @@ const Neprikosnovenna = () => {
 
             <CursorPublicTracker
               getArticleRect={getPublicTrackerArticleRect}
+              getArticleElement={getPublicTrackerArticleElement}
               getCursorPosition={getPublicTrackerCursorPosition}
               getIsCursorReady={getPublicTrackerIsCursorReady}
               getPointerDevice={getPublicTrackerPointerDevice}

@@ -14,6 +14,7 @@ const DEBUG_PUBLIC_CURSOR = import.meta.env.VITE_PUBLIC_CURSOR_DEBUG === '1'
 const PAGE_SESSION_ID = createSessionId()
 const PAGE_BOOT_AT = Date.now()
 const PAGE_BOOT_SEQ = createBootSeq()
+let clientIdMemoryFallback = null
 
 function createClientId() {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -22,11 +23,39 @@ function createClientId() {
     return `pc_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`
 }
 
+function tryReadClientIdFromSessionStorage() {
+    try {
+        if (typeof sessionStorage === 'undefined') return null
+        const existing = sessionStorage.getItem(SESSION_CLIENT_ID_KEY)
+        if (typeof existing !== 'string' || existing.length === 0) return null
+        return existing
+    } catch {
+        return null
+    }
+}
+
+function tryWriteClientIdToSessionStorage(clientId) {
+    try {
+        if (typeof sessionStorage === 'undefined') return false
+        sessionStorage.setItem(SESSION_CLIENT_ID_KEY, clientId)
+        return true
+    } catch {
+        return false
+    }
+}
+
 function getOrCreateClientId() {
-    const existing = sessionStorage.getItem(SESSION_CLIENT_ID_KEY)
-    if (existing) return existing
+    const existing = tryReadClientIdFromSessionStorage()
+    if (existing) {
+        clientIdMemoryFallback = existing
+        return existing
+    }
+
+    if (clientIdMemoryFallback) return clientIdMemoryFallback
+
     const next = createClientId()
-    sessionStorage.setItem(SESSION_CLIENT_ID_KEY, next)
+    clientIdMemoryFallback = next
+    tryWriteClientIdToSessionStorage(next)
     return next
 }
 
@@ -259,7 +288,12 @@ export default function usePublicCursors() {
                 if (ws && ws.readyState === 1) {
                     try {
                         ws.send(JSON.stringify({ t: 'bye' }))
-                    } catch {
+                    } catch (error) {
+                        logPublic('failed to send bye', {
+                            cid: clientId,
+                            sid: sessionId,
+                            reason: error?.message,
+                        })
                     }
                 }
                 if (ws) {
@@ -289,7 +323,7 @@ export default function usePublicCursors() {
             }
             clearTransientState()
         }
-    }, [clearTransientState, connect])
+    }, [clearTransientState, clientId, connect, logPublic, sessionId])
 
     return {
         clientId,

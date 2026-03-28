@@ -15,6 +15,8 @@ import useCursor from "./hooks/useCursor.js";
  * @param {Object} props
  * @param {Object} props.settings - cursor config from createCursorSettings()
  * @param {React.MutableRefObject} props.zoneSettingsRef - ref with zone config from createCursorZoneSettings()
+ * @description Imperative ref API:
+ * hide(), show(), disable(), enable(), stopVideo(), start(), getPosition(), getIsReady()
  */
 const Cursor = forwardRef((props, ref) => {
     const { settings, zoneSettingsRef } = props;

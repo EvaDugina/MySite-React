@@ -11,6 +11,9 @@ const {
     SEND_INTERVAL_MS,
     MAX_CURSORS,
     IMAGE_URL,
+    CURSOR_SIZE_REM,
+    HOTSPOT_X,
+    HOTSPOT_Y,
     Z_INDEX,
 } = PublicCursorConfig
 
@@ -23,6 +26,7 @@ const CursorPhase = {
 
 const CursorPublicTracker = ({
     getArticleRect,
+    getArticleElement,
     getCursorPosition,
     getIsCursorReady,
     getPointerDevice,
@@ -43,6 +47,8 @@ const CursorPublicTracker = ({
     const instanceDataByKeyRef = useRef(new Map())
     const skippedSendsRef = useRef(0)
     const lastValidSendAtRef = useRef(0)
+    const hotspotTranslateXPercent = -(HOTSPOT_X * 100)
+    const hotspotTranslateYPercent = -(HOTSPOT_Y * 100)
 
     const logPublic = useCallback((message, data = null) => {
         if (!DEBUG_PUBLIC_CURSOR) return
@@ -53,7 +59,7 @@ const CursorPublicTracker = ({
         console.log(`[public-cursor] ${message}`, data)
     }, [])
 
-    const getValidArticleRect = useCallback(() => {
+    const refreshArticleRect = useCallback(() => {
         if (typeof getArticleRect !== 'function') return null
         const rect = getArticleRect()
         if (!rect) return null
@@ -64,7 +70,7 @@ const CursorPublicTracker = ({
     }, [getArticleRect])
 
     const getPayloadForSend = useCallback(() => {
-        const rect = getValidArticleRect()
+        const rect = articleRectRef.current || refreshArticleRect()
         if (!rect) return null
         if (typeof getCursorPosition !== 'function') return null
 
@@ -83,7 +89,7 @@ const CursorPublicTracker = ({
         }
 
         return { x, y, device }
-    }, [getCursorPosition, getPointerDevice, getValidArticleRect])
+    }, [getCursorPosition, getPointerDevice, refreshArticleRect])
 
     const sendCurrentPosition = useCallback((reason) => {
         if (document.hidden) return
@@ -298,24 +304,37 @@ const CursorPublicTracker = ({
 
     useEffect(() => {
         const updateRect = () => {
-            getValidArticleRect()
+            refreshArticleRect()
         }
 
         updateRect()
         window.addEventListener('resize', updateRect, { passive: true })
         window.addEventListener('scroll', updateRect, { passive: true })
 
+        let resizeObserver = null
+        const articleElement =
+            typeof getArticleElement === 'function'
+                ? getArticleElement()
+                : null
+        if (articleElement && typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => {
+                updateRect()
+            })
+            resizeObserver.observe(articleElement)
+        }
+
         return () => {
             window.removeEventListener('resize', updateRect)
             window.removeEventListener('scroll', updateRect)
+            if (resizeObserver) resizeObserver.disconnect()
         }
-    }, [getValidArticleRect])
+    }, [getArticleElement, refreshArticleRect])
 
     useEffect(() => {
         const animate = () => {
             rafIdRef.current = requestAnimationFrame(animate)
 
-            const rect = getValidArticleRect() || articleRectRef.current
+            const rect = articleRectRef.current
             if (!rect) return
 
             const centerX = rect.left + rect.width / 2
@@ -343,7 +362,7 @@ const CursorPublicTracker = ({
 
                 const screenX = centerX + (displayX / 100) * rect.width
                 const screenY = centerY + (displayY / 100) * rect.height
-                el.style.transform = `translate(-26.5%, -9%) translate3d(${screenX}px, ${screenY}px, 0)`
+                el.style.transform = `translate(${hotspotTranslateXPercent}%, ${hotspotTranslateYPercent}%) translate3d(${screenX}px, ${screenY}px, 0)`
             }
         }
 
@@ -351,7 +370,7 @@ const CursorPublicTracker = ({
         return () => {
             if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
         }
-    }, [cursorsRef, getValidArticleRect, renderItems])
+    }, [cursorsRef, hotspotTranslateXPercent, hotspotTranslateYPercent, renderItems])
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -426,7 +445,13 @@ const CursorPublicTracker = ({
     }, [])
 
     return (
-        <div className={styles.overlay} style={{ zIndex }}>
+        <div
+            className={styles.overlay}
+            style={{
+                zIndex,
+                '--public-cursor-size': `${CURSOR_SIZE_REM}rem`,
+            }}
+        >
             {renderItems.map(item => (
                 <img
                     key={item.instanceKey}
