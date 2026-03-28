@@ -9,6 +9,7 @@ import {
 import "./Cursor.css";
 import styles from "./Cursor.module.css";
 import useCursor from "./hooks/useCursor.js";
+import { getPublicCursorIconKeyByUrl } from "./PublicCursorIcons.js";
 
 /**
  * Custom physics-based cursor with zone detection.
@@ -19,7 +20,7 @@ import useCursor from "./hooks/useCursor.js";
  * hide(), show(), disable(), enable(), stopVideo(), start(), getPosition(), getIsReady()
  */
 const Cursor = forwardRef((props, ref) => {
-    const { settings, zoneSettingsRef } = props;
+    const { settings, zoneSettingsRef, onPublicIconChange = null } = props;
 
     const [src, setSrc] = useState(settings.imgCursor);
     const changeCursorSrc = useCallback((newSrc) => {
@@ -74,6 +75,10 @@ const Cursor = forwardRef((props, ref) => {
         handleLeftClickDownRef.current = handleLeftClickDown;
         handleLeftClickUpRef.current = handleLeftClickUp;
     }, [handleLeftClickDown, handleLeftClickUp]);
+
+    useEffect(() => {
+        onPublicIconChange?.(getPublicCursorIconKeyByUrl(src));
+    }, [onPublicIconChange, src]);
 
     useImperativeHandle(ref, () => ({
         hide: hideCursor,

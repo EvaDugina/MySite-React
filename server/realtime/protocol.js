@@ -55,8 +55,28 @@ function isValidPosition(msg) {
     )
 }
 
+function isIconMessage(msg) {
+    return (
+        msg !== null &&
+        typeof msg === 'object' &&
+        msg.t === 'i' &&
+        Object.prototype.hasOwnProperty.call(msg, 'i')
+    )
+}
+
 function isValidBye(msg) {
     return msg !== null && typeof msg === 'object' && msg.t === 'bye'
+}
+
+function normalizeIconKey(rawValue, config) {
+    if (typeof rawValue !== 'string') return config.DEFAULT_ICON_KEY
+    if (rawValue.length < config.ICON_KEY_MIN_LEN) return config.DEFAULT_ICON_KEY
+    if (rawValue.length > config.ICON_KEY_MAX_LEN) return config.DEFAULT_ICON_KEY
+    if (!ID_PATTERN.test(rawValue)) return config.DEFAULT_ICON_KEY
+    if (!config.ALLOWED_ICON_KEYS.includes(rawValue)) {
+        return config.DEFAULT_ICON_KEY
+    }
+    return rawValue
 }
 
 export function getSessionKey(cid, sid) {
@@ -89,11 +109,22 @@ export function parseIncomingMessage(rawData, config) {
     }
 
     if (isValidPosition(msg)) {
+        const hasIconKey = Object.prototype.hasOwnProperty.call(msg, 'i')
         return {
             kind: 'position',
             x: msg.x,
             y: msg.y,
             device: msg.d,
+            iconKey: hasIconKey
+                ? normalizeIconKey(msg.i, config)
+                : undefined,
+        }
+    }
+
+    if (isIconMessage(msg)) {
+        return {
+            kind: 'icon',
+            iconKey: normalizeIconKey(msg.i, config),
         }
     }
 
@@ -103,4 +134,3 @@ export function parseIncomingMessage(rawData, config) {
 export function serializeBatchMessage(cursors) {
     return JSON.stringify({ t: 'b', c: cursors })
 }
-

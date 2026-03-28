@@ -12,7 +12,7 @@ export function getActiveStats(registry) {
     }
 }
 
-export function createClientState({ ws, wsId, now }) {
+export function createClientState({ ws, wsId, now, defaultIconKey = 'pointer' }) {
     return {
         wsId,
         cid: null,
@@ -21,6 +21,7 @@ export function createClientState({ ws, wsId, now }) {
         x: null,
         y: null,
         device: 'd',
+        iconKey: defaultIconKey,
         lastSeen: now,
         hasPosition: false,
         ws,
@@ -75,4 +76,3 @@ export function bindClientSession(registry, client, cid, sid, sessionKey) {
         previousClient,
     }
 }
-

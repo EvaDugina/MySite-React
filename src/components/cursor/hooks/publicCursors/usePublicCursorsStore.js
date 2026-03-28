@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from '../../PublicCursorIcons.js'
 
 const STALE_BATCH_COUNT = 12
 
@@ -18,7 +19,7 @@ export function usePublicCursorsStore({ onUpdateRef }) {
         const newIds = new Set()
 
         for (const entry of entries) {
-            const { cid, sid, x, y, device } = entry
+            const { cid, sid, x, y, device, iconKey } = entry
             if (cid === clientId && sid === sessionId) continue
 
             const id = `${cid}:${sid}`
@@ -31,6 +32,9 @@ export function usePublicCursorsStore({ onUpdateRef }) {
                 existing.device = device
                 existing.cid = cid
                 existing.sid = sid
+                existing.iconKey = typeof iconKey === 'string'
+                    ? iconKey
+                    : DEFAULT_PUBLIC_CURSOR_ICON_KEY
             } else {
                 cursorsRef.current.set(id, {
                     cid,
@@ -40,6 +44,9 @@ export function usePublicCursorsStore({ onUpdateRef }) {
                     displayX: x,
                     displayY: y,
                     device,
+                    iconKey: typeof iconKey === 'string'
+                        ? iconKey
+                        : DEFAULT_PUBLIC_CURSOR_ICON_KEY,
                 })
             }
 

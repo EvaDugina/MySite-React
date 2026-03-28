@@ -19,9 +19,9 @@ Language in code/docs/UI is primarily **Russian**. Пиши **только на 
 docker compose -f docker-compose.dev.yml up --build  # Vite dev server
 
 # Build, preview, prod and lint only inside docker:
-docker compose -f docker-compose.dev.yml run --rm app npm run build
-docker compose -f docker-compose.dev.yml run --rm app npm run preview
-docker compose -f docker-compose.dev.yml run --rm app npm run lint
+docker compose -f docker-compose.dev.yml run --rm frontend npm run build
+docker compose -f docker-compose.dev.yml run --rm frontend npm run preview
+docker compose -f docker-compose.dev.yml run --rm frontend npm run lint
 
 # Production
 docker-compose -f docker-compose.prod.yml up --build -d   # (nginx on :8080)
@@ -61,7 +61,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
 - **useCursorZone** — zone detection mapping elements to zones (NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3, OBEZZHIRIT: 4) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
-- **CursorPublicTracker** — realtime public cursors over WebSocket (`/ws`) с декомпозицией на `hooks/publicTracker/*` (viewport/send loop/instances/dom renderer) и `hooks/publicCursors/*` (identity/protocol/store/connection), включая batching, stale cleanup, interpolation/fade
+- **CursorPublicTracker** — realtime public cursors over WebSocket (`/ws`) с `iconKey`-синхронизацией (позиция + иконка), fast-path icon update (`t:"i"`), hard gate по первому клику `BtnNeprikosnovenna`, и декомпозицией на `hooks/publicTracker/*` и `hooks/publicCursors/*`
 
 ### Imperative Component Pattern
 

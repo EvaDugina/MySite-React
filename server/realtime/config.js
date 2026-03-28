@@ -13,7 +13,17 @@ export const RealtimeConfig = Object.freeze({
     CLIENT_ID_MAX_LEN: 64,
     SESSION_ID_MIN_LEN: 12,
     SESSION_ID_MAX_LEN: 64,
+    DEFAULT_ICON_KEY: 'pointer',
+    ICON_KEY_MIN_LEN: 3,
+    ICON_KEY_MAX_LEN: 32,
+    ALLOWED_ICON_KEYS: [
+        'default',
+        'pointer',
+        'pointer_clicked',
+        'hand_open',
+        'hand_close',
+        'unavailable',
+    ],
     WS_PATH: '/ws',
     DEBUG_WS: process.env.WS_DEBUG === '1',
 })
-

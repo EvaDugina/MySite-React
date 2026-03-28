@@ -9,7 +9,8 @@ import usePublicCursorsConnection from './publicCursors/usePublicCursorsConnecti
 
 const DEBUG_PUBLIC_CURSOR = import.meta.env.VITE_PUBLIC_CURSOR_DEBUG === '1'
 
-export default function usePublicCursors() {
+export default function usePublicCursors(options = {}) {
+    const { enabled = true } = options
     const onUpdateRef = useRef(null)
     const onOpenRef = useRef(null)
     const [clientId] = useState(() => getOrCreateClientId())
@@ -29,7 +30,8 @@ export default function usePublicCursors() {
         onUpdateRef,
     })
 
-    const { sendPosition } = usePublicCursorsConnection({
+    const { sendPosition, sendIcon } = usePublicCursorsConnection({
+        enabled,
         clientId,
         sessionId,
         lineageRef,
@@ -52,6 +54,7 @@ export default function usePublicCursors() {
         sessionId,
         cursorsRef,
         sendPosition,
+        sendIcon,
         setOnUpdate,
         setOnOpen,
     }

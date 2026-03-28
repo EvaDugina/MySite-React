@@ -10,7 +10,7 @@ import {
     removeConnection,
     bindClientSession,
 } from './registry.js'
-import { applyPosition, clearPosition } from './presence.js'
+import { applyPosition, applyIconKey, clearPosition } from './presence.js'
 import { runBroadcast } from './broadcast.js'
 import { runPingSweep } from './liveness.js'
 import {
@@ -58,16 +58,7 @@ export function createRealtimeRuntime(configOverrides = {}) {
     function startLoopsIfNeeded() {
         if (!broadcastInterval) {
             broadcastInterval = setInterval(() => {
-                const result = runBroadcast({
-                    registry,
-                    config,
-                    now: Date.now(),
-                    cleanupClient,
-                    log,
-                })
-                if (result.shouldStopLoops) {
-                    stopLoops()
-                }
+                runBroadcastOnce(Date.now())
             }, config.BROADCAST_INTERVAL_MS)
         }
 
@@ -98,6 +89,19 @@ export function createRealtimeRuntime(configOverrides = {}) {
             cid: client.cid,
             sid: client.sid,
         })
+    }
+
+    function runBroadcastOnce(now) {
+        const result = runBroadcast({
+            registry,
+            config,
+            now,
+            cleanupClient,
+            log,
+        })
+        if (result.shouldStopLoops) {
+            stopLoops()
+        }
     }
 
     function cleanupClient(client, options = {}) {
@@ -220,6 +224,15 @@ export function createRealtimeRuntime(configOverrides = {}) {
         applyPosition(client, message, Date.now())
     }
 
+    function handleIcon(client, message) {
+        if (!client.sessionKey) {
+            logDrop(client, 'icon_before_hello')
+            return
+        }
+        applyIconKey(client, message.iconKey)
+        runBroadcastOnce(Date.now())
+    }
+
     function handleMessage(client, rawData) {
         const now = Date.now()
         if (isRateLimited(client, now)) {
@@ -249,6 +262,11 @@ export function createRealtimeRuntime(configOverrides = {}) {
 
         if (message.kind === 'position') {
             handlePosition(client, message)
+            return
+        }
+
+        if (message.kind === 'icon') {
+            handleIcon(client, message)
         }
     }
 
@@ -257,6 +275,7 @@ export function createRealtimeRuntime(configOverrides = {}) {
             ws,
             wsId: crypto.randomUUID(),
             now: Date.now(),
+            defaultIconKey: config.DEFAULT_ICON_KEY,
         })
         addConnection(registry, client)
 
@@ -333,4 +352,3 @@ export function createRealtimeRuntime(configOverrides = {}) {
         stop,
     }
 }
-

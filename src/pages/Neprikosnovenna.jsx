@@ -23,6 +23,7 @@ import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
 import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
+import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from "../components/cursor/PublicCursorIcons.js";
 
 const Zone = {
   NONE: 0,
@@ -45,6 +46,10 @@ const Neprikosnovenna = () => {
   const [isPortraitLoaded, setIsPortraitLoaded] = useState(false);
   const [isClickedOnPortrait, setIsClickedOnPortrait] = useState(false);
   const [isObezzhiritVisible, setIsObezzhiritVisible] = useState(false);
+  const [isPublicCursorsUnlocked, setIsPublicCursorsUnlocked] = useState(false);
+  const [publicCursorIconKey, setPublicCursorIconKey] = useState(
+    DEFAULT_PUBLIC_CURSOR_ICON_KEY,
+  );
   const isObezzhiritVisibleRef = useRef(false);
   const dbHasFingerprintsRef = useRef(false);
 
@@ -173,9 +178,16 @@ const Neprikosnovenna = () => {
     return pointerDeviceRef.current;
   }, []);
 
+  const handlePublicCursorIconChange = useCallback((iconKey) => {
+    setPublicCursorIconKey(iconKey);
+  }, []);
+
   const handleLeftClickDown = useCallback(
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
+        if (!isPublicCursorsUnlocked) {
+          setIsPublicCursorsUnlocked(true);
+        }
         if (!buttonRef.current.isDisabled()) {
           backgroundSecondaryRef.current.hide();
           buttonRef.current.disable();
@@ -207,13 +219,17 @@ const Neprikosnovenna = () => {
         }
       }
     },
-    [isClickedOnPortrait],
+    [
+      hideObezzhirit,
+      isClickedOnPortrait,
+      isPublicCursorsUnlocked,
+      showObezzhirit,
+    ],
   );
 
   const handleLeftClickUp = useCallback((currentElementId) => {
     if (currentElementId === "BtnNeprikosnovenna") {
       buttonRef.current.hover();
-    } else if (currentElementId === "Portrait") {
     }
   }, []);
 
@@ -239,6 +255,7 @@ const Neprikosnovenna = () => {
         ref={cursorRef}
         settings={cursorSettings}
         zoneSettingsRef={cursorZoneSettingsRef}
+        onPublicIconChange={handlePublicCursorIconChange}
       />
 
       <main className={styles.main}>
@@ -253,6 +270,8 @@ const Neprikosnovenna = () => {
             />
 
             <CursorPublicTracker
+              enabled={isPublicCursorsUnlocked}
+              currentIconKey={publicCursorIconKey}
               getArticleRect={getPublicTrackerArticleRect}
               getArticleElement={getPublicTrackerArticleElement}
               getCursorPosition={getPublicTrackerCursorPosition}

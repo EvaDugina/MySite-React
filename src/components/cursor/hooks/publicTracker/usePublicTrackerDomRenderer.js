@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
-import { PublicCursorConfig } from '../../CursorPublicTrackerSettings.js'
-
-const { FADE_OUT_DURATION } = PublicCursorConfig
+import styles from '../../CursorPublicTracker.module.css'
 
 const LERP_FACTOR = 0.15
-const OPACITY = 1
-const FADE_IN_DURATION = 300
 const HOTSPOT_X = 0.265
 const HOTSPOT_Y = 0.09
 
@@ -87,23 +83,26 @@ export function usePublicTrackerDomRenderer({
             if (!el || !data) continue
 
             if (data.enterPending) {
-                el.style.transition = 'none'
-                el.style.opacity = '0'
+                el.classList.remove(styles.publicCursorFadeOut)
                 void el.offsetWidth
-                el.style.transition = `opacity ${FADE_IN_DURATION}ms cubic-bezier(.25,.1,.25,1)`
-                el.style.opacity = String(OPACITY)
+                el.classList.add(styles.publicCursorFadeIn)
                 data.enterPending = false
                 continue
             }
 
             if (data.fadePending) {
-                el.style.transition = `opacity ${FADE_OUT_DURATION}ms cubic-bezier(0,.41,.4,1.01)`
-                el.style.opacity = '0'
+                el.classList.remove(styles.publicCursorFadeIn)
+                void el.offsetWidth
+                el.classList.add(styles.publicCursorFadeOut)
                 data.fadePending = false
                 continue
             }
 
-            el.style.opacity = data.phase === 'fading' ? '0' : String(OPACITY)
+            if (data.phase === 'fading') {
+                el.classList.add(styles.publicCursorFadeOut)
+            } else {
+                el.classList.remove(styles.publicCursorFadeOut)
+            }
         }
     }, [instanceDataByKeyRef, renderItems])
 
@@ -120,7 +119,10 @@ export function usePublicTrackerDomRenderer({
             cursorElementsRef.current.set(instanceKey, el)
             const data = instanceDataByKeyRef.current.get(instanceKey)
             if (!data) return
-            el.style.opacity = '0'
+            el.classList.remove(styles.publicCursorFadeIn, styles.publicCursorFadeOut)
+            if (data.phase === 'fading') {
+                el.classList.add(styles.publicCursorFadeOut)
+            }
         }
 
         refCallbacksRef.current.set(instanceKey, callback)

@@ -20,23 +20,24 @@
 - dev: proxy через `vite.config.js`
 - prod: proxy через `for-docker/nginx.conf`
 
-### Wire protocol (strict v2)
+### Wire protocol (strict v2+)
 
 Client -> Server:
 
 ```json
 {"t":"hello","cid":"pc_xxx","sid":"ps_xxx"}
-{"t":"p","x":12.5,"y":-3.2,"d":"d"}
+{"t":"p","x":12.5,"y":-3.2,"d":"d","i":"pointer"}
+{"t":"i","i":"pointer_clicked"}
 {"t":"bye"}
 ```
 
 Server -> Client:
 
 ```json
-{"t":"b","c":[["pc_a","ps_a",14.2,-5.1,"d"],["pc_b","ps_b",0.0,22.7,"m"]]}
+{"t":"b","c":[["pc_a","ps_a",14.2,-5.1,"d","pointer"],["pc_b","ps_b",0.0,22.7,"m","pointer_clicked"]]}
 ```
 
-Где `c` — массив `[cid, sid, x, y, d]`.
+Где `c` — массив `[cid, sid, x, y, d, iconKey]`.
 
 ## Серверная архитектура
 
@@ -87,25 +88,55 @@ Server -> Client:
 - `usePublicTrackerViewport.js` — актуальный `articleRect`, `ResizeObserver`,
   вычисление payload (`x`, `y`, `device`) для отправки.
 - `usePublicTrackerSendLoop.js` — периодическая отправка `p` (интервал + реакция
-  на `visibilitychange` + проверка `getIsCursorReady`).
+  на `visibilitychange` + проверка `getIsCursorReady`), отправка `iconKey` в `p`.
 - `usePublicTrackerInstances.js` — выбор активных инстансов, лимит по `cid`,
-  lifecycle `active -> fading -> remove`.
+  lifecycle `active -> fading -> remove`, синхронизация `iconKey` для активного
+  инстанса.
 - `usePublicTrackerDomRenderer.js` — `requestAnimationFrame`-LERP,
-  `translate3d`-позиционирование, fade-in/fade-out на DOM-элементах.
+  `translate3d`-позиционирование, class-based fade-in/fade-out.
 
 ### `usePublicCursors.js` + `hooks/publicCursors/*` (transport/runtime)
 
 - `usePublicCursors.js` — orchestrator c сохранением прежнего return API:
-  `clientId`, `sessionId`, `cursorsRef`, `sendPosition`, `setOnUpdate`,
-  `setOnOpen`.
+  `clientId`, `sessionId`, `cursorsRef`, `sendPosition`, `sendIcon`,
+  `setOnUpdate`, `setOnOpen`, + `enabled`-гейтинг.
 - `publicCursorIdentity.js` — генерация/переиспользование `clientId`,
   `sessionId`, boot lineage.
 - `publicCursorProtocol.js` — `hello/p/bye` serialize и парсинг `b`-батчей
-  (включая fallback для legacy entry).
+  + отдельное сообщение `i` (icon update).
 - `usePublicCursorsStore.js` — `cursorsRef`, stale cleanup по batch-счётчику,
-  `clearTransientState`.
+  `clearTransientState`, хранение `iconKey` на курсор.
 - `usePublicCursorsConnection.js` — WebSocket lifecycle, reconnect/backoff,
-  hidden/resume поведение.
+  hidden/resume поведение, отправка `sendIcon`.
+
+### Карта иконок
+
+Иконки публичных курсоров синхронизируются по `iconKey`, а не по URL.
+
+- На wire передаётся только `iconKey`.
+- URL берётся из локальной карты `PublicCursorIcons.js` (`iconKey -> URL`).
+- Неизвестный ключ fallback'ится в `DEFAULT_PUBLIC_CURSOR_ICON_KEY`.
+
+Это снижает размер payload и ускоряет смену иконок в realtime.
+
+### Гейтинг показа
+
+Публичные курсоры включаются только после первого нажатия
+`currentElementId === "BtnNeprikosnovenna"` в текущей вкладке:
+
+- до unlock: `CursorPublicTracker` работает в `enabled=false`, websocket не
+  поднимается и чужие курсоры не рендерятся;
+- после unlock: realtime запускается и остаётся включённым до перезагрузки
+  вкладки.
+
+### Анимации FADE_IN / FADE_OUT
+
+Fade-поведение управляется CSS-классами (редактируемо из stylesheet):
+
+- `publicCursorFadeIn` — отдельный класс входа;
+- `publicCursorFadeOut` — отдельный класс выхода;
+- перед затуханием выполняется 300ms вспышка:
+  `filter: brightness(2) blur(0.75px);`.
 
 ## Константы и Settings
 

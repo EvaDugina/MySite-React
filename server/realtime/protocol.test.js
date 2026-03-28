@@ -40,7 +40,7 @@ test('protocol rejects payloads over max size', () => {
 
 test('protocol parses valid position payload', () => {
     const msg = parseIncomingMessage(
-        Buffer.from(JSON.stringify({ t: 'p', x: 10, y: -5, d: 'd' })),
+        Buffer.from(JSON.stringify({ t: 'p', x: 10, y: -5, d: 'd', i: 'pointer_clicked' })),
         RealtimeConfig
     )
 
@@ -48,5 +48,25 @@ test('protocol parses valid position payload', () => {
     assert.equal(msg.x, 10)
     assert.equal(msg.y, -5)
     assert.equal(msg.device, 'd')
+    assert.equal(msg.iconKey, 'pointer_clicked')
 })
 
+test('protocol normalizes invalid icon key in position payload', () => {
+    const msg = parseIncomingMessage(
+        Buffer.from(JSON.stringify({ t: 'p', x: 0, y: 0, d: 'm', i: '!!!' })),
+        RealtimeConfig
+    )
+
+    assert.equal(msg.kind, 'position')
+    assert.equal(msg.iconKey, RealtimeConfig.DEFAULT_ICON_KEY)
+})
+
+test('protocol parses icon update payload', () => {
+    const msg = parseIncomingMessage(
+        Buffer.from(JSON.stringify({ t: 'i', i: 'pointer_clicked' })),
+        RealtimeConfig
+    )
+
+    assert.equal(msg.kind, 'icon')
+    assert.equal(msg.iconKey, 'pointer_clicked')
+})

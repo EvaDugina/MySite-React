@@ -11,5 +11,47 @@
     height: var(--public-cursor-size, 1.9rem);
     pointer-events: none;
     user-select: none;
-    will-change: transform, opacity;
+    opacity: 0;
+    filter: brightness(1) blur(0);
+    will-change: transform, opacity, filter;
+}
+
+.publicCursorFadeIn {
+    animation: publicCursorFadeIn 300ms cubic-bezier(.25,.1,.25,1) forwards;
+}
+
+.publicCursorFadeOut {
+    animation:
+        publicCursorPreFadeFlash 300ms ease-out forwards,
+        publicCursorFadeOutOpacity var(--public-cursor-fade-out-duration, 5000ms) cubic-bezier(0,.41,.4,1.01) 300ms forwards;
+}
+
+@keyframes publicCursorFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes publicCursorPreFadeFlash {
+    0% {
+        filter: brightness(1) blur(0);
+    }
+    35% {
+        filter: brightness(2) blur(0.75px);
+    }
+    100% {
+        filter: brightness(1) blur(0);
+    }
+}
+
+@keyframes publicCursorFadeOutOpacity {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }

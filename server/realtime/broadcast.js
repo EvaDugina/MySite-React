@@ -50,6 +50,7 @@ function snapshotCursors(registry) {
             x: client.x,
             y: client.y,
             device: client.device,
+            iconKey: client.iconKey,
             lastSeen: client.lastSeen,
         })
     }
@@ -57,12 +58,19 @@ function snapshotCursors(registry) {
     return allCursors
 }
 
-function buildCursorsForClient(client, allCursors, maxCursorsPerClient) {
+function buildCursorsForClient(client, allCursors, maxCursorsPerClient, defaultIconKey) {
     const cursors = []
     for (const cursor of allCursors) {
         if (cursor.sessionKey === client.sessionKey) continue
         if (cursor.wsId === client.wsId) continue
-        cursors.push([cursor.cid, cursor.sid, cursor.x, cursor.y, cursor.device])
+        cursors.push([
+            cursor.cid,
+            cursor.sid,
+            cursor.x,
+            cursor.y,
+            cursor.device,
+            cursor.iconKey || defaultIconKey,
+        ])
         if (cursors.length >= maxCursorsPerClient) break
     }
     return cursors
@@ -94,7 +102,8 @@ export function runBroadcast({
         const cursors = buildCursorsForClient(
             client,
             allCursors,
-            config.MAX_CURSORS_PER_CLIENT
+            config.MAX_CURSORS_PER_CLIENT,
+            config.DEFAULT_ICON_KEY
         )
 
         try {

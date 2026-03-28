@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import {
     buildByeMessage,
     buildHelloMessage,
+    buildIconMessage,
     buildPositionMessage,
     parseBatchMessage,
 } from './publicCursorProtocol.js'
@@ -13,6 +14,7 @@ const WS_PATH = '/ws'
 const MIN_HEALTHY_CONNECTION_MS = 5000
 
 export function usePublicCursorsConnection({
+    enabled,
     clientId,
     sessionId,
     lineageRef,
@@ -31,6 +33,7 @@ export function usePublicCursorsConnection({
     const connectRef = useRef(() => {})
 
     const connect = useCallback(() => {
+        if (!enabled) return
         if (!mountedRef.current) return
         if (isSuspendedRef.current) return
         if (wsRef.current && wsRef.current.readyState <= 1) return
@@ -116,25 +119,59 @@ export function usePublicCursorsConnection({
         applyBatch,
         clearTransientState,
         clientId,
+        enabled,
         lineageRef,
         logPublic,
         onOpenRef,
         sessionId,
     ])
 
-    const sendPosition = useCallback((x, y, device) => {
+    const sendPosition = useCallback((x, y, device, iconKey) => {
+        if (!enabled) return
         if (isSuspendedRef.current) return
 
         const ws = wsRef.current
         if (!ws || ws.readyState !== 1) return
         if (!Number.isFinite(x) || !Number.isFinite(y)) return
 
-        ws.send(buildPositionMessage(x, y, device))
-    }, [])
+        ws.send(buildPositionMessage(x, y, device, iconKey))
+    }, [enabled])
+
+    const sendIcon = useCallback((iconKey) => {
+        if (!enabled) return
+        if (isSuspendedRef.current) return
+        if (typeof iconKey !== 'string' || iconKey.length === 0) return
+
+        const ws = wsRef.current
+        if (!ws || ws.readyState !== 1) return
+        ws.send(buildIconMessage(iconKey))
+    }, [enabled])
 
     useEffect(() => {
         mountedRef.current = true
         connectRef.current = connect
+
+        if (!enabled) {
+            isSuspendedRef.current = true
+            if (reconnectTimerRef.current) {
+                clearTimeout(reconnectTimerRef.current)
+                reconnectTimerRef.current = null
+            }
+            if (wsRef.current) {
+                try {
+                    wsRef.current.close(1000, 'disabled')
+                } catch {
+                    // ignore close errors during explicit disable
+                }
+                wsRef.current = null
+            }
+            clearTransientState()
+            return () => {
+                mountedRef.current = false
+            }
+        }
+
+        isSuspendedRef.current = document.hidden
         connect()
 
         const handleVisibilityChange = () => {
@@ -183,9 +220,9 @@ export function usePublicCursorsConnection({
             }
             clearTransientState()
         }
-    }, [clearTransientState, clientId, connect, logPublic, sessionId])
+    }, [clearTransientState, clientId, connect, enabled, logPublic, sessionId])
 
-    return { sendPosition }
+    return { sendPosition, sendIcon }
 }
 
 export default usePublicCursorsConnection

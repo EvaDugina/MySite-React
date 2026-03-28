@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { PublicCursorConfig } from '../../CursorPublicTrackerSettings.js'
+import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from '../../PublicCursorIcons.js'
 
 const { FADE_OUT_DURATION } = PublicCursorConfig
 const MAX_CURSORS = 8
@@ -81,11 +82,16 @@ export function usePublicTrackerInstances({ cursorsRef, setOnUpdate }) {
     const createActiveInstance = useCallback((id, cursor) => {
         const instanceKey = `${id}#${instanceCounterRef.current++}`
         const now = Date.now()
+        const iconKey =
+            typeof cursor.iconKey === 'string'
+                ? cursor.iconKey
+                : DEFAULT_PUBLIC_CURSOR_ICON_KEY
         const data = {
             instanceKey,
             id,
             cid: cursor.cid,
             sid: cursor.sid,
+            iconKey,
             phase: CursorPhase.ACTIVE,
             enterPending: true,
             fadePending: false,
@@ -106,6 +112,7 @@ export function usePublicTrackerInstances({ cursorsRef, setOnUpdate }) {
                 id,
                 cid: cursor.cid,
                 sid: cursor.sid,
+                iconKey,
                 phase: CursorPhase.ACTIVE,
                 createdAt: now,
                 removeAt: null,
@@ -177,6 +184,26 @@ export function usePublicTrackerInstances({ cursorsRef, setOnUpdate }) {
                 startFadeOut(instanceKey)
             }
         }
+
+        setRenderItems((prev) => {
+            let changed = false
+            const next = prev.map((item) => {
+                if (item.phase !== CursorPhase.ACTIVE) return item
+                const cursor = cursorsRef.current.get(item.id)
+                if (!cursor) return item
+                const nextIconKey =
+                    typeof cursor.iconKey === 'string'
+                        ? cursor.iconKey
+                        : DEFAULT_PUBLIC_CURSOR_ICON_KEY
+                if (item.iconKey === nextIconKey) return item
+                changed = true
+                return {
+                    ...item,
+                    iconKey: nextIconKey,
+                }
+            })
+            return changed ? next : prev
+        })
     }, [createActiveInstance, cursorsRef, startFadeOut])
 
     useEffect(() => {

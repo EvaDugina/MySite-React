@@ -12,6 +12,7 @@ function makeClient({
     x = 1,
     y = 2,
     device = 'd',
+    iconKey = RealtimeConfig.DEFAULT_ICON_KEY,
     lastSeen,
     connectedAt,
 }) {
@@ -31,6 +32,7 @@ function makeClient({
         x,
         y,
         device,
+        iconKey,
         lastSeen,
         hasPosition,
         connectedAt,
@@ -59,6 +61,7 @@ test('broadcast sends only positioned cursors and excludes self', () => {
         x: 10,
         y: 11,
         device: 'm',
+        iconKey: 'pointer_clicked',
         lastSeen: now,
         connectedAt: now - 1000,
     })
@@ -90,7 +93,7 @@ test('broadcast sends only positioned cursors and excludes self', () => {
     assert.equal(receiver._sent.length, 1)
     const payload = JSON.parse(receiver._sent[0])
     assert.equal(payload.t, 'b')
-    assert.deepEqual(payload.c, [[other.cid, other.sid, 10, 11, 'm']])
+    assert.deepEqual(payload.c, [[other.cid, other.sid, 10, 11, 'm', 'pointer_clicked']])
 })
 
 test('broadcast sends empty list to identified client when no active cursors', () => {
@@ -121,6 +124,48 @@ test('broadcast sends empty list to identified client when no active cursors', (
     const payload = JSON.parse(receiver._sent[0])
     assert.equal(payload.t, 'b')
     assert.deepEqual(payload.c, [])
+})
+
+test('broadcast uses default icon key when cursor icon is missing', () => {
+    const now = Date.now()
+    const registry = createRegistry()
+
+    const receiver = makeClient({
+        wsId: 'ws-1',
+        cid: 'abcdefghijkl',
+        sid: 'mnopqrstuvwx',
+        hasPosition: false,
+        lastSeen: now,
+        connectedAt: now - 1000,
+    })
+
+    const other = makeClient({
+        wsId: 'ws-2',
+        cid: 'zzzzzzzzzzzz',
+        sid: 'yyyyyyyyyyyy',
+        x: 10,
+        y: 11,
+        device: 'd',
+        iconKey: null,
+        lastSeen: now,
+        connectedAt: now - 1000,
+    })
+
+    registry.connectionsByWs.set(receiver.ws, receiver)
+    registry.connectionsByWs.set(other.ws, other)
+    registry.clientsBySession.set(receiver.sessionKey, receiver)
+    registry.clientsBySession.set(other.sessionKey, other)
+
+    runBroadcast({
+        registry,
+        config: RealtimeConfig,
+        now,
+        cleanupClient: () => {},
+        log: { debug: () => {} },
+    })
+
+    const payload = JSON.parse(receiver._sent[0])
+    assert.deepEqual(payload.c, [[other.cid, other.sid, 10, 11, 'd', RealtimeConfig.DEFAULT_ICON_KEY]])
 })
 
 test('broadcast does not send to non-identified connection', () => {

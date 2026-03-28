@@ -3,10 +3,12 @@ import { useCallback, useEffect, useRef } from 'react'
 const SEND_INTERVAL_MS = 50
 
 export function usePublicTrackerSendLoop({
+    enabled,
     clientId,
     sendPosition,
     getIsCursorReady,
     getPayloadForSend,
+    currentIconKey,
     logPublic,
 }) {
     const skippedSendsRef = useRef(0)
@@ -14,6 +16,7 @@ export function usePublicTrackerSendLoop({
     const lastValidSendAtRef = useRef(0)
 
     const sendCurrentPosition = useCallback((reason) => {
+        if (!enabled) return
         if (document.hidden) return
 
         if (typeof getIsCursorReady === 'function' && !getIsCursorReady()) {
@@ -39,11 +42,20 @@ export function usePublicTrackerSendLoop({
             return
         }
 
-        sendPosition(payload.x, payload.y, payload.device)
+        sendPosition(payload.x, payload.y, payload.device, currentIconKey)
         lastValidSendAtRef.current = Date.now()
-    }, [clientId, getIsCursorReady, getPayloadForSend, logPublic, sendPosition])
+    }, [
+        clientId,
+        currentIconKey,
+        enabled,
+        getIsCursorReady,
+        getPayloadForSend,
+        logPublic,
+        sendPosition,
+    ])
 
     useEffect(() => {
+        if (!enabled) return undefined
         const handleVisibilityChange = () => {
             if (document.hidden) return
             sendCurrentPosition('visibilitychange')
@@ -52,9 +64,10 @@ export function usePublicTrackerSendLoop({
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange)
         }
-    }, [sendCurrentPosition])
+    }, [enabled, sendCurrentPosition])
 
     useEffect(() => {
+        if (!enabled) return undefined
         const intervalId = setInterval(() => {
             if (document.hidden) return
             sendCurrentPosition('interval')
@@ -63,7 +76,7 @@ export function usePublicTrackerSendLoop({
         return () => {
             clearInterval(intervalId)
         }
-    }, [sendCurrentPosition])
+    }, [enabled, sendCurrentPosition])
 
     return { sendCurrentPosition }
 }
