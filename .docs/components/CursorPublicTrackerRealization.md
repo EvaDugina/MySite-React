@@ -2,13 +2,15 @@
 
 ## Цель
 
-Показывать до `MAX_CURSORS` чужих курсоров поверх страницы `/neprikosnovenna` с плавной интерполяцией и fade-эффектами.
+Показывать до `MAX_CURSORS` чужих курсоров поверх страницы `/neprikosnovenna`
+с плавной интерполяцией и fade-эффектами.
 
 Ключевое поведение:
 
-- новые пользователи после `hello` получают чужие курсоры даже до отправки своего первого `p`;
+- новые пользователи после `hello` получают чужие курсоры даже до отправки
+  своего первого `p`;
 - собственный курсор пользователя в публичный список не попадает;
-- мобильные/десктопные курсоры удаляются по разным TTL.
+- мобильные/десктопные курсоры удаляются по разным TTL на сервере.
 
 ## Транспорт и протокол
 
@@ -43,16 +45,16 @@ Server -> Client:
 - `setupWebSocket(httpServer)`
 - `closeWebSocket()`
 
-Но реализация декомпозирована в `server/realtime`:
+Реализация декомпозирована в `server/realtime`:
 
-- `runtime.js` — orchestration lifecycle
-- `transport.js` — upgrade guard + ws events
-- `protocol.js` — parse/validate/serialize
-- `registry.js` — connections/sessions state
-- `presence.js` — применение `p`
-- `broadcast.js` — batch delivery и stale cleanup
-- `liveness.js` — ping/pong
-- `config.js`, `logger.js`
+- `runtime.js` — orchestration lifecycle;
+- `transport.js` — upgrade guard + ws events;
+- `protocol.js` — parse/validate/serialize;
+- `registry.js` — connections/sessions state;
+- `presence.js` — применение `p`;
+- `broadcast.js` — batch delivery и stale cleanup;
+- `liveness.js` — ping/pong;
+- `config.js`, `logger.js`.
 
 ### Broadcast правила
 
@@ -62,52 +64,80 @@ Server -> Client:
 
 Получатели batch:
 
-- любой identified-клиент с `readyState === OPEN` (даже без собственной позиции).
+- любой identified-клиент с `readyState === OPEN` (даже без собственной
+  позиции).
 
-Это позволяет показать уже активные чужие курсоры сразу после `hello`, не дожидаясь локальной инициализации курсора.
+Это позволяет показать уже активные чужие курсоры сразу после `hello`,
+не дожидаясь локальной инициализации курсора.
 
-## Клиентская часть
+## Клиентская архитектура
 
-### `usePublicCursors.js`
+Клиентская часть декомпозирована по тому же принципу, что backend:
+`orchestrator + transport/store/render`.
 
-- открывает WS-соединение на `/ws`;
-- отправляет `hello` на `onopen`;
-- принимает `b`-батчи и обновляет `cursorsRef`;
-- отправка позиции (`p`) выполняется только отдельно через `sendPosition(...)`;
-- при скрытии вкладки отправляет `bye`, закрывает сокет и чистит transient state;
-- на reconnect использует exponential backoff.
+### `CursorPublicTracker.jsx` (тонкий orchestrator)
 
-Примечание:
+- собирает и связывает хуки `publicTracker/*`;
+- рендерит overlay и `<img>`-курсор;
+- сохраняет публичный API компонента (те же props, тот же контракт интеграции в
+  `Neprikosnovenna.jsx`).
 
-- в парсинге client-side сохраняется fallback для legacy entry (`entry.length < 5`);
-- сервер работает в strict v2, поэтому legacy-формат сейчас не ожидается, fallback оставлен только ради совместимости клиента.
+### `hooks/publicTracker/*` (UI-runtime)
 
-### `CursorPublicTracker.jsx`
+- `usePublicTrackerViewport.js` — актуальный `articleRect`, `ResizeObserver`,
+  вычисление payload (`x`, `y`, `device`) для отправки.
+- `usePublicTrackerSendLoop.js` — периодическая отправка `p` (интервал + реакция
+  на `visibilitychange` + проверка `getIsCursorReady`).
+- `usePublicTrackerInstances.js` — выбор активных инстансов, лимит по `cid`,
+  lifecycle `active -> fading -> remove`.
+- `usePublicTrackerDomRenderer.js` — `requestAnimationFrame`-LERP,
+  `translate3d`-позиционирование, fade-in/fade-out на DOM-элементах.
 
-- рендерит курсоры в overlay (`position: fixed; inset: 0`);
-- интерполирует позиции через LERP в `requestAnimationFrame`;
-- делает fade-in/fade-out на уровне DOM-элементов;
-- отправляет локальную позицию по интервалу (`SEND_INTERVAL_MS`, сейчас 50ms);
-- если локальный курсор ещё не готов (`getIsCursorReady() === false`), отправка `p` откладывается, но приём чужих batch продолжается.
+### `usePublicCursors.js` + `hooks/publicCursors/*` (transport/runtime)
 
-## Актуальные параметры
+- `usePublicCursors.js` — orchestrator c сохранением прежнего return API:
+  `clientId`, `sessionId`, `cursorsRef`, `sendPosition`, `setOnUpdate`,
+  `setOnOpen`.
+- `publicCursorIdentity.js` — генерация/переиспользование `clientId`,
+  `sessionId`, boot lineage.
+- `publicCursorProtocol.js` — `hello/p/bye` serialize и парсинг `b`-батчей
+  (включая fallback для legacy entry).
+- `usePublicCursorsStore.js` — `cursorsRef`, stale cleanup по batch-счётчику,
+  `clearTransientState`.
+- `usePublicCursorsConnection.js` — WebSocket lifecycle, reconnect/backoff,
+  hidden/resume поведение.
 
-См. `CursorPublicTrackerSettings.js` и `server/realtime/config.js`.
+## Константы и Settings
 
-Важные значения по умолчанию:
+Для `CursorPublicTracker` применяется правило:
 
-- broadcast interval: 66ms (~15Hz)
-- send interval client->server: 50ms
-- stale ttl mobile: 2s
-- stale ttl desktop: 5s
-- max cursors per client: 8
+- **single-use константы** хранятся рядом с местом применения (конкретный
+  компонент/хук);
+- в `CursorPublicTrackerSettings.js` остаются только **shared-константы**,
+  используемые более чем в одном месте.
+
+Текущее состояние:
+
+- `CursorPublicTrackerSettings.js` содержит только `FADE_OUT_DURATION`
+  (shared между `usePublicTrackerInstances` и `usePublicTrackerDomRenderer`);
+- остальные значения (`SEND_INTERVAL_MS`, `LERP_FACTOR`, `MAX_CURSORS`,
+  `WS_PATH`, reconnect-параметры и т.д.) локализованы по хукам.
+
+## Актуальные параметры (по умолчанию)
+
+- broadcast interval (server): `66ms` (~15Hz)
+- send interval client -> server: `50ms`
+- stale ttl mobile (server): `2s`
+- stale ttl desktop (server): `5s`
+- max cursors per client: `8`
 
 ## Проверка
 
 1. Запустить `docker compose -f docker-compose.dev.yml up --build`.
 2. Открыть страницу в двух вкладках.
 3. Во вкладке A дождаться инициализации локального курсора и подвигать мышь.
-4. Во вкладке B проверить, что чужой курсор появляется после `hello`, даже если локальный курсор B ещё не готов.
+4. Во вкладке B проверить, что чужой курсор появляется после `hello`, даже если
+   локальный курсор B ещё не готов.
 5. Закрыть вкладку A и убедиться, что курсор плавно исчезает.
 6. Запустить backend unit tests:
 
@@ -117,4 +147,3 @@ node --test /app/realtime/protocol.test.js \
   /app/realtime/broadcast.test.js \
   /app/realtime/liveness.test.js
 ```
-

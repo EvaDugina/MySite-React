@@ -61,7 +61,7 @@ The most complex subsystem. Custom physics-based cursor replacing the browser de
 - **useCursor** — orchestrator: events, resize, animation loop, zone changes
 - **useCursorZone** — zone detection mapping elements to zones (NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3, OBEZZHIRIT: 4) with cursor icon/behavior changes
 - **CursorFingerprintTracker** — two-layer fingerprint renderer (WebGL instanced for DB data, 2D Canvas for session) with shared SQLite backend via Express API
-- **CursorPublicTracker** — realtime public cursors over WebSocket (`/ws`), with server-side batching, stale TTL cleanup, and client-side interpolation/fade
+- **CursorPublicTracker** — realtime public cursors over WebSocket (`/ws`) с декомпозицией на `hooks/publicTracker/*` (viewport/send loop/instances/dom renderer) и `hooks/publicCursors/*` (identity/protocol/store/connection), включая batching, stale cleanup, interpolation/fade
 
 ### Imperative Component Pattern
 
@@ -78,7 +78,8 @@ Pages orchestrate complex interaction sequences by calling these imperatively.
 
 ### Settings Pattern
 
-Each component has a `*Settings.js` file defining configuration objects/factories (cursor types, background types, flash types, portrait types). These are the single source of truth for component variants.
+`*Settings.js` используется для shared-констант и конфигураций вариантов компонентов.  
+Если константа используется только в одном компоненте/хуке, она хранится рядом с местом использования (пример: `CursorPublicTracker` после декомпозиции).
 
 ## Code Style (from .docs/RulesCoding.md)
 
