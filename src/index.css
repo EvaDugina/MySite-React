@@ -139,6 +139,10 @@ body,
     z-index: 9;
 }
 
+.z-10 {
+    z-index: 10;
+}
+
 .z-998 {
     z-index: 998;
 }

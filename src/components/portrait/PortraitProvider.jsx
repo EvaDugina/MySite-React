@@ -29,10 +29,6 @@ const PortraitProvider = forwardRef((props, ref) => {
         scrollToStartVideo
     } = useVideoController(settings, videoRef);
 
-      useEffect(() => {
-        setIsLoadedCallback?.(true);
-      }, [videoRef.current]);
-
     const changeImagePortraitType = useCallback((newImagePortraitType) => {
         if (!Object.values(ImagePortraitType).includes(newImagePortraitType)) {
             const validValues = Object.values(ImagePortraitType);
@@ -63,6 +59,7 @@ const PortraitProvider = forwardRef((props, ref) => {
                 id={id}
                 type={imagePortraitType}
                 zIndex={zIndex}
+                setIsLoadedCallback={setIsLoadedCallback}
             />
         </figure>
     </>);

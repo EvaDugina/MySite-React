@@ -16,7 +16,7 @@ import Cursor from "../components/cursor/Cursor.jsx";
 import Background from "../components/background/Background.jsx";
 import { BackgroundType } from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
-
+import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 // import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
@@ -37,8 +37,9 @@ const Neprikosnovenna = () => {
   const cursorRef = useRef(null);
   const articleRef = useRef(null);
   const cursorTrackerRef = useRef(null);
+  const portraitRef = useRef(null);
   const buttonObeszhiritRef = useRef(null);
-  const buttonRef = useRef(null);
+  const buttonNeprikosnovennaRef = useRef(null);
   const flashProviderRef = useRef(null);
   const backgroundSecondaryRef = useRef(null);
   const pointerDeviceRef = useRef("d");
@@ -50,8 +51,31 @@ const Neprikosnovenna = () => {
   const [publicCursorIconKey, setPublicCursorIconKey] = useState(
     DEFAULT_PUBLIC_CURSOR_ICON_KEY,
   );
+
+  const isVideoEndedRef = useRef(false);
+  const isFadeInCompleteRef = useRef(false);
   const isObezzhiritVisibleRef = useRef(false);
   const dbHasFingerprintsRef = useRef(false);
+
+
+  //
+  // VIDEO CONTROL
+  //
+
+  useEffect(() => {
+    portraitRef.current.showVideo(false);
+  }, []);
+
+  const handleVideoEnded = useCallback(() => {
+      isVideoEndedRef.current = true;
+      // backgroundSecondaryRef.current.changeType(BackgroundType.KETCHUP)
+  }, []);
+
+  const videoSettings = useMemo(() => {
+      return {
+          onEnded: handleVideoEnded,
+      };
+  }, [handleVideoEnded]);
 
   //
   // AUDIO CONTROL
@@ -60,8 +84,12 @@ const Neprikosnovenna = () => {
   // const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov");
 
   //
-  // ОБЕЗЖИРИТЬ — логика появления
+  // НЕПРИКОСНОВЕННА / ОБЕЗЖИРИТЬ — логика поведения / появления
   //
+
+  const enableButtonNeprikosnovenna = useCallback(() => {
+    buttonNeprikosnovennaRef.current.reset();
+  }, []);
 
   const showObezzhirit = useCallback(() => {
     isObezzhiritVisibleRef.current = true;
@@ -78,17 +106,27 @@ const Neprikosnovenna = () => {
   }, []);
 
   const handleFadeInComplete = useCallback(() => {
-    if (dbHasFingerprintsRef.current && !isObezzhiritVisibleRef.current) {
+    if (dbHasFingerprintsRef.current && !isFadeInCompleteRef.current) {
+      isFadeInCompleteRef.current = true;
       showObezzhirit();
+      enableButtonNeprikosnovenna();
     }
-  }, [showObezzhirit]);
+  }, [showObezzhirit, enableButtonNeprikosnovenna]);
 
   //
   // CURSOR CONTROL
   //
 
-  const handleOnButton = () => {};
-  const handleOffButton = () => {};
+  const handleOnButton = () => {
+    if (isFadeInCompleteRef.current) {
+      buttonNeprikosnovennaRef.current.hover();
+    }
+  };
+  const handleOffButton = () => {
+    if (isFadeInCompleteRef.current) {
+      buttonNeprikosnovennaRef.current.reset();
+    }
+  };
 
   const handleOnObezzhirit = () => {
     buttonObeszhiritRef.current?.hover();
@@ -186,11 +224,12 @@ const Neprikosnovenna = () => {
     (currentElementId) => {
       if (currentElementId === "BtnNeprikosnovenna") {
         if (!isPublicCursorsUnlocked) {
+          portraitRef.current.playVideo();
           setIsPublicCursorsUnlocked(true);
-        }
-        if (!buttonRef.current.isDisabled()) {
           backgroundSecondaryRef.current.hide();
-          buttonRef.current.disable();
+          buttonNeprikosnovennaRef.current.disable();
+        } else if (isFadeInCompleteRef.current) {
+          buttonNeprikosnovennaRef.current.click();
         }
       } else if (currentElementId === "BtnObeszhirit") {
         buttonObeszhiritRef.current.click();
@@ -229,7 +268,7 @@ const Neprikosnovenna = () => {
 
   const handleLeftClickUp = useCallback((currentElementId) => {
     if (currentElementId === "BtnNeprikosnovenna") {
-      buttonRef.current.hover();
+      buttonNeprikosnovennaRef.current.hover();
     }
   }, []);
 
@@ -263,10 +302,18 @@ const Neprikosnovenna = () => {
             ref={articleRef}
             className={`${styles["portrait-container-default"]}`}
           >
-            <ImagePortrait
+            {/* <ImagePortrait
               id="Painting"
               zIndex={1}
               setIsLoadedCallback={setIsPortraitLoaded}
+            /> */}
+
+            <PortraitProvider
+                id="Painting"
+                ref={portraitRef}
+                zIndex={1}
+                settings={videoSettings}
+                setIsLoadedCallback={setIsPortraitLoaded}
             />
 
             <CursorPublicTracker
@@ -281,14 +328,14 @@ const Neprikosnovenna = () => {
             />
 
             <Button
-              ref={buttonRef}
+              ref={buttonNeprikosnovennaRef}
               id="BtnNeprikosnovenna"
               variant="neprikosnovenna"
               zIndex={8}
               text="неприкосновенна"
             />
 
-            {isObezzhiritVisible && (
+            {/* {isObezzhiritVisible && (
               <Button
                 ref={buttonObeszhiritRef}
                 id="BtnObeszhirit"
@@ -296,14 +343,14 @@ const Neprikosnovenna = () => {
                 zIndex={7}
                 text="обезжирить"
               />
-            )}
+            )} */}
 
-            <FlashProvider ref={flashProviderRef} zIndex={4} />
+            <FlashProvider ref={flashProviderRef} zIndex={5} />
 
             {isPortraitLoaded && (
               <CursorFingerprintTracker
                 ref={cursorTrackerRef}
-                zIndex={3}
+                zIndex={4}
                 onReady={handleTrackerReady}
                 onFadeInComplete={handleFadeInComplete}
                 startFadeIn={isClickedOnPortrait}
@@ -312,7 +359,7 @@ const Neprikosnovenna = () => {
 
             <div
               id="Portrait"
-              className="z-2"
+              className="z-3"
               style={{
                 position: "absolute",
                 width: "68%",
