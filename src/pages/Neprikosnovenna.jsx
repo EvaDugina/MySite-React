@@ -22,6 +22,7 @@ import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
+import CursorMoveParalax from "../components/parallax/CursorMoveParalax.jsx";
 // import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
 import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from "../components/cursor/PublicCursorIcons.js";
 
@@ -49,6 +50,7 @@ const Neprikosnovenna = () => {
   const [isClickedOnPortrait, setIsClickedOnPortrait] = useState(false);
   const [isObezzhiritVisible, setIsObezzhiritVisible] = useState(false);
   const [isPublicCursorsUnlocked, setIsPublicCursorsUnlocked] = useState(false);
+  const [isParallaxVisible, setIsParallaxVisible] = useState(false);
   const [publicCursorIconKey, setPublicCursorIconKey] = useState(
     DEFAULT_PUBLIC_CURSOR_ICON_KEY,
   );
@@ -109,6 +111,7 @@ const Neprikosnovenna = () => {
   const handleFadeInComplete = useCallback(() => {
     if (dbHasFingerprintsRef.current && !isFadeInCompleteRef.current) {
       isFadeInCompleteRef.current = true;
+      setIsParallaxVisible(true);
       showObezzhirit();
       enableButtonNeprikosnovenna();
     }
@@ -322,6 +325,18 @@ const Neprikosnovenna = () => {
                 setIsLoadedCallback={setIsPortraitLoaded}
             />
 
+            {/* <CursorMoveParalax
+              zIndex={10}
+              maxOffsetX={12}
+              maxOffsetY={12}
+              direction={-1}
+              transitionMs={120}
+              transitionTiming="ease-out"
+              isVisible={isParallaxVisible}
+              enableGyroscope={true}
+              fallbackToMouse={true}
+            /> */}
+
             {/*<CursorPublicTracker
               enabled={isPublicCursorsUnlocked}
               currentIconKey={publicCursorIconKey}
@@ -365,7 +380,7 @@ const Neprikosnovenna = () => {
 
             <div
               id="Portrait"
-              className="z-3"
+              className={`not-allowed z-${3}`}
               style={{
                 position: "absolute",
                 width: "68%",
