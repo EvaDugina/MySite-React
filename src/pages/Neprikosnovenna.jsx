@@ -17,12 +17,12 @@ import Background from "../components/background/Background.jsx";
 import { BackgroundType } from "../components/background/BackgroundSettings.js";
 import Button from "../components/button/Button.jsx";
 import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
-import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
+// import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
 // import useSoundEffect from "../hooks/useSoundEffect.js";
 import { FlashType } from "../components/flash/FlashSettings.js";
 import FlashProvider from "../components/flash/FlashProvider.jsx";
 import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
-import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
+// import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
 import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from "../components/cursor/PublicCursorIcons.js";
 
 const Zone = {
@@ -41,6 +41,7 @@ const Neprikosnovenna = () => {
   const buttonObeszhiritRef = useRef(null);
   const buttonNeprikosnovennaRef = useRef(null);
   const flashProviderRef = useRef(null);
+  const backgroundMainRef = useRef(null);
   const backgroundSecondaryRef = useRef(null);
   const pointerDeviceRef = useRef("d");
 
@@ -228,6 +229,9 @@ const Neprikosnovenna = () => {
           setIsPublicCursorsUnlocked(true);
           backgroundSecondaryRef.current.hide();
           buttonNeprikosnovennaRef.current.disable();
+          // setTimeout(() => {
+          //   playAudio();
+          // }, 4400);
         } else if (isFadeInCompleteRef.current) {
           buttonNeprikosnovennaRef.current.click();
         }
@@ -237,8 +241,10 @@ const Neprikosnovenna = () => {
         hideObezzhirit();
         dbHasFingerprintsRef.current = false;
       } else if (currentElementId === "Portrait") {
-        if (!isClickedOnPortrait) setIsClickedOnPortrait(true);
-        // playAudio();
+        if (!isClickedOnPortrait) {
+          setIsClickedOnPortrait(true);
+          backgroundMainRef.current.changeType(BackgroundType.KETCHUP, "cubic-bezier(1,-0.01,1,-0.37)", 45_000, 0.1);
+        }
         flashProviderRef.current.flashes(FlashType.VZGLAD);
         let cursorPosition = cursorRef.current.getPosition();
         const articleRect = articleRef.current.getBoundingClientRect();
@@ -316,7 +322,7 @@ const Neprikosnovenna = () => {
                 setIsLoadedCallback={setIsPortraitLoaded}
             />
 
-            <CursorPublicTracker
+            {/*<CursorPublicTracker
               enabled={isPublicCursorsUnlocked}
               currentIconKey={publicCursorIconKey}
               getArticleRect={getPublicTrackerArticleRect}
@@ -325,7 +331,7 @@ const Neprikosnovenna = () => {
               getIsCursorReady={getPublicTrackerIsCursorReady}
               getPointerDevice={getPublicTrackerPointerDevice}
               zIndex={9}
-            />
+            />*/}
 
             <Button
               ref={buttonNeprikosnovennaRef}
@@ -375,7 +381,7 @@ const Neprikosnovenna = () => {
           <Background id="Background-1" ref={backgroundSecondaryRef} type={BackgroundType.BLUE} zIndex={6} />
         </main>
 
-      <Background id="Background-0" type={BackgroundType.WHITE} zIndex={0} />
+      <Background id="Background-0" ref={backgroundMainRef} type={BackgroundType.WHITE} zIndex={0} />
     </>
   );
 };

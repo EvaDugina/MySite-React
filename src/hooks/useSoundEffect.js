@@ -75,11 +75,9 @@ function useSoundEffect(src, volume = 1) {
     };
 
     document.addEventListener("pointerdown", warmUp, { once: true });
-    document.addEventListener("pointermove", warmUp, { once: true });
 
     return () => {
       document.removeEventListener("pointerdown", warmUp);
-      document.removeEventListener("pointermove", warmUp);
     };
   }, []);
 
