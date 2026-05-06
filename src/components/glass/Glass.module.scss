@@ -1,0 +1,110 @@
+// Glassmorphism в стиле Apple "Liquid Glass" (CodePen wprod/raVpwJL):
+// многослойная структура — filter → overlay → specular → content.
+//
+// CSS-переменные темы стекла (по CodePen wprod/raVpwJL).
+:root {
+    --lg-bg-color: rgba(255, 255, 255, 0.25);
+    --lg-highlight: rgba(255, 255, 255, 0.75);
+    --lg-text: #ffffff;
+    --lg-red: #fb4268;
+    --lg-grey: #444739;
+}
+
+// SVG-контейнер с фильтрами невидимый.
+.svgFilters {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+// Внешний контейнер.
+//
+// position: absolute (а не fixed), потому что родитель .frame имеет transform —
+// тогда fixed позиционируется относительно него, а не viewport.
+//
+// calc(50% - 50vw) от центра containing block отъезжает на 50vw влево; при
+// условии центрирования родителя в viewport это совпадает с левым краем
+// viewport — независимо от ширины родителя.
+.glassContainer {
+    // Полный viewport, центрирован (см. calc-трюк).
+    position: absolute;
+    top: calc(50% - 55vh);
+    left: calc(50% - 55vw);
+    width: 110vw;
+    height: 110vh;
+
+    // Свойства из канонического CodePen wprod/raVpwJL — пропорции layout.
+    display: flex;
+    align-items: center;
+    background: transparent;
+    overflow: hidden;
+    flex: 1 1 auto;
+    color: var(--lg-text);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+
+    // Полноэкранный overlay не должен перехватывать клики.
+    pointer-events: none;
+    will-change: transform;
+    isolation: isolate;
+}
+
+// Общие стили слоёв-подложек (filter / overlay / specular).
+.glassFilter,
+.glassOverlay,
+.glassSpecular {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+// 1) FILTER LAYER — backdrop blur + SVG-рефракция.
+//    backdrop-filter сначала размывает «снимок» фона, затем filter: url(...)
+//    применяет displacement к этому размытому слою.
+.glassFilter {
+    z-index: 0;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    @supports (filter: url(#a)) {
+        filter: url(#lensFilter) saturate(120%) brightness(1.15);
+    }
+}
+
+// 2) OVERLAY LAYER — основной тон стекла.
+.glassOverlay {
+    z-index: 1;
+    background: var(--lg-bg-color);
+}
+
+// 3) SPECULAR LAYER — внутренние highlights, имитация «грани линзы».
+.glassSpecular {
+    z-index: 2;
+    box-shadow:
+        inset 1px 1px 0 var(--lg-highlight),
+        inset 0 0 5px var(--lg-highlight);
+}
+
+// 4) CONTENT LAYER — слот для содержимого (по CodePen).
+// align-self: stretch перебивает родительский align-items: center,
+// чтобы glass-content занимал всю высоту контейнера (и absolute-дети
+// внутри корректно позиционировались относительно viewport).
+.glassContent {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex: 1 1 auto;
+    align-self: stretch;
+    align-items: center;
+    justify-content: space-around;
+    padding: 12px 28px;
+    gap: 1rem;
+    flex-wrap: wrap;
+    pointer-events: auto;
+}
+
+// Если внутри ничего нет — клики проходят насквозь.
+.glassContent:empty {
+    pointer-events: none;
+}

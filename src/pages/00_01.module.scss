@@ -1,0 +1,99 @@
+// Layout 00_01 «Вхождение в МИНИАТЮРУ» по прототипу Figma 00_01.
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    background-color: white;
+}
+
+// Article — 102vw, по центру относительно viewport.
+.frame {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 84vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+// Портрет растянут по ширине в 2 раза, высота не меняется.
+// transform: scaleX(2) удваивает визуальную ширину относительно центра,
+// клипп по краям делает .main (overflow: hidden).
+.portrait {
+    position: absolute;
+    left: 11% !important;
+    inset: 0;
+    width: 80%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(3);
+    transform-origin: center center;
+    user-select: none;
+}
+
+// Текстовый блок поверх портрета, под Glass. Размеры привязаны к viewport-ширине,
+// сохраняя пропорции прототипа Figma (frame 1728px → 100vw):
+// h1: 96/1728 ≈ 5.55% → 5.55vw, body: 48/1728 ≈ 2.78% → 2.78vw.
+.textBlock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(92vw, 1599px);
+    margin: 0;
+    padding: 0;
+    color: white;
+    font-family: "Inter", "Helvetica", "Arial", sans-serif;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+.title {
+    margin: 0 0 0.6em 0;
+    padding: 0;
+    font-weight: 800; // Inter ExtraBold (Figma)
+    font-size: 5.55vw;
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.body {
+    margin: 0;
+    padding: 0;
+    font-weight: 700; // Inter Bold (Figma)
+    font-style: italic;
+    font-size: 2.78vw;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.underline {
+    text-decoration: underline;
+    text-decoration-thickness: 0.04em;
+    text-underline-offset: 0.12em;
+}
+
+// Слоты только позиционируют кнопки — стиль / hover / disabled
+// берутся дефолтные из компонента Button (Button.module.scss).
+.btnSpitSlot,
+.btnKissSlot {
+    position: absolute;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    z-index: 4; // выше Glass (z=3)
+}
+
+.btnSpitSlot {
+    top: 23%;
+}
+
+.btnKissSlot {
+    top: 86%;
+}
