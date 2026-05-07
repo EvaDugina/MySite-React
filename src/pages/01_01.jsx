@@ -73,7 +73,7 @@ const SotvorenieZhizni = () => {
         maxOffsetY: 200,
         // lerpFactor 0.04 (× 1.5 медленнее предыдущих 0.06; 4× медленнее
         // дефолтного 0.16) — руки догоняют курсор лениво, выраженная инерция.
-        lerpFactor: 0.0175,
+        lerpFactor: 0.022,
     })
 
     // Зоны курсора: окно глаз и кнопка — Pointer; остальное — дефолт.
@@ -206,6 +206,13 @@ const SotvorenieZhizni = () => {
             }
             const btnEl = document.getElementById("BtnNeprikosnovenna")
             if (!btnEl) return
+            // Пока кнопка ещё не «активна» (CSS transition держит
+            // pointer-events: none во время delay + fade-in), не перебиваем
+            // cursor src — иконкой управляет только zone-system.
+            if (getComputedStyle(btnEl).pointerEvents === "none") {
+                isHandsCoveringBtnRef.current = false
+                return
+            }
             const r = btnEl.getBoundingClientRect()
             const overBtn =
                 x >= r.left && x <= r.right && y >= r.top && y <= r.bottom

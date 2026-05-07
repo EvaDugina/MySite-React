@@ -155,9 +155,13 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    // 3s — задержка появления; 10s — длительность fade-in opacity 0→1.
+    // pointer-events переключается ровно в конце fade (13s = 3+10) —
+    // до этого момента кнопка не кликабельна.
     transition:
         opacity 10s ease-out 3s,
-        visibility 0s linear 3s;
+        visibility 0s linear 3s,
+        pointer-events 0s 13s;
 }
 
 .btnSlotVisible {
