@@ -71,15 +71,66 @@ Glass** как единое целое. Текст, руки и кнопка —
 
 ## Зоны курсора
 
-| Zone | elementId | Иконка | Действие на клик |
-|---|---|---|---|
-| `NONE` | — | DEFAULT | — |
-| `BACK` | `Background-01_01` | DEFAULT | — |
-| `EYES_WINDOW` | `EyesWindow` | POINTER | `setIsOpened(true)` — раскрытие |
-| `BTN_NEPRIKOSNOVENNA` | `BtnNeprikosnovenna` | POINTER | `.click()` (TODO: дальнейший флоу) |
+Зона `BTN_NEPRIKOSNOVENNA` зависит от `dragState` (см. ниже):
+
+| Zone | elementId | Иконка (idle) | Иконка (frozen/dragging) | Иконка (dropped) |
+|---|---|---|---|---|
+| `NONE` | — | DEFAULT | — | — |
+| `BACK` | `Background-01_01` | DEFAULT | — | — |
+| `EYES_WINDOW` | `EyesWindow` | POINTER | — | — |
+| `BTN_NEPRIKOSNOVENNA` | `BtnNeprikosnovenna` | POINTER | HAND_CLOSE | POINTER |
+
+`imgCursorClicked`: idle → POINTER_CLICKED, frozen/dragging → HAND_CLOSE,
+dropped → HAND_CLOSE (показывается на pickup-back).
 
 ⚠️ `.eyesImage` имеет `pointer-events: none` — иначе `document.elementFromPoint`
 возвращает `<img>` (без id), и зона `EYES_WINDOW` не определяется.
+
+## Drag&drop кнопки
+
+После успешного клика на `BtnNeprikosnovenna` (alpha-hit hands не блокирует
++ кнопка достигла `opacity: 1`) кнопка превращается в draggable-элемент.
+Машина состояний `dragState`:
+
+```
+[idle]
+  ─pointerdown на btn────────────→ [frozen]
+        • setSrc(HAND_CLOSE)
+        • cursorRef.stopVideo()       — снимает pointermove-listeners
+        • кнопка прилипает к курсору в точке касания (pivot offset)
+        • setTimeout 1000 ms
+
+[frozen]
+  ─через 1с──→ [dragging]              cursorRef.start() возвращает движение
+  pointerup ИГНОРИРУЕТСЯ (pointerup от исходного клика не дропает)
+
+[dragging]
+  ─pointerup──→ [dropped]              кнопка остаётся в droppedPos
+
+[dropped]
+  ─pointerdown на btn──→ [dragging]    pickup-back, freeze повторно НЕ делаем
+```
+
+**Pivot offset.** При каждом pickup (initial click + pickup-back) сохраняется
+вектор `(event.clientX − btn.center.x, event.clientY − btn.center.y)`.
+В rAF-loop'е и в inline-style для `dropped` транслейт делает
+`btn.center = cursor − pivot`, поэтому курсор остаётся ровно в той точке
+кнопки, где было касание (а не прыгает в её центр).
+
+**Реализация.** Только в `01_01.jsx` — `Cursor`/`Button` без модификаций;
+используются методы imperative API: `setSrc`, `stopVideo`, `start`,
+`getPosition`. Позиция кнопочного слота пишется напрямую в
+`buttonSlotRef.current.style.transform` через rAF (без re-render).
+
+**SCSS-гейт.** `.btnSlot { pointer-events: none }` + `& > * { pointer-events:
+inherit }` — внутренний `<button>` наследует значение слота, иначе пробивал
+бы блокировку. После 13s (3s delay + 10s fade) `.btnSlotVisible` переключает
+на `auto`. До этого момента ни клик, ни hover не срабатывают
+(`document.elementFromPoint` пропускает кнопку → zone не BTN).
+
+**Detached-режим.** Класс `.btnSlotDetached` (`top: 0; left: 0;
+z-index: 8 (над hands z-7); transition: none; pointer-events: auto`) —
+позиционирование переходит к JS, slot становится поверх рук на время drag.
 
 ## Glass для 01_01
 
@@ -97,7 +148,5 @@ Glass** как единое целое. Текст, руки и кнопка —
 
 ## TODO
 
-- Поведение клика на `BtnNeprikosnovenna` — пока stub. Возможные варианты:
-  - Переход на следующий фрейм (`01_02` или дальше)
-  - Анимация раскрытия в полный портрет
-  - Что-то ещё по сценарию миниатюры
+- Анимация захвата (плавный «прыжок» кнопки к курсору вместо моментального).
+- Drop-зоны / финальный сценарий после первого drag.
