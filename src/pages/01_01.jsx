@@ -32,6 +32,38 @@ const SotvorenieZhizni = () => {
 
     const [isOpened, setIsOpened] = useState(false)
 
+    // Drag-state машина (после успешного клика на кнопку):
+    //   'idle'     — кнопка ещё кликабельна (alpha-hit blocking активен)
+    //   'frozen'   — клик произошёл, курсор стоит, кнопка прилипла (1 сек)
+    //   'dragging' — курсор разморожен, кнопка следует за курсором
+    //   'dropped'  — pointerup случился, кнопка стоит в droppedPos
+    // dragStateRef — синхронное зеркало для window-листенеров (чтобы не
+    // ждать ре-рендера для проверки в pointerup-хендлере собственно клика).
+    const [dragState, setDragState] = useState("idle")
+    const dragStateRef = useRef("idle")
+    const setDrag = useCallback((next) => {
+        dragStateRef.current = next
+        setDragState(next)
+    }, [])
+
+    // droppedPos — state (а не ref), потому что:
+    //   а) переход в 'dropped' требует перерисовки (inline-style transform);
+    //   б) eslint react-hooks/refs запрещает читать ref.current в render.
+    const [droppedPos, setDroppedPos] = useState(null)
+    const buttonSlotRef = useRef(null)
+    const freezeTimerRef = useRef(null)
+    // Pivot-offset: смещение точки касания курсора от ЦЕНТРА кнопки в момент
+    // pointerdown. Используется в rAF и для inline-стиля 'dropped', чтобы
+    // курсор оставался ровно в той точке кнопки, где было касание (а не
+    // прыгал в её центр). Перевычисляется на каждом pickup (initial click +
+    // pickup-back).
+    const pivotOffsetRef = useRef({ x: 0, y: 0 })
+
+    // Cleanup отложенного unfreeze-таймера на unmount страницы.
+    useEffect(() => () => {
+        if (freezeTimerRef.current) clearTimeout(freezeTimerRef.current)
+    }, [])
+
     // Aspect-ratio изображения ВЗГЛЯД — задаётся при onLoad,
     // прокидывается в inline-style EyesWindow, чтобы окно
     // повторяло пропорции картинки (без letterbox).
@@ -92,6 +124,38 @@ const SotvorenieZhizni = () => {
 
     const cursorZoneSettingsRef = useRef(null)
     useEffect(() => {
+        // Зона кнопки зависит от dragState:
+        //   idle      — POINTER / POINTER_CLICKED + hover/reset (кликабельно)
+        //   frozen    — HAND_CLOSE (кнопка прилипла, иконка-«хват»)
+        //   dragging  — HAND_CLOSE (продолжается drag)
+        //   dropped   — POINTER на hover, HAND_CLOSE на pointerdown
+        let btnZone
+        if (dragState === "frozen" || dragState === "dragging") {
+            btnZone = {
+                elementId: "BtnNeprikosnovenna",
+                imgCursor: CursorImages.HAND_CLOSE,
+                imgCursorClicked: CursorImages.HAND_CLOSE,
+                handleOn: null,
+                handleOff: null,
+            }
+        } else if (dragState === "dropped") {
+            btnZone = {
+                elementId: "BtnNeprikosnovenna",
+                imgCursor: CursorImages.POINTER,
+                imgCursorClicked: CursorImages.HAND_CLOSE,
+                handleOn: null,
+                handleOff: null,
+            }
+        } else {
+            btnZone = {
+                elementId: "BtnNeprikosnovenna",
+                imgCursor: CursorImages.POINTER,
+                imgCursorClicked: CursorImages.POINTER_CLICKED,
+                handleOn: handleOnBtn,
+                handleOff: handleOffBtn,
+            }
+        }
+
         const ZoneData = {
             [Zone.NONE]: {
                 elementId: null,
@@ -114,19 +178,14 @@ const SotvorenieZhizni = () => {
                 handleOn: handleOnEyesWindow,
                 handleOff: handleOffEyesWindow,
             },
-            [Zone.BTN_NEPRIKOSNOVENNA]: {
-                elementId: "BtnNeprikosnovenna",
-                imgCursor: CursorImages.POINTER,
-                imgCursorClicked: CursorImages.POINTER_CLICKED,
-                handleOn: handleOnBtn,
-                handleOff: handleOffBtn,
-            },
+            [Zone.BTN_NEPRIKOSNOVENNA]: btnZone,
         }
         cursorZoneSettingsRef.current = createCursorZoneSettings({
             Zone,
             Data: { ...ZoneData },
         })
     }, [
+        dragState,
         handleOnEyesWindow,
         handleOffEyesWindow,
         handleOnBtn,
@@ -155,21 +214,51 @@ const SotvorenieZhizni = () => {
     }, [isHandsOpaqueAt])
 
     // По клику на окно глаз — раскрываем «руки + кнопку».
-    // По клику на кнопку — пересчитываем coverage НА МЕСТЕ по реальным
-    // координатам события (не по lerp'нутой позиции курсора), чтобы
-    // быстрый клик при лагающем cursor lerp всё равно блокировался.
-    // Успешный клик — открываем /neprikosnovenna в новой вкладке.
+    // По клику на кнопку (только в state 'idle'):
+    //   1) проверяем coverage руками по РЕАЛЬНЫМ event.clientX/Y (не по
+    //      lerp'нутой позиции — против race на быстрых движениях);
+    //   2) переключаем иконку курсора на HAND_CLOSE;
+    //   3) замораживаем курсор (stopVideo ≡ stopCursor: снимает
+    //      pointermove-listeners; курсор стоит в lerp'нутой позиции);
+    //   4) переходим в state 'frozen' — rAF-sync ниже начнёт прилеплять
+    //      кнопку к позиции курсора;
+    //   5) через 1с снимаем freeze (start ≡ startCursor) и переводим в
+    //      'dragging' — кнопка продолжает прилипать, но курсор уже
+    //      движется за мышью.
+    // window.open(/neprikosnovenna) удалён — переход заменён drag-механикой.
     const handleLeftClickDown = useCallback(
         (currentElementId, event) => {
             if (currentElementId === "EyesWindow" && !isOpened) {
                 setIsOpened(true)
-            } else if (currentElementId === "BtnNeprikosnovenna") {
+                return
+            }
+            if (
+                currentElementId === "BtnNeprikosnovenna" &&
+                dragStateRef.current === "idle"
+            ) {
                 if (isCoveredAtCursor(event)) return
+                // Pivot offset: касание курсора (event.clientX/Y) минус
+                // центр кнопки. В rAF потом btn.center = cursor − pivot.
+                const btnEl = document.getElementById("BtnNeprikosnovenna")
+                if (btnEl) {
+                    const r = btnEl.getBoundingClientRect()
+                    pivotOffsetRef.current = {
+                        x: event.clientX - (r.left + r.width / 2),
+                        y: event.clientY - (r.top + r.height / 2),
+                    }
+                }
                 btnNeprikosnovennaRef.current?.click()
-                window.open("/neprikosnovenna", "_blank", "noopener")
+                cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
+                cursorRef.current?.stopVideo()
+                setDrag("frozen")
+                freezeTimerRef.current = setTimeout(() => {
+                    cursorRef.current?.start()
+                    if (dragStateRef.current === "frozen") setDrag("dragging")
+                    freezeTimerRef.current = null
+                }, 1000)
             }
         },
-        [isOpened, isCoveredAtCursor],
+        [isOpened, isCoveredAtCursor, setDrag],
     )
 
     // Re-assert корректной иконки курсора на любое pointer-событие.
@@ -187,6 +276,13 @@ const SotvorenieZhizni = () => {
     // (если переход зон случился между нашими тиками).
     useEffect(() => {
         const reassert = (event) => {
+            // В состоянии 'dropped' — реассертим POINTER при наведении
+            // на кнопку (zone-system читает currentZoneDataRef, который
+            // обновляется только при смене зоны → может быть устаревшим).
+            // В 'frozen'/'dragging' — иконку держит handleLeftClickDown
+            // и pointerup-handler (HAND_CLOSE), не трогаем.
+            const ds = dragStateRef.current
+            if (ds === "frozen" || ds === "dragging") return
             // Реальные координаты события (event.clientX/Y) — синхронны
             // с пользовательским movement; lerp'нутая позиция курсора
             // отстаёт. Это критично для быстрых движений и кликов.
@@ -206,10 +302,13 @@ const SotvorenieZhizni = () => {
             }
             const btnEl = document.getElementById("BtnNeprikosnovenna")
             if (!btnEl) return
-            // Пока кнопка ещё не «активна» (CSS transition держит
+            // 'idle': пока кнопка ещё не «активна» (CSS transition держит
             // pointer-events: none во время delay + fade-in), не перебиваем
             // cursor src — иконкой управляет только zone-system.
-            if (getComputedStyle(btnEl).pointerEvents === "none") {
+            if (
+                ds === "idle" &&
+                getComputedStyle(btnEl).pointerEvents === "none"
+            ) {
                 isHandsCoveringBtnRef.current = false
                 return
             }
@@ -220,6 +319,13 @@ const SotvorenieZhizni = () => {
                 isHandsCoveringBtnRef.current = false
                 return
             }
+            // 'dropped': курсор над кнопкой → POINTER (без alpha-hit
+            // блокировки — после первого успешного клика игра выиграна).
+            if (ds === "dropped") {
+                cursorRef.current?.setSrc(CursorImages.POINTER)
+                return
+            }
+            // 'idle': alpha-hit blocking + POINTER/DEFAULT.
             const covered = isHandsOpaqueAt(x, y)
             isHandsCoveringBtnRef.current = covered
             cursorRef.current?.setSrc(
@@ -235,6 +341,87 @@ const SotvorenieZhizni = () => {
             window.removeEventListener("pointerup", reassert)
         }
     }, [isHandsOpaqueAt])
+
+    // Drag-эффект 1: pickup-back. Если кнопка УЖЕ дропнута и
+    // пользователь зажал ЛКМ внутри её bounding-box — снова прилеплять.
+    // Freeze второй раз НЕ выполняем (он только на самый первый клик).
+    useEffect(() => {
+        const onPointerDown = (e) => {
+            if (dragStateRef.current !== "dropped") return
+            const btnEl = document.getElementById("BtnNeprikosnovenna")
+            if (!btnEl) return
+            const r = btnEl.getBoundingClientRect()
+            const inside =
+                e.clientX >= r.left &&
+                e.clientX <= r.right &&
+                e.clientY >= r.top &&
+                e.clientY <= r.bottom
+            if (!inside) return
+            // Recalc pivot — пользователь подхватил кнопку в новой точке.
+            pivotOffsetRef.current = {
+                x: e.clientX - (r.left + r.width / 2),
+                y: e.clientY - (r.top + r.height / 2),
+            }
+            cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
+            setDrag("dragging")
+        }
+        window.addEventListener("pointerdown", onPointerDown)
+        return () => window.removeEventListener("pointerdown", onPointerDown)
+    }, [setDrag])
+
+    // Drag-эффект 2: drop по pointerup (только из state 'dragging').
+    // pointerup от исходного клика приходит во state 'frozen' —
+    // ИГНОРИРУЕТСЯ для drop, но иконка реассертится в HAND_CLOSE,
+    // т.к. cursor-system на pointerup ставит imgCursor зоны (в момент
+    // первого pointerup zone-settings useEffect мог ещё не пересобраться
+    // → стояла бы старая POINTER).
+    useEffect(() => {
+        const onPointerUp = (e) => {
+            const s = dragStateRef.current
+            if (s === "frozen") {
+                cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
+                return
+            }
+            if (s !== "dragging") return
+            // droppedPos хранит позицию ЦЕНТРА кнопки (cursor − pivot),
+            // т.к. в JSX inline-стиль ставит translate3d именно на центр.
+            const off = pivotOffsetRef.current
+            setDroppedPos({ x: e.clientX - off.x, y: e.clientY - off.y })
+            setDrag("dropped")
+            cursorRef.current?.setSrc(CursorImages.POINTER)
+        }
+        window.addEventListener("pointerup", onPointerUp)
+        return () => window.removeEventListener("pointerup", onPointerUp)
+    }, [setDrag])
+
+    // Drag-эффект 3: rAF-sync позиции кнопочного слота с курсором.
+    // Активен в 'frozen' и 'dragging'. Пишем style.transform НАПРЯМУЮ
+    // в DOM (как useCursorParallax) — без ре-рендера на каждом тике.
+    // translate(-50%,-50%) сохраняет «хват кнопки за центр».
+    useEffect(() => {
+        if (dragState !== "frozen" && dragState !== "dragging") return
+        let raf = 0
+        const tick = () => {
+            const pos = cursorRef.current?.getPosition()
+            const el = buttonSlotRef.current
+            if (
+                pos &&
+                el &&
+                pos.x !== null &&
+                pos.x !== undefined &&
+                pos.y !== null &&
+                pos.y !== undefined
+            ) {
+                // btn.center = cursor − pivotOffset → курсор остаётся ровно
+                // в той точке кнопки, где было касание.
+                const off = pivotOffsetRef.current
+                el.style.transform = `translate(-50%, -50%) translate3d(${pos.x - off.x}px, ${pos.y - off.y}px, 0)`
+            }
+            raf = requestAnimationFrame(tick)
+        }
+        raf = requestAnimationFrame(tick)
+        return () => cancelAnimationFrame(raf)
+    }, [dragState])
 
     const cursorSettings = useMemo(
         () =>
@@ -329,11 +516,26 @@ const SotvorenieZhizni = () => {
 
                 {/* Btn-Neprikosnovenna лежит ПОД руками по z-index, чтобы
                    руки визуально перекрывали кнопку (геймплей: успеть нажать
-                   до перекрытия). */}
+                   до перекрытия).
+                   После drag → состояние 'dropped': inline-transform держит
+                   кнопку в droppedPos. В 'frozen'/'dragging' transform пишется
+                   из rAF-loop'а напрямую в DOM (см. эффект выше). */}
                 <div
-                    className={`${styles.btnSlot} ${
-                        isOpened ? styles.btnSlotVisible : ""
-                    }`}
+                    ref={buttonSlotRef}
+                    className={[
+                        styles.btnSlot,
+                        isOpened ? styles.btnSlotVisible : null,
+                        dragState !== "idle" ? styles.btnSlotDetached : null,
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    style={
+                        dragState === "dropped" && droppedPos
+                            ? {
+                                  transform: `translate(-50%, -50%) translate3d(${droppedPos.x}px, ${droppedPos.y}px, 0)`,
+                              }
+                            : undefined
+                    }
                 >
                     <Button
                         ref={btnNeprikosnovennaRef}

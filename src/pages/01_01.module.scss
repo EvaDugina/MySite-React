@@ -162,9 +162,34 @@
         opacity 10s ease-out 3s,
         visibility 0s linear 3s,
         pointer-events 0s 13s;
+
+    // Внутренний <button> по умолчанию pointer-events: auto, что
+    // ПРОБИВАЕТ pointer-events:none слота → клик/hover проходят.
+    // Делаем inherit, чтобы кнопка наследовала состояние слота:
+    // во время fade-in — none (не кликается, не hover'ится), после
+    // 13s одновременно с слотом → auto.
+    & > * {
+        pointer-events: inherit;
+    }
 }
 
 .btnSlotVisible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+// Detached-режим — после первого клика кнопка отлеплена от слота:
+// позиция управляется JS через style.transform (rAF в 'frozen'/'dragging'
+// или статичный inline-style в 'dropped'). top/left обнуляются, чтобы
+// transform translate3d работал от (0, 0) viewport. z-index 8 — над
+// руками (z-7), чтобы dragged-кнопка была видна поверх рук.
+// transition отключён — fade-in уже не нужен.
+.btnSlotDetached {
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 8;
+    transition: none;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
