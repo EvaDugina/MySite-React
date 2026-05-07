@@ -39,7 +39,7 @@ const Vhozhdenie = () => {
     // Переход на следующую страницу — через 2 секунды после второго клика.
     useEffect(() => {
         if (isSpitClicked && isKissClicked) {
-            const id = setTimeout(() => navigate(NEXT_ROUTE), 2000)
+            const id = setTimeout(() => navigate(NEXT_ROUTE), 1000)
             return () => clearTimeout(id)
         }
     }, [isSpitClicked, isKissClicked, navigate])
@@ -131,16 +131,29 @@ const Vhozhdenie = () => {
     const cursorSettings = useMemo(
         () =>
             createCursorSettings({
-                imgCursor: CursorImages.DEFAULT,
-                startX: null,
-                startY: null,
-                handleLeftClickDown,
-                handleLeftClickUp: null,
-                stiffness: 0.4,
-                damping: 0.1,
-                mass: 0.1,
-                maxSpeed: 25,
-            }),
+                            imgCursor: CursorImages.DEFAULT,
+                            startX: null,
+                            startY: null,
+                            handleLeftClickDown,
+                            handleLeftClickUp: null,
+                            // Максимально быстрый курсор + плавная остановка.
+                            // ВНИМАНИЕ (useCursorMovePhysics.js:48): `damping` —
+                            // множитель сохранения скорости (velocity *= damping
+                            // каждый кадр). damping=0 → курсор не двигается;
+                            // damping→1 → overshoot.
+                            //
+                            // Скорость регулируется stiffness/mass (отношение 2:1 даёт
+                            // высокий acceleration). damping контролирует «хвост» при
+                            // подходе к цели: выше damping = velocity дольше сохраняется
+                            // у самой цели = плавнее остановка (без рывка).
+                            //
+                            // 0.5 → 0.75: остановка более «эластичная», без изменения
+                            // пикового скорости (ограничена maxSpeed=150).
+                            stiffness: 1.0,
+                            damping: 0.4,
+                            mass: 1,
+                            maxSpeed: 200,
+                        }),
         [handleLeftClickDown],
     )
 
