@@ -36,8 +36,31 @@
 | `enableGyroscope` | `boolean` | `true` | Слушать ли `deviceorientation` на мобильных |
 | `fallbackToMouse` | `boolean` | `true` | Если гироскоп недоступен — слушать ли `pointermove` |
 | `enabled` | `boolean` | `true` | Включает параллакс. Если `false` — стекло на месте |
+| `enableParallax` | `boolean` | `true` | Если `false`, Glass не делает свой параллакс (нужно когда параллакс делает родитель) |
+| `mode` | `"fullscreen" \| "contained"` | `"fullscreen"` | `fullscreen` — overlay во весь viewport. `contained` — заполняет родительский containing block (используется для локального glass над элементом) |
+| `frostBlur` | `number` | `4` | Радиус `backdrop-filter: blur` в px (Figma Frost). При `0` стекло прозрачное без размытия |
+| `bgColor` | `string` | `var(--lg-bg-color)` | Переопределяет тон overlay-слоя (CSS color) |
 | `zIndex` | `number` | — | z-index самого стеклянного контейнера |
 | `children` | `ReactNode` | — | Контент `.glass-content`. Если пусто — клики проходят насквозь |
+
+## Режимы
+
+### `fullscreen` (default)
+Overlay во весь viewport, центрирован через `calc(50% - 55vw)` трюк.
+Используется для общестраничного glass-effect (например, в [Vhozhdenie](../pages/Vhozhdenie.md)).
+
+### `contained`
+`position: absolute; inset: 0; width: 100%; height: 100%`.
+Заполняет родителя, который должен быть containing block (`position: relative` или подобный).
+Используется для локального стекла над конкретным элементом
+(например, в [SotvorenieZhizni](../pages/SotvorenieZhizni.md) — над окном с глазами).
+
+```jsx
+<div className={styles.eyesWindow}>
+    <img src="/images/ВЗГЛЯД.jpg" />
+    <Glass mode="contained" enableParallax={false} frostBlur={0} />
+</div>
+```
 
 ## CSS-переменные
 

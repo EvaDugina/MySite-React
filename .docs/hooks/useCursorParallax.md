@@ -30,6 +30,7 @@ useCursorParallax(targetRef, options)
 | `options.enableGyroscope` | `boolean` | Слушать `deviceorientation` (default `true`) |
 | `options.fallbackToMouse` | `boolean` | Слушать `pointermove` (default `true`) |
 | `options.onApply` | `(x, y) => void` | Кастомный аппликатор вместо `style.transform` |
+| `options.lerpFactor` | `number` | Скорость подтягивания к цели, 0..1 (default `0.16`). Меньше = «инерция»/задержка, больше = быстрее. |
 
 ## Поведение
 
