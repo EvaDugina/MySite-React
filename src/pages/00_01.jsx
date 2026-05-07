@@ -24,7 +24,7 @@ const Zone = {
     BTN_KISS: 4,
 }
 
-const NEXT_ROUTE = "/neprikosnovenna"
+const NEXT_ROUTE = "/01_01"
 
 const Vhozhdenie = () => {
     const navigate = useNavigate()

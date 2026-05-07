@@ -61,14 +61,14 @@ const Cursor = forwardRef((props, ref) => {
         return { ...positionRef.current }
     }, [])
 
-    const handleLeftClickDown = useCallback(() => {
+    const handleLeftClickDown = useCallback((event) => {
         changeCursorSrc(currentZoneDataRef.current.imgCursorClicked);
-        settings.handleLeftClickDown?.(currentZoneDataRef.current.elementId);
+        settings.handleLeftClickDown?.(currentZoneDataRef.current.elementId, event);
     }, [changeCursorSrc, settings, currentZoneDataRef]);
 
-    const handleLeftClickUp = useCallback(() => {
+    const handleLeftClickUp = useCallback((event) => {
         changeCursorSrc(currentZoneDataRef.current.imgCursor);
-        settings.handleLeftClickUp?.(currentZoneDataRef.current.elementId);
+        settings.handleLeftClickUp?.(currentZoneDataRef.current.elementId, event);
     }, [changeCursorSrc, settings, currentZoneDataRef]);
 
     useEffect(() => {
@@ -88,7 +88,11 @@ const Cursor = forwardRef((props, ref) => {
         stopVideo: stopCursor,
         start: startCursor,
         getPosition: getPosition,
-        getIsReady: getIsCursorReady
+        getIsReady: getIsCursorReady,
+        // Imperative-метод для смены иконки курсора в обход zone-системы.
+        // Будет перекрыт следующей сменой зоны — для устойчивого override
+        // вызывайте на каждом pointermove (см. 01_01.jsx).
+        setSrc: changeCursorSrc,
     }));
 
     const className = [

@@ -1,10 +1,22 @@
 import React from "react";
 
 const Vhozhdenie = React.lazy(() => import('./pages/00_01'));
+const SotvorenieZhizni = React.lazy(() => import('./pages/01_01'));
 const Neprikosnovenna = React.lazy(() => import('./pages/Neprikosnovenna'));
 const AndIAmTheOnlyOne = React.lazy(() => import('./pages/./AndIAmTheOnlyOne'));
 
 export const routes = [
+    {
+        path: "/01_01",
+        title: "Сотворение жизни",
+        icon: "/favicon.ico",
+        description:
+            "Миниатюра о том, как удивительно способно рукотворное оживать и становиться сакральным.",
+        keywords:
+            "искусство, web-инсталляция, неприкосновенна, сакральное, рукотворное",
+        ogImage: "/images/ВЗГЛЯД.jpg",
+        component: SotvorenieZhizni,
+    },
     {
         path: "/",
         title: "Неприкосновенна — вхождение",

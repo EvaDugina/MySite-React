@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-const LERP_FACTOR = 0.16
+const DEFAULT_LERP_FACTOR = 0.16
 const STOP_THRESHOLD = 0.05
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
@@ -20,6 +20,9 @@ const isFiniteNumber = (value) =>
  * @param {boolean} [options.enableGyroscope=true]
  * @param {boolean} [options.fallbackToMouse=true]
  * @param {(x: number, y: number) => void} [options.onApply] хук вместо style.transform
+ * @param {number} [options.lerpFactor=0.16] скорость подтягивания к цели
+ *   (0..1). Меньше = «тяжелее»/с задержкой, больше = быстрее. Используется
+ *   для эффекта «отставания» элемента от курсора.
  */
 const useCursorParallax = (targetRef, options = {}) => {
     const {
@@ -30,6 +33,7 @@ const useCursorParallax = (targetRef, options = {}) => {
         enableGyroscope = true,
         fallbackToMouse = true,
         onApply,
+        lerpFactor = DEFAULT_LERP_FACTOR,
     } = options
 
     const inputModeRef = useRef("mouse")
@@ -63,12 +67,14 @@ const useCursorParallax = (targetRef, options = {}) => {
             isAnimatingRef.current = false
         }
 
+        const safeLerpFactor = clamp(Number(lerpFactor) || 0, 0.001, 1)
+
         const animate = () => {
             const target = targetOffsetRef.current
             const current = currentOffsetRef.current
 
-            const nextX = current.x + (target.x - current.x) * LERP_FACTOR
-            const nextY = current.y + (target.y - current.y) * LERP_FACTOR
+            const nextX = current.x + (target.x - current.x) * safeLerpFactor
+            const nextY = current.y + (target.y - current.y) * safeLerpFactor
             currentOffsetRef.current = { x: nextX, y: nextY }
             applyTransform(nextX, nextY)
 
@@ -208,6 +214,7 @@ const useCursorParallax = (targetRef, options = {}) => {
         enableGyroscope,
         fallbackToMouse,
         onApply,
+        lerpFactor,
     ])
 }
 

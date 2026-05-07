@@ -22,8 +22,8 @@
     padding: 0;
 }
 
-// Портрет растянут по ширине в 2 раза, высота не меняется.
-// transform: scaleX(2) удваивает визуальную ширину относительно центра,
+// Портрет растянут по ширине в 5 раз, высота не меняется.
+// transform: scaleX(5) увеличивает визуальную ширину относительно центра,
 // клипп по краям делает .main (overflow: hidden).
 .portrait {
     position: absolute;
@@ -32,7 +32,7 @@
     width: 80%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(3);
+    transform: scaleX(5);
     transform-origin: center center;
     user-select: none;
 }

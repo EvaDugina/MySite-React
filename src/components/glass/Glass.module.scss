@@ -27,15 +27,9 @@
 // calc(50% - 50vw) от центра containing block отъезжает на 50vw влево; при
 // условии центрирования родителя в viewport это совпадает с левым краем
 // viewport — независимо от ширины родителя.
+// Базовый контейнер. Размеры/позиция задаются через модификатор
+// .glassContainerFullscreen или .glassContainerContained.
 .glassContainer {
-    // Полный viewport, центрирован (см. calc-трюк).
-    position: absolute;
-    top: calc(50% - 55vh);
-    left: calc(50% - 55vw);
-    width: 110vw;
-    height: 110vh;
-
-    // Свойства из канонического CodePen wprod/raVpwJL — пропорции layout.
     display: flex;
     align-items: center;
     background: transparent;
@@ -44,10 +38,30 @@
     color: var(--lg-text);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
 
-    // Полноэкранный overlay не должен перехватывать клики.
     pointer-events: none;
     will-change: transform;
     isolation: isolate;
+}
+
+// Mode: fullscreen — overlay во весь viewport, центрирован через calc-трюк.
+// calc(50% - 55vw) от центра containing block отъезжает на 55vw влево;
+// при условии центрирования родителя в viewport это даёт viewport-bounds
+// + буфер 5vw на каждую сторону под параллакс.
+.glassContainerFullscreen {
+    position: absolute;
+    top: calc(50% - 55vh);
+    left: calc(50% - 55vw);
+    width: 110vw;
+    height: 110vh;
+}
+
+// Mode: contained — заполняет родителя (родитель должен быть position: relative
+// или другим containing block).
+.glassContainerContained {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
 // Общие стили слоёв-подложек (filter / overlay / specular).
@@ -64,8 +78,10 @@
 //    применяет displacement к этому размытому слою.
 .glassFilter {
     z-index: 0;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    // var(--lg-frost-blur) задаётся через style на .glassContainer,
+    // дефолт 4px в Glass.jsx (и фолбэк ниже).
+    backdrop-filter: blur(var(--lg-frost-blur, 4px));
+    -webkit-backdrop-filter: blur(var(--lg-frost-blur, 4px));
 
     @supports (filter: url(#a)) {
         filter: url(#lensFilter) saturate(120%) brightness(1.15);

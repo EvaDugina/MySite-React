@@ -1,0 +1,167 @@
+// Layout 01_01 «Сотворение жизни» по прототипу Figma 01_01.
+//
+// Размеры и позиции пропорционально мапятся из Figma 1728×1117.
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    background-color: #002fa7; // International Klein Blue
+}
+
+// Background — отдельный параллакс-слой (двигается независимо).
+// Чуть больше viewport, чтобы при сдвиге не оголялись края.
+.background {
+    position: absolute;
+    top: -5vh;
+    left: -5vw;
+    width: 110vw;
+    height: 110vh;
+    background-color: #002fa7;
+    will-change: transform;
+}
+
+// Окно с глазами — двигается параллаксом целиком (с img + Glass).
+// Высота вычисляется из ширины + aspect-ratio изображения (inline-style
+// в 01_01.jsx) → окно повторяет пропорции картинки без letterbox.
+// ВНИМАНИЕ: transform НЕ ставим в CSS — useCursorParallax пишет
+// transform: translate3d(...) сверху, любая CSS transform будет затёрта.
+.eyesWindow {
+    position: absolute;
+    top: 28.83%; // 322/1117 (Figma top)
+    left: 33.16%; // 573/1728 (Figma left)
+    width: 39.81%; // 688/1728 (Figma width)
+    // height — без явного значения, вычисляется из aspect-ratio (inline)
+    overflow: hidden;
+    // Inner shadow из Figma — приближение через box-shadow inset.
+    box-shadow: inset 0 0 10px 4px rgba(0, 0, 0, 1);
+    will-change: transform;
+}
+
+.eyesImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    // contain — изображение полностью вписывается в окно с сохранением
+    // оригинальных пропорций (без crop, без stretch). По бокам / сверху
+    // могут появиться letterbox-полосы — это допустимо.
+    object-fit: contain;
+    object-position: center center;
+    user-select: none;
+    // Делаем img прозрачной для hit-теста: cursor zone использует
+    // document.elementFromPoint, который возвращает верхний элемент.
+    // Без этого зона EyesWindow не определяется (img перекрывает).
+    pointer-events: none;
+}
+
+// Текстовый блок — поверх фона, под окном по z-индексу.
+// Скрывается МОМЕНТАЛЬНО (без transition) после клика на EyesWindow.
+.textBlock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(92vw, 1599px);
+    margin: 0;
+    padding: 0;
+    color: white;
+    font-family: "Inter", "Helvetica", "Arial", sans-serif;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+.textBlockHidden {
+    display: none;
+}
+
+.title {
+    margin: 0 0 0.6em 0;
+    padding: 0;
+    font-weight: 800;
+    font-size: 5.55vw;
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.body {
+    margin: 0;
+    padding: 0;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 2.78vw;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.underline {
+    text-decoration: underline;
+    text-decoration-thickness: 0.04em;
+    text-underline-offset: 0.12em;
+}
+
+// Руки — изначально скрыты (opacity 0), плавно появляются по клику.
+// Двигаются параллаксом (handsRef в 01_01.jsx).
+// Из Figma: x=147.8, y=395, w=1431.3, h=668 в 1728×1117 frame.
+.hands {
+    position: absolute;
+    top: 45.4%; // 395/1117
+    left: 8.55%; // 147.8/1728
+    width: 82.83%; // 1431.3/1728
+    height: 59.8%; // 668/1117
+    object-fit: contain;
+    object-position: center top;
+    opacity: 0;
+    // Без transition — руки появляются МОМЕНТАЛЬНО на смену .handsVisible.
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+
+    // Image filters из Figma:
+    //   exposure +0.09  → brightness(1.09)
+    //   contrast +0.30  → contrast(1.30)
+    //   temperature +0.30 → тёплый сдвиг через sepia + saturate + hue-rotate
+    //   highlights +0.83 → дополнительный brightness (приближение)
+    filter:
+        brightness(1.09)
+        contrast(1.3)
+        sepia(0.18)
+        saturate(1.2)
+        hue-rotate(-3deg)
+        brightness(1.15);
+}
+
+.handsVisible {
+    opacity: 0.85; // Figma: hands opacity 0.85
+}
+
+// Слот для кнопки — позиция из Figma 01_02: x=801, y=762, w=125, h=17.
+// Изначально скрыт. z-index 5 — кнопка ПОД руками (z-7), чтобы руки
+// визуально перекрывали её. Клики через руки (pointer-events: none) проходят
+// к кнопке; pixel-perfect блокировка — в JS (см. useImageAlphaHitMap).
+//
+// Появляется через 3 секунды после .btnSlotVisible (= после клика на
+// EyesWindow), плавно за 0.8 секунды.
+.btnSlot {
+    position: absolute;
+    top: 68.22%; // (762 + 17/2) / 1117
+    left: 50%; // (801 + 125/2) / 1728 ≈ 50%
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 10s ease-out 3s,
+        visibility 0s linear 3s;
+}
+
+.btnSlotVisible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
