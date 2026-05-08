@@ -186,7 +186,7 @@ const Vhozhdenie = () => {
                     {/* Текст вне Glass — статичен, не двигается с параллаксом.
                        z-index 2: под Glass (z=3), поэтому подвергается рефракции. */}
                     <div
-                        className={`${styles.textBlock} not-allowed z-2`}
+                        className={`${styles.textBlock} not-allowed z-3`}
                     >
                         <h1 className={styles.title}>
                             Миниатюра «Неприкосновенна»
