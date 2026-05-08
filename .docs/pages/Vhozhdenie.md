@@ -14,10 +14,11 @@
 
 ```
 <main class="main">
-  <article class="frame">                        — 84vw, по центру
-    <img id="Portrait">                          — z-1, scaleX(2), статичен
+  <article class="frame">                        — 60vw layout, scaleX(4)
+                                                   visual = 240vw, центр viewport
+    <img id="Portrait">                          — z-1, заполняет frame
     <Glass zIndex={3} maxOffsetX={40} ...>       — z-3, параллакс
-    <div class="textBlock z-2">                  — z-2, под Glass (refraction)
+    <div class="textBlock z-3">                  — fixed, z-3, поверх Glass
       <h1>Миниатюра «Неприкосновенна»</h1>
       <p>Миниатюра о том... <u>рукотворное</u> ...</p>
     </div>
@@ -30,6 +31,11 @@
   </article>
 </main>
 ```
+
+**Координатная система article.** `scaleX(4)` на `.frame` растягивает
+весь content (img + кнопки) горизонтально 4× от центра. Кнопки сидят
+в layout-координатах frame, поэтому при ресайзе viewport их визуальная
+позиция меняется синхронно с лицом на фото — не разъезжаются.
 
 ## Поведение
 
@@ -48,8 +54,8 @@
 
 | Элемент | Шрифт | Размер | Стиль |
 |---|---|---|---|
-| `.title` | Inter ExtraBold (800) | 5.55vw | (= 96px на 1728-frame Figma) |
-| `.body` | Inter Bold Italic (700) | 2.78vw | (= 48px на 1728-frame Figma) |
+| `.title` | Inter ExtraBold (800) | 2vw | (textBlock width 25vw, шрифт подобран после scaleX-разметки) |
+| `.body` | Inter Bold Italic (700) | 0.8vw | (textBlock width 25vw) |
 | `.underline` | — | — | `text-decoration: underline` на словах «рукотворное» / «сакральным» |
 
 ## Glass-эффект
@@ -69,5 +75,6 @@
 ## Изображение портрета
 
 `/images/НЕПРИКОСНОВЕННА.webp` — статичный image-fill, без видео-флоу.
-Применён `transform: scaleX(2)` — растянут по ширине в 2 раза при
-сохранении высоты (визуально-непропорциональное искажение).
+Стретч даёт `scaleX(4)` на родительском `.frame` (см. структуру выше) —
+визуально-непропорциональное искажение по ширине. На самой `<img>`
+никаких transform нет, она просто заполняет frame через `inset: 0`.
