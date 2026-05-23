@@ -76,27 +76,29 @@ const Glass = ({
                 <defs>
                     <filter
                         id="lensFilter"
-                        x="0%"
-                        y="0%"
-                        width="100%"
-                        height="100%"
+                        x="-8%"
+                        y="-8%"
+                        width="116%"
+                        height="116%"
+                        filterRes="2048"
+                        colorInterpolationFilters="sRGB"
                     >
                         <feTurbulence
                             type="fractalNoise"
-                            baseFrequency="0.012 0.012"
+                            baseFrequency="0.008 0.008"
                             numOctaves="2"
                             seed="92"
                             result="noise"
                         />
                         <feGaussianBlur
                             in="noise"
-                            stdDeviation="1.5"
+                            stdDeviation="3"
                             result="softNoise"
                         />
                         <feDisplacementMap
                             in="SourceGraphic"
                             in2="softNoise"
-                            scale="14"
+                            scale="11"
                             xChannelSelector="R"
                             yChannelSelector="G"
                         />
@@ -112,8 +114,8 @@ const Glass = ({
             >
                 <div className={styles.glassFilter} />
                 <div className={styles.glassOverlay} />
-                <div className={styles.glassSpecular} />
-                <div className={styles.glassContent}>{children}</div>
+                <div className={styles.glassSpecular + " d-none"} />
+                <div className={styles.glassContent + " d-none"}>{children}</div>
             </div>
         </>
     )

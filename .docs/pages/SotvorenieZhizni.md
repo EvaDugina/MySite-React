@@ -6,8 +6,8 @@
 
 ## Роут
 
-| Path | Title | Component |
-|---|---|---|
+| Path     | Title            | Component          |
+| -------- | ---------------- | ------------------ |
 | `/01_01` | Сотворение жизни | `SotvorenieZhizni` |
 
 Переход с `/` (страница 00, [Vhozhdenie](Vhozhdenie.md)) — после двух
@@ -25,7 +25,7 @@
 - Курсор `pointer` над окном (зона `EYES_WINDOW`)
 
 ### 2. Opened — после клика на окно (соответствует 01_02 в Figma)
-- Появляется изображение `/images/РУКИ.png` (opacity 0.85, fade-in 0.8s)
+- Появляется изображение `/images/РУКИ.png` (opacity 0.95, fade-in 0.8s)
 - Появляется `Btn-Neprikosnovenna` (текст «неприкосновенна», fade-in 0.8s
   с задержкой 0.3s)
 - Окно с глазами и Glass — остаются на месте
@@ -53,7 +53,7 @@
   </div>
 
   <img class="hands [.handsVisible]"
-       src="/images/РУКИ.png"/>                     — z-5, opacity 0→0.85
+       src="/images/РУКИ.png"/>                     — z-5, opacity 0→0.95
   <div class="btnSlot [.btnSlotVisible]">           — z-6, opacity 0→1
     <Button id="BtnNeprikosnovenna" />
   </div>
@@ -73,12 +73,12 @@ Glass** как единое целое. Текст, руки и кнопка —
 
 Зона `BTN_NEPRIKOSNOVENNA` зависит от `dragState` (см. ниже):
 
-| Zone | elementId | Иконка (idle) | Иконка (frozen/dragging) | Иконка (dropped) |
-|---|---|---|---|---|
-| `NONE` | — | DEFAULT | — | — |
-| `BACK` | `Background-01_01` | DEFAULT | — | — |
-| `EYES_WINDOW` | `EyesWindow` | POINTER | — | — |
-| `BTN_NEPRIKOSNOVENNA` | `BtnNeprikosnovenna` | POINTER | HAND_CLOSE | POINTER |
+| Zone                  | elementId            | Иконка (idle) | Иконка (frozen/dragging) | Иконка (dropped) |
+| --------------------- | -------------------- | ------------- | ------------------------ | ---------------- |
+| `NONE`                | —                    | DEFAULT       | —                        | —                |
+| `BACK`                | `Background-01_01`   | DEFAULT       | —                        | —                |
+| `EYES_WINDOW`         | `EyesWindow`         | POINTER       | —                        | —                |
+| `BTN_NEPRIKOSNOVENNA` | `BtnNeprikosnovenna` | POINTER       | HAND_CLOSE               | POINTER          |
 
 `imgCursorClicked`: idle → POINTER_CLICKED, frozen/dragging → HAND_CLOSE,
 dropped → HAND_CLOSE (показывается на pickup-back).

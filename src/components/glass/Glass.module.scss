@@ -92,6 +92,7 @@
 .glassOverlay {
     z-index: 1;
     background: var(--lg-bg-color);
+    opacity: 0.2;
 }
 
 // 3) SPECULAR LAYER — внутренние highlights, имитация «грани линзы».

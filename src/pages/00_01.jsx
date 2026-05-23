@@ -25,6 +25,7 @@ const Zone = {
 }
 
 const NEXT_ROUTE = "/01_01"
+const NEXT_ROUTE_DELAY_MS = 1000
 
 const Vhozhdenie = () => {
     const navigate = useNavigate()
@@ -36,10 +37,10 @@ const Vhozhdenie = () => {
     const [isSpitClicked, setIsSpitClicked] = useState(false)
     const [isKissClicked, setIsKissClicked] = useState(false)
 
-    // Переход на следующую страницу — через 2 секунды после второго клика.
+    // Переход на следующую страницу — через 1 секунду после второго клика.
     useEffect(() => {
         if (isSpitClicked && isKissClicked) {
-            const id = setTimeout(() => navigate(NEXT_ROUTE), 1000)
+            const id = setTimeout(() => navigate(NEXT_ROUTE), NEXT_ROUTE_DELAY_MS)
             return () => clearTimeout(id)
         }
     }, [isSpitClicked, isKissClicked, navigate])

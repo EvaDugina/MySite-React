@@ -103,12 +103,12 @@ const SotvorenieZhizni = () => {
         ...baseParallaxOpts,
         maxOffsetX: 200,
         maxOffsetY: 200,
-        // lerpFactor 0.04 (× 1.5 медленнее предыдущих 0.06; 4× медленнее
-        // дефолтного 0.16) — руки догоняют курсор лениво, выраженная инерция.
-        lerpFactor: 0.025,
+        // lerpFactor 0.0167 (× 1.5 медленнее предыдущих 0.025) —
+        // руки догоняют курсор лениво, выраженная инерция.
+        lerpFactor: 0.0167,
     })
 
-    // Зоны курсора: окно глаз и кнопка — Pointer; остальное — дефолт.
+    // Зоны курсора: окно глаз до открытия и кнопка — Pointer; остальное — дефолт.
     const handleOnEyesWindow = useCallback(() => {
         // hover-state для окна не нужен; просто иконка курсора меняется
     }, [])
@@ -173,8 +173,12 @@ const SotvorenieZhizni = () => {
             },
             [Zone.EYES_WINDOW]: {
                 elementId: "EyesWindow",
-                imgCursor: CursorImages.POINTER,
-                imgCursorClicked: CursorImages.POINTER_CLICKED,
+                imgCursor: isOpened
+                    ? CursorImages.DEFAULT
+                    : CursorImages.POINTER,
+                imgCursorClicked: isOpened
+                    ? CursorImages.DEFAULT
+                    : CursorImages.POINTER_CLICKED,
                 handleOn: handleOnEyesWindow,
                 handleOff: handleOffEyesWindow,
             },
@@ -186,6 +190,7 @@ const SotvorenieZhizni = () => {
         })
     }, [
         dragState,
+        isOpened,
         handleOnEyesWindow,
         handleOffEyesWindow,
         handleOnBtn,
@@ -230,6 +235,7 @@ const SotvorenieZhizni = () => {
         (currentElementId, event) => {
             if (currentElementId === "EyesWindow" && !isOpened) {
                 setIsOpened(true)
+                cursorRef.current?.setSrc(CursorImages.DEFAULT)
                 return
             }
             if (
@@ -300,6 +306,22 @@ const SotvorenieZhizni = () => {
                 x = pos.x
                 y = pos.y
             }
+            if (isOpened) {
+                const eyesEl = document.getElementById("EyesWindow")
+                if (eyesEl) {
+                    const eyesRect = eyesEl.getBoundingClientRect()
+                    const overEyes =
+                        x >= eyesRect.left &&
+                        x <= eyesRect.right &&
+                        y >= eyesRect.top &&
+                        y <= eyesRect.bottom
+                    if (overEyes) {
+                        cursorRef.current?.setSrc(CursorImages.DEFAULT)
+                        return
+                    }
+                }
+            }
+
             const btnEl = document.getElementById("BtnNeprikosnovenna")
             if (!btnEl) return
             // 'idle': пока кнопка ещё не «активна» (CSS transition держит
@@ -310,6 +332,7 @@ const SotvorenieZhizni = () => {
                 getComputedStyle(btnEl).pointerEvents === "none"
             ) {
                 isHandsCoveringBtnRef.current = false
+                if (isOpened) cursorRef.current?.setSrc(CursorImages.DEFAULT)
                 return
             }
             const r = btnEl.getBoundingClientRect()
@@ -317,6 +340,7 @@ const SotvorenieZhizni = () => {
                 x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
             if (!overBtn) {
                 isHandsCoveringBtnRef.current = false
+                if (isOpened) cursorRef.current?.setSrc(CursorImages.DEFAULT)
                 return
             }
             // 'dropped': курсор над кнопкой → POINTER (без alpha-hit
@@ -340,7 +364,7 @@ const SotvorenieZhizni = () => {
             window.removeEventListener("pointerdown", reassert)
             window.removeEventListener("pointerup", reassert)
         }
-    }, [isHandsOpaqueAt])
+    }, [isHandsOpaqueAt, isOpened])
 
     // Drag-эффект 1: pickup-back. Если кнопка УЖЕ дропнута и
     // пользователь зажал ЛКМ внутри её bounding-box — снова прилеплять.
