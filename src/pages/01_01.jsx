@@ -15,6 +15,7 @@ import Button from "../components/button/Button.jsx"
 import Glass from "../components/glass/Glass.jsx"
 import useCursorParallax from "../hooks/useCursorParallax.js"
 import useImageAlphaHitMap from "../hooks/useImageAlphaHitMap.js"
+import useSoundEffect from "../hooks/useSoundEffect.js"
 
 const Zone = {
     NONE: 0,
@@ -31,6 +32,7 @@ const SotvorenieZhizni = () => {
 
     const [isOpened, setIsOpened] = useState(false)
     const [isParallaxFrozen, setIsParallaxFrozen] = useState(false)
+    const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov")
 
     // Drag-state машина (после успешного клика на кнопку):
     //   'idle'     — кнопка ещё кликабельна (alpha-hit blocking активен)
@@ -104,9 +106,9 @@ const SotvorenieZhizni = () => {
         ...baseParallaxOpts,
         maxOffsetX: 200,
         maxOffsetY: 200,
-        // lerpFactor 0.0167 (× 1.5 медленнее предыдущих 0.025) —
+        // lerpFactor 0.0209 (задержка рук уменьшена в 1.25 раза) —
         // руки догоняют курсор лениво, выраженная инерция.
-        lerpFactor: 0.0167,
+        lerpFactor: 0.0209,
     })
 
     // Зоны курсора: окно глаз до открытия и кнопка — Pointer; остальное — дефолт.
@@ -255,6 +257,7 @@ const SotvorenieZhizni = () => {
                     }
                 }
                 btnNeprikosnovennaRef.current?.click()
+                playAudio()
                 cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
                 cursorRef.current?.stopVideo()
                 setIsParallaxFrozen(true)
@@ -266,7 +269,7 @@ const SotvorenieZhizni = () => {
                 }, 1000)
             }
         },
-        [isOpened, isCoveredAtCursor, setDrag],
+        [isOpened, isCoveredAtCursor, playAudio, setDrag],
     )
 
     // Re-assert корректной иконки курсора на любое pointer-событие.
