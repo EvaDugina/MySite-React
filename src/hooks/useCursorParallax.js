@@ -17,9 +17,11 @@ const isFiniteNumber = (value) =>
  * @param {number} [options.maxOffsetY=12]
  * @param {number} [options.direction=-1] инвертирует знак смещения (-1 = противоход курсору)
  * @param {boolean} [options.enabled=true]
+ * @param {boolean} [options.isFrozen=false] останавливает параллакс на текущем transform
  * @param {boolean} [options.enableGyroscope=true]
  * @param {boolean} [options.fallbackToMouse=true]
  * @param {(x: number, y: number) => void} [options.onApply] хук вместо style.transform
+ * @param {number} [options.pointerThrottleMs=0] throttle входных pointermove
  * @param {number} [options.lerpFactor=0.16] скорость подтягивания к цели
  *   (0..1). Меньше = «тяжелее»/с задержкой, больше = быстрее. Используется
  *   для эффекта «отставания» элемента от курсора.
@@ -30,9 +32,11 @@ const useCursorParallax = (targetRef, options = {}) => {
         maxOffsetY = 12,
         direction = -1,
         enabled = true,
+        isFrozen = false,
         enableGyroscope = true,
         fallbackToMouse = true,
         onApply,
+        pointerThrottleMs = 0,
         lerpFactor = DEFAULT_LERP_FACTOR,
     } = options
 
@@ -48,6 +52,10 @@ const useCursorParallax = (targetRef, options = {}) => {
         const safeMaxOffsetX = Math.max(0, Number(maxOffsetX) || 0)
         const safeMaxOffsetY = Math.max(0, Number(maxOffsetY) || 0)
         const normalizedDirection = Number(direction) < 0 ? -1 : 1
+        const safePointerThrottleMs = Math.max(0, Number(pointerThrottleMs) || 0)
+        let latestPointerEvent = null
+        let pointerRafId = null
+        let lastPointerApplyTime = 0
 
         const applyTransform = (x, y) => {
             if (typeof onApply === "function") {
@@ -109,8 +117,36 @@ const useCursorParallax = (targetRef, options = {}) => {
             startAnimation()
         }
 
+        const applyPointerTarget = (event) => {
+            if (!event) return
+            if (!fallbackToMouse) return
+            if (inputModeRef.current === "gyro-active") return
+
+            const center = getCenter()
+            if (center.x === 0 || center.y === 0) {
+                resetTargetOffset()
+                return
+            }
+            const nx = (event.clientX - center.x) / center.x
+            const ny = (event.clientY - center.y) / center.y
+            setTargetFromNormalized(nx, ny)
+        }
+
+        const cancelPointerRaf = () => {
+            if (pointerRafId === null) return
+            cancelAnimationFrame(pointerRafId)
+            pointerRafId = null
+        }
+
+        if (isFrozen) {
+            stopAnimation()
+            cancelPointerRaf()
+            return undefined
+        }
+
         if (!enabled) {
             stopAnimation()
+            cancelPointerRaf()
             targetOffsetRef.current = { x: 0, y: 0 }
             currentOffsetRef.current = { x: 0, y: 0 }
             applyTransform(0, 0)
@@ -123,17 +159,27 @@ const useCursorParallax = (targetRef, options = {}) => {
         })
 
         const handleMouseMove = (event) => {
-            if (!fallbackToMouse) return
-            if (inputModeRef.current === "gyro-active") return
-
-            const center = getCenter()
-            if (center.x === 0 || center.y === 0) {
-                resetTargetOffset()
+            if (safePointerThrottleMs === 0) {
+                applyPointerTarget(event)
                 return
             }
-            const nx = (event.clientX - center.x) / center.x
-            const ny = (event.clientY - center.y) / center.y
-            setTargetFromNormalized(nx, ny)
+
+            latestPointerEvent = event
+            if (pointerRafId !== null) return
+
+            pointerRafId = requestAnimationFrame((timestamp) => {
+                pointerRafId = null
+                if (
+                    timestamp - lastPointerApplyTime <
+                    safePointerThrottleMs
+                ) {
+                    handleMouseMove(latestPointerEvent)
+                    return
+                }
+
+                lastPointerApplyTime = timestamp
+                applyPointerTarget(latestPointerEvent)
+            })
         }
 
         const handleMouseLeave = () => {
@@ -203,6 +249,7 @@ const useCursorParallax = (targetRef, options = {}) => {
             }
             window.removeEventListener("blur", handleBlur)
             window.removeEventListener("resize", handleResize)
+            cancelPointerRaf()
             stopAnimation()
         }
     }, [
@@ -211,9 +258,11 @@ const useCursorParallax = (targetRef, options = {}) => {
         maxOffsetY,
         direction,
         enabled,
+        isFrozen,
         enableGyroscope,
         fallbackToMouse,
         onApply,
+        pointerThrottleMs,
         lerpFactor,
     ])
 }

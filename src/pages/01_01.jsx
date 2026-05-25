@@ -7,7 +7,6 @@ import React, {
     useState,
 } from "react"
 import {
-    createCursorSettings,
     createCursorZoneSettings,
     CursorImages,
 } from "../components/cursor/CursorSettings.js"
@@ -31,6 +30,7 @@ const SotvorenieZhizni = () => {
     const eyesWindowRef = useRef(null)
 
     const [isOpened, setIsOpened] = useState(false)
+    const [isParallaxFrozen, setIsParallaxFrozen] = useState(false)
 
     // Drag-state машина (после успешного клика на кнопку):
     //   'idle'     — кнопка ещё кликабельна (alpha-hit blocking активен)
@@ -96,6 +96,7 @@ const SotvorenieZhizni = () => {
         enabled: true,
         enableGyroscope: true,
         fallbackToMouse: true,
+        isFrozen: isParallaxFrozen,
     }
     useCursorParallax(backgroundRef, baseParallaxOpts)
     useCursorParallax(eyesWindowRef, baseParallaxOpts)
@@ -256,6 +257,7 @@ const SotvorenieZhizni = () => {
                 btnNeprikosnovennaRef.current?.click()
                 cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
                 cursorRef.current?.stopVideo()
+                setIsParallaxFrozen(true)
                 setDrag("frozen")
                 freezeTimerRef.current = setTimeout(() => {
                     cursorRef.current?.start()
@@ -449,12 +451,14 @@ const SotvorenieZhizni = () => {
 
     const cursorSettings = useMemo(
         () =>
-            createCursorSettings({
+            ({
                 imgCursor: CursorImages.DEFAULT,
+                isHidden: false,
                 startX: null,
                 startY: null,
                 handleLeftClickDown,
                 handleLeftClickUp: null,
+                handleDoubleLeftClick: null,
                 // Максимально быстрый курсор + плавная остановка.
                 // ВНИМАНИЕ (useCursorMovePhysics.js:48): `damping` —
                 // множитель сохранения скорости (velocity *= damping

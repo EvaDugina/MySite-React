@@ -8,7 +8,6 @@ import React, {
 } from "react"
 import { useNavigate } from "react-router-dom"
 import {
-    createCursorSettings,
     createCursorZoneSettings,
     CursorImages,
 } from "../components/cursor/CursorSettings.js"
@@ -26,6 +25,18 @@ const Zone = {
 
 const NEXT_ROUTE = "/01_01"
 const NEXT_ROUTE_DELAY_MS = 1000
+const CURSOR_PHYSICS_DEFAULT = {
+    stiffness: 1,
+    damping: 0.4,
+    mass: 1,
+    maxSpeed: 200,
+}
+const CURSOR_PHYSICS_AFTER_FIRST_CLICK = {
+    stiffness: 0.5,
+    damping: 0.68,
+    mass: 1,
+    maxSpeed: 0.2,
+}
 
 const Vhozhdenie = () => {
     const navigate = useNavigate()
@@ -36,6 +47,7 @@ const Vhozhdenie = () => {
 
     const [isSpitClicked, setIsSpitClicked] = useState(false)
     const [isKissClicked, setIsKissClicked] = useState(false)
+    const hasFirstClick = isSpitClicked || isKissClicked
 
     // Переход на следующую страницу — через 1 секунду после второго клика.
     useEffect(() => {
@@ -130,32 +142,23 @@ const Vhozhdenie = () => {
     )
 
     const cursorSettings = useMemo(
-        () =>
-            createCursorSettings({
-                            imgCursor: CursorImages.DEFAULT,
-                            startX: null,
-                            startY: null,
-                            handleLeftClickDown,
-                            handleLeftClickUp: null,
-                            // Максимально быстрый курсор + плавная остановка.
-                            // ВНИМАНИЕ (useCursorMovePhysics.js:48): `damping` —
-                            // множитель сохранения скорости (velocity *= damping
-                            // каждый кадр). damping=0 → курсор не двигается;
-                            // damping→1 → overshoot.
-                            //
-                            // Скорость регулируется stiffness/mass (отношение 2:1 даёт
-                            // высокий acceleration). damping контролирует «хвост» при
-                            // подходе к цели: выше damping = velocity дольше сохраняется
-                            // у самой цели = плавнее остановка (без рывка).
-                            //
-                            // 0.5 → 0.75: остановка более «эластичная», без изменения
-                            // пикового скорости (ограничена maxSpeed=150).
-                            stiffness: 1.0,
-                            damping: 0.4,
-                            mass: 1,
-                            maxSpeed: 200,
-                        }),
-        [handleLeftClickDown],
+        () => {
+            const cursorPhysics = hasFirstClick
+                ? CURSOR_PHYSICS_AFTER_FIRST_CLICK
+                : CURSOR_PHYSICS_DEFAULT
+
+            return {
+                imgCursor: CursorImages.DEFAULT,
+                isHidden: false,
+                startX: null,
+                startY: null,
+                handleLeftClickDown,
+                handleLeftClickUp: null,
+                handleDoubleLeftClick: null,
+                ...cursorPhysics,
+            }
+        },
+        [handleLeftClickDown, hasFirstClick],
     )
 
     return (
@@ -180,12 +183,15 @@ const Vhozhdenie = () => {
                         zIndex={3}
                         maxOffsetX={40}
                         maxOffsetY={40}
-                        enableGyroscope
-                        fallbackToMouse
+                        enableParallax={false}
+                        enableGyroscope={false}
+                        fallbackToMouse={false}
+                        extraClass="d-none"
+                        pointerThrottleMs={16}
                     />
 
-                    {/* Текст вне Glass — статичен, не двигается с параллаксом.
-                       z-index 2: под Glass (z=3), поэтому подвергается рефракции. */}
+                    {/* Текст статичен: Glass на этой странице скрыт и не слушает
+                       pointermove, чтобы не нагружать движение курсора. */}
                     <div
                         className={`${styles.textBlock} not-allowed z-3`}
                     >

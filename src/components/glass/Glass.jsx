@@ -27,6 +27,8 @@ import useCursorParallax from "../../hooks/useCursorParallax.js"
  * @param {boolean} [props.enabled=true]
  * @param {number} [props.frostBlur=4] backdrop-blur в px
  * @param {string} [props.bgColor] переопределяет --lg-bg-color (overlay tint)
+ * @param {string} [props.extraClass] дополнительный класс контейнера
+ * @param {number} [props.pointerThrottleMs=0] throttle для pointermove
  * @param {number} [props.zIndex]
  * @param {React.ReactNode} [props.children]
  */
@@ -40,6 +42,8 @@ const Glass = ({
     enabled = true,
     frostBlur = 4,
     bgColor,
+    extraClass,
+    pointerThrottleMs = 0,
     zIndex,
     children,
 }) => {
@@ -51,11 +55,13 @@ const Glass = ({
         enabled: enabled && enableParallax,
         enableGyroscope,
         fallbackToMouse,
+        pointerThrottleMs,
     })
 
     const containerClass = [
         styles.glassContainer,
         mode === "contained" ? styles.glassContainerContained : styles.glassContainerFullscreen,
+        extraClass,
     ]
         .filter(Boolean)
         .join(" ")
