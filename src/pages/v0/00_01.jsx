@@ -10,10 +10,10 @@ import { useNavigate } from "react-router-dom"
 import {
     createCursorZoneSettings,
     CursorImages,
-} from "../components/cursor/CursorSettings.js"
-import Cursor from "../components/cursor/Cursor.jsx"
-import Button from "../components/button/Button.jsx"
-import Glass from "../components/glass/Glass.jsx"
+} from "../../components/cursor/CursorSettings.js"
+import Cursor from "../../components/cursor/Cursor.jsx"
+import Button from "../../components/button/Button.jsx"
+import Glass from "../../components/glass/Glass.jsx"
 
 const Zone = {
     NONE: 0,

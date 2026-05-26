@@ -1,15 +1,15 @@
 import "./Neprikosnovenna.css";
 import styles from "./Neprikosnovenna.module.scss";
 import React, {useCallback, useEffect, useMemo, useRef, useState,} from "react";
-import {createCursorSettings, createCursorZoneSettings, CursorImages,} from "../components/cursor/CursorSettings.js";
-import Cursor from "../components/cursor/Cursor.jsx";
-import Background from "../components/background/Background.jsx";
-import Button from "../components/button/Button.jsx";
-import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
-import FlashProvider from "../components/flash/FlashProvider.jsx";
-import useSoundEffect from "../hooks/useSoundEffect.js";
-import {BackgroundType} from "../components/background/BackgroundSettings.js";
-import {FlashType} from "../components/flash/FlashSettings.js";
+import {createCursorSettings, createCursorZoneSettings, CursorImages,} from "../../components/cursor/CursorSettings.js";
+import Cursor from "../../components/cursor/Cursor.jsx";
+import Background from "../../components/background/Background.jsx";
+import Button from "../../components/button/Button.jsx";
+import PortraitProvider from "../../components/portrait/PortraitProvider.jsx";
+import FlashProvider from "../../components/flash/FlashProvider.jsx";
+import useSoundEffect from "../../hooks/useSoundEffect.js";
+import {BackgroundType} from "../../components/background/BackgroundSettings.js";
+import {FlashType} from "../../components/flash/FlashSettings.js";
 
 const Zone = {
     NONE: 0, BACK: 1, PORTRAIT: 2, BUTTON: 3,

@@ -9,13 +9,13 @@ import React, {
 import {
     createCursorZoneSettings,
     CursorImages,
-} from "../components/cursor/CursorSettings.js"
-import Cursor from "../components/cursor/Cursor.jsx"
-import Button from "../components/button/Button.jsx"
-import Glass from "../components/glass/Glass.jsx"
-import useCursorParallax from "../hooks/useCursorParallax.js"
-import useImageAlphaHitMap from "../hooks/useImageAlphaHitMap.js"
-import useSoundEffect from "../hooks/useSoundEffect.js"
+} from "../../components/cursor/CursorSettings.js"
+import Cursor from "../../components/cursor/Cursor.jsx"
+import Button from "../../components/button/Button.jsx"
+import Glass from "../../components/glass/Glass.jsx"
+import useCursorParallax from "../../hooks/useCursorParallax.js"
+import useImageAlphaHitMap from "../../hooks/useImageAlphaHitMap.js"
+import useSoundEffect from "../../hooks/useSoundEffect.js"
 
 const Zone = {
     NONE: 0,

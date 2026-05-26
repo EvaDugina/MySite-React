@@ -11,20 +11,20 @@ import {
   createCursorSettings,
   createCursorZoneSettings,
   CursorImages,
-} from "../components/cursor/CursorSettings.js";
-import Cursor from "../components/cursor/Cursor.jsx";
-import Background from "../components/background/Background.jsx";
-import { BackgroundType } from "../components/background/BackgroundSettings.js";
-import Button from "../components/button/Button.jsx";
-import PortraitProvider from "../components/portrait/PortraitProvider.jsx";
-// import ImagePortrait from "../components/portrait/ImagePortrait.jsx";
-// import useSoundEffect from "../hooks/useSoundEffect.js";
-import { FlashType } from "../components/flash/FlashSettings.js";
-import FlashProvider from "../components/flash/FlashProvider.jsx";
-import CursorFingerprintTracker from "../components/cursor/CursorFingerprintTracker.jsx";
-import CursorMoveParalax from "../components/parallax/CursorMoveParalax.jsx";
-// import CursorPublicTracker from "../components/cursor/CursorPublicTracker.jsx";
-import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from "../components/cursor/PublicCursorIcons.js";
+} from "../../components/cursor/CursorSettings.js";
+import Cursor from "../../components/cursor/Cursor.jsx";
+import Background from "../../components/background/Background.jsx";
+import { BackgroundType } from "../../components/background/BackgroundSettings.js";
+import Button from "../../components/button/Button.jsx";
+import PortraitProvider from "../../components/portrait/PortraitProvider.jsx";
+// import ImagePortrait from "../../components/portrait/ImagePortrait.jsx";
+// import useSoundEffect from "../../hooks/useSoundEffect.js";
+import { FlashType } from "../../components/flash/FlashSettings.js";
+import FlashProvider from "../../components/flash/FlashProvider.jsx";
+import CursorFingerprintTracker from "../../components/cursor/CursorFingerprintTracker.jsx";
+import CursorMoveParalax from "../../components/parallax/CursorMoveParalax.jsx";
+// import CursorPublicTracker from "../../components/cursor/CursorPublicTracker.jsx";
+import { DEFAULT_PUBLIC_CURSOR_ICON_KEY } from "../../components/cursor/PublicCursorIcons.js";
 
 const Zone = {
   NONE: 0,

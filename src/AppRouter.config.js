@@ -1,9 +1,9 @@
 import React from "react";
 
-const Vhozhdenie = React.lazy(() => import('./pages/00_01'));
-const SotvorenieZhizni = React.lazy(() => import('./pages/01_01'));
-const Neprikosnovenna = React.lazy(() => import('./pages/Neprikosnovenna'));
-const AndIAmTheOnlyOne = React.lazy(() => import('./pages/./AndIAmTheOnlyOne'));
+const Vhozhdenie = React.lazy(() => import('./pages/v0/00_01'));
+const SotvorenieZhizni = React.lazy(() => import('./pages/v0/01_01'));
+const Neprikosnovenna = React.lazy(() => import('./pages/v0/Neprikosnovenna'));
+const AndIAmTheOnlyOne = React.lazy(() => import('./pages/v0/AndIAmTheOnlyOne'));
 
 export const routes = [
     {

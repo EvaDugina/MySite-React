@@ -3,7 +3,7 @@
 ## brunelleschi_stage
 
 - **Стадия:** POC B
-- **Последнее обновление:** 2026-05-18
+- **Последнее обновление:** 2026-05-26
 
 ---
 
@@ -50,10 +50,10 @@
 
 **Модули фронта (`src/`):**
 
-- `App.jsx`, `index.jsx`, `AppRouter.jsx`, `AppRouter.config.js` — composition root и роутинг (4 lazy-loaded страницы).
+- `App.jsx`, `index.jsx`, `AppRouter.jsx`, `AppRouter.config.js` — composition root и роутинг (4 lazy-loaded страницы из `src/pages/v0`).
 - `components/cursor/` — кастомный курсор с физикой, WebGL-отрисовка отпечатков, realtime публичные курсоры.
 - `components/background/`, `components/button/`, `components/portrait/`, `components/flash/` — императивные UI-блоки через `forwardRef` + `useImperativeHandle`.
-- `pages/00_01.jsx`, `pages/01_01.jsx`, `pages/Neprikosnovenna.jsx`, `pages/AndIAmTheOnlyOne.jsx` — оркестрируют императивные API.
+- `pages/v0/{00_01,01_01,Neprikosnovenna,AndIAmTheOnlyOne}.jsx` — версия `v0` пользовательских сцен; публичные URL задаются в `AppRouter.config.js` и не содержат префикс `/v0`.
 - `hooks/useCursorParallax.js` — параллакс DOM-элемента по pointermove / deviceorientation, rAF + lerp, без re-render. Слушает `pointermove`, `pointerleave`, `deviceorientation`, `blur`, `resize`. Опции: `maxOffsetX/Y` (default 12), `direction` (-1/1), `lerpFactor` (default 0.16).
 - `hooks/useImageAlphaHitMap.js` — pixel-perfect hit-testing PNG с прозрачностью. Строит `Uint8Array` α-канала при `onLoad` (один `getImageData`), O(1) lookup через `getBoundingClientRect`. Учитывает `object-fit: contain/cover`, `transform` (через bounding rect). Опция `threshold` (default 32). Ограничение: same-origin (cross-origin без CORS — tainted canvas).
 
@@ -119,7 +119,7 @@ Neprikosnovenna/
   src/                          # фронт
     App.jsx, index.jsx, AppRouter*.{jsx,config.js}
     components/{cursor,background,button,portrait,flash}/
-    pages/{00_01,01_01,Neprikosnovenna,AndIAmTheOnlyOne}.jsx
+    pages/v0/{00_01,01_01,Neprikosnovenna,AndIAmTheOnlyOne}.jsx
     hooks/{useCursorParallax,useImageAlphaHitMap}.js
   server/                       # бэк
     index.js, db.js, websocket.js
@@ -133,9 +133,7 @@ Neprikosnovenna/
   docker-compose.dev.yml
   docker-compose.prod.yml
   .docs/                        # документация
-    product.md, technical.md, demo.md
-    pages/{Neprikosnovenna,SotvorenieZhizni,Vhozhdenie}.md
-    server/server-architecture.md
+    product.md, technical.md, demo.md, SCENARIO.md
     screenshots/*.webp
   CLAUDE.md                     # инструкции для агента
   README.md
@@ -148,7 +146,7 @@ Neprikosnovenna/
 - `.docs/product.md` — продуктовое видение, аудитория, фичи, метрики.
 - `.docs/technical.md` — техническое устройство (этот файл).
 - `.docs/demo.md` — короткий gist для показа.
-- `.docs/pages/*.md` — детали поведения отдельных страниц триптиха (DOM, зоны курсора, параллакс, drag&drop).
+- `.docs/SCENARIO.md` — авторский сценарий, поэтическое ядро и титры.
 - `README.md` — что это и быстрый старт.
 - `CLAUDE.md` (project root) — стандарты разработки и архитектурные принципы для агента.
 
@@ -285,7 +283,7 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 - Non-root пользователи в контейнерах.
 - Healthchecks на обоих контейнерах.
 - Unit-тесты для realtime-слоя WS.
-- Документацию: `product.md` / `technical.md` / `demo.md` + page-specific.
+- Документацию: `product.md` / `technical.md` / `demo.md` / `SCENARIO.md`.
 
 **Intentionally deferred (что НЕ делаем до следующей стадии):**
 
@@ -314,7 +312,7 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 
 ### Active plans
 
-- **Реализовано:** четыре страницы триптиха, кастомный курсор с физикой и зонами, WebGL-карта отпечатков + 2D-слой сессии, realtime WS публичные курсоры с fast-path icon update, императивные API всех ключевых компонентов, prod-сборка под Nginx, dev-сборка с HMR.
+- **Реализовано:** четыре страницы триптиха в `src/pages/v0`, кастомный курсор с физикой и зонами, WebGL-карта отпечатков + 2D-слой сессии, realtime WS публичные курсоры с fast-path icon update, императивные API всех ключевых компонентов, prod-сборка под Nginx, dev-сборка с HMR.
 - **Временно сломано / отложено:** см. Intentionally deferred выше + раздел «Технический долг».
 
 ### Manual verification scenarios
@@ -342,7 +340,8 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 
 ### Журнал изменений
 
-- **2026-05-18:** документация консолидирована в `product.md` / `technical.md` / `demo.md` (Vibe++). Удалены `architecture.md`, `ci-cd.md`, `infrastructure.md`, `hooks/*.md`, `server/server-architecture.md`. Содержимое перенесено в соответствующие секции `technical.md`. Сохранены только `pages/*.md` как page-specific справочники.
+- **2026-05-18:** документация консолидирована в `product.md` / `technical.md` / `demo.md` (Vibe++). Удалены `architecture.md`, `ci-cd.md`, `infrastructure.md`, `hooks/*.md`, `server/server-architecture.md`. Содержимое перенесено в соответствующие секции `technical.md`.
+- **2026-05-26:** страницы перенесены из `src/pages` в `src/pages/v0`; `AppRouter.config.js` импортирует страницы из `v0`, публичные маршруты остались прежними. Удалены активные `.docs/pages/*` для перенесённых page-specific справочников.
 
 ---
 
