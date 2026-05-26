@@ -51,7 +51,7 @@
 **Модули фронта (`src/`):**
 
 - `App.jsx`, `index.jsx`, `AppRouter.jsx`, `AppRouter.config.js` — composition root и роутинг (4 lazy-loaded страницы из `src/pages/v0`).
-- `components/cursor/` — кастомный курсор с физикой, WebGL-отрисовка отпечатков, realtime публичные курсоры.
+- `components/cursor/` — кастомный курсор с физикой, WebGL-отрисовка отпечатков, подготовленный realtime-слой публичных курсоров. В активных страницах `v0` визуальный `CursorPublicTracker` сейчас не монтируется.
 - `components/background/`, `components/button/`, `components/portrait/`, `components/flash/` — императивные UI-блоки через `forwardRef` + `useImperativeHandle`.
 - `pages/v0/{00_01,01_01,Neprikosnovenna,AndIAmTheOnlyOne}.jsx` — версия `v0` пользовательских сцен; публичные URL задаются в `AppRouter.config.js` и не содержат префикс `/v0`.
 - `hooks/useCursorParallax.js` — параллакс DOM-элемента по pointermove / deviceorientation, rAF + lerp, без re-render. Слушает `pointermove`, `pointerleave`, `deviceorientation`, `blur`, `resize`. Опции: `maxOffsetX/Y` (default 12), `direction` (-1/1), `lerpFactor` (default 0.16).
@@ -170,15 +170,6 @@ docker compose -f docker-compose.dev.yml up --build
 - SQLite-файл лежит в `./server/data/fingerprints.db` (bind mount).
 - Healthcheck API: `wget` на `/api/fingerprints`, фронт ждёт `condition: service_healthy`.
 
-Без Docker (запасной путь):
-
-```bash
-# терминал 1
-cd server && npm install && npm run dev   # Express + SQLite на :3001
-# терминал 2
-npm run dev                                # Vite на :5173
-```
-
 Build / preview / lint — внутри контейнера:
 
 ```bash
@@ -226,9 +217,10 @@ Healthcheck API: `wget -qO- http://localhost:3001/api/fingerprints` — `interva
 
 ### Тестирование
 
-- **Unit-тесты бэка:** `server/realtime/*.test.js` на `node:test`. Запуск внутри `api`-контейнера:
+- **Unit-тесты бэка:** `server/realtime/*.test.js` на `node:test`. Запуск только через Docker:
   ```bash
-  node --test /app/realtime/protocol.test.js \
+  docker compose -f docker-compose.dev.yml run --rm api \
+    node --test /app/realtime/protocol.test.js \
     /app/realtime/registry.test.js \
     /app/realtime/broadcast.test.js \
     /app/realtime/liveness.test.js
@@ -303,7 +295,7 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 - Обе compose-конфигурации (`dev` и `prod`) поднимаются с нуля одной командой и доходят до `service_healthy`.
 - На прод-стенде по адресу [82.202.138.61/neprikosnovenna](http://82.202.138.61/neprikosnovenna) триптих проходится с десктопа без визуальных артефактов.
 - REST `/api/fingerprints` принимает POST с батчем и отдаёт GET со всеми точками.
-- WS `/ws` отдаёт `iconKey`-синхронизированные курсоры других зрителей в реальном времени.
+- WS `/ws` поддерживает `iconKey`-синхронизированные курсоры других зрителей; визуальный слой публичных курсоров в активных страницах `v0` выключен.
 - Unit-тесты `server/realtime/*.test.js` зелёные.
 
 ---
@@ -312,14 +304,15 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 
 ### Active plans
 
-- **Реализовано:** четыре страницы триптиха в `src/pages/v0`, кастомный курсор с физикой и зонами, WebGL-карта отпечатков + 2D-слой сессии, realtime WS публичные курсоры с fast-path icon update, императивные API всех ключевых компонентов, prod-сборка под Nginx, dev-сборка с HMR.
+- **Реализовано:** четыре страницы / фрейма в `src/pages/v0`, кастомный курсор с физикой и зонами, WebGL-карта отпечатков + 2D-слой сессии, WS-протокол публичных курсоров с fast-path icon update, императивные API всех ключевых компонентов, prod-сборка под Nginx, dev-сборка с HMR.
 - **Временно сломано / отложено:** см. Intentionally deferred выше + раздел «Технический долг».
 
 ### Manual verification scenarios
 
-- **Триптих на десктопе.** `/` → нажать «плюнуть» и «поцеловать» → через 2 секунды переход на `/neprikosnovenna` → кликнуть по портрету несколько раз → перейти на `/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood` → дождаться видео-трансформации.
+- **Первые фреймы на десктопе.** `/` → нажать «плюнуть» и «поцеловать» → через 1 секунду переход на `/01_01` → кликнуть окно глаз → дождаться кнопки «неприкосновенна» → кликнуть кнопку в зоне, не перекрытой руками → проверить freeze, появление ч/б фото через 0.5 секунды и растворение к играющему видео за 2 секунды.
+- **Портрет «Неприкосновенна».** Открыть `/neprikosnovenna` → нажать `BtnNeprikosnovenna` → кликнуть по портрету несколько раз → проверить flash-эффекты и сохранение точек.
+- **Финал с кровью.** Открыть `/neprikosnovenna/and-i-am-the-only-one-who-knows-that-you-look-better-with-blood` → нажать `BtnNeprikosnovenna` → дождаться видео-трансформации → перезагрузить страницу и проверить восстановление `bloody`-состояния из localStorage.
 - **Карта отпечатков.** Открыть страницу, увидеть подгруженные точки из БД (WebGL-слой), кликнуть — точка появляется поверх (2D-слой), перезагрузить — точка теперь в WebGL-слое.
-- **Realtime курсоры.** Открыть страницу в двух окнах → курсор из одного видно в другом, иконка меняется при клике на `BtnNeprikosnovenna`.
 - **Адаптивность.** Resize окна на странице 00_01 — кнопки остаются «привязаны» к лицу портрета (scaleX-разметка).
 - **Drag&drop кнопки.** На `/01_01` после клика по окну глаз кнопка «неприкосновенна» через секунду переходит в drag, остаётся в `dropped` после отпускания, поднимается обратно по клику.
 
@@ -328,6 +321,7 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 - **Императивная оркестрация.** Ключевые компоненты (`Background`, `Button`, `Cursor`, `PortraitProvider`, `FlashProvider`, `CursorFingerprintTracker`) экспонируют API через `forwardRef` + `useImperativeHandle`. Страницы дирижируют сложными сценариями, не пробрасывая state-машины через пропсы. Последствие: page-компоненты императивны и читаются как сценарий, а не как декларативный JSX.
 - **Two-layer fingerprint render.** Подгруженные из БД точки — в WebGL instanced (быстро для тысяч точек), точки текущей сессии — в 2D canvas (мгновенный отклик). При reload сессионные точки попадают в WebGL.
 - **WS strict v2+ без legacy.** Заранее отказались от обратной совместимости — проект не имеет старых клиентов в природе. Последствие: парсер проще, отладка дешевле.
+- **Публичные курсоры выключены в активном `v0`.** Серверный `/ws`-слой и клиентский `CursorPublicTracker` сохранены, но в `src/pages/v0/Neprikosnovenna.jsx` визуальный компонент не монтируется. Перед повторным включением нужен отдельный прогон сценария в двух окнах.
 - **Su-exec в API-entrypoint.** `USER node` в Dockerfile не помогает, когда volume монтируется в runtime — файлы наследуют права хоста. Поэтому entrypoint от root делает `chown` и переключается через `su-exec`.
 
 ### Технический долг
@@ -337,6 +331,7 @@ curl -X DELETE http://localhost:3001/api/fingerprints
 - Нет smoke-тестов в `tests/smoke/`.
 - Нет бэкапов SQLite-volume.
 - Нет ротации логов на уровне приложения (полагаемся на Docker logging driver хоста).
+- Публичные курсоры не подключены к активной странице `v0`, несмотря на сохранённый WS-протокол и компонент.
 
 ### Журнал изменений
 
