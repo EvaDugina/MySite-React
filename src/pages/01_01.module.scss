@@ -12,6 +12,14 @@
     background-color: #002fa7; // International Klein Blue
 }
 
+.mainScene05 {
+    background-color: #ffffff;
+}
+
+.scene05Hidden {
+    display: none !important;
+}
+
 // Background — отдельный параллакс-слой (двигается независимо).
 // Чуть больше viewport, чтобы при сдвиге не оголялись края.
 .background {
@@ -22,6 +30,47 @@
     height: 110vh;
     background-color: #002fa7;
     will-change: transform;
+}
+
+.scene06Video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: 24%;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+}
+
+.scene06VideoVisible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scene05Image {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 4;
+    width: 908px;
+    max-width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 1;
+    transform: translateX(-50%);
+    transition: opacity 2s ease-out;
+    pointer-events: none;
+    user-select: none;
+}
+
+.scene05ImageHidden {
+    opacity: 0;
 }
 
 // Окно с глазами — двигается параллаксом целиком (с img + Glass).

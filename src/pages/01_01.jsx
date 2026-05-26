@@ -26,12 +26,15 @@ const Zone = {
 
 const SotvorenieZhizni = () => {
     const cursorRef = useRef(null)
+    const videoRef = useRef(null)
     const btnNeprikosnovennaRef = useRef(null)
     const backgroundRef = useRef(null)
     const eyesWindowRef = useRef(null)
 
     const [isOpened, setIsOpened] = useState(false)
     const [isParallaxFrozen, setIsParallaxFrozen] = useState(false)
+    const [isScene05Visible, setIsScene05Visible] = useState(false)
+    const [isScene06Visible, setIsScene06Visible] = useState(false)
     const { playAudio } = useSoundEffect("/audio/СимуляцияОргазма.mov")
 
     // Drag-state машина (после успешного клика на кнопку):
@@ -54,6 +57,8 @@ const SotvorenieZhizni = () => {
     const [droppedPos, setDroppedPos] = useState(null)
     const buttonSlotRef = useRef(null)
     const freezeTimerRef = useRef(null)
+    const scene05TimerRef = useRef(null)
+    const scene06FrameRef = useRef(null)
     // Pivot-offset: смещение точки касания курсора от ЦЕНТРА кнопки в момент
     // pointerdown. Используется в rAF и для inline-стиля 'dropped', чтобы
     // курсор оставался ровно в той точке кнопки, где было касание (а не
@@ -64,6 +69,10 @@ const SotvorenieZhizni = () => {
     // Cleanup отложенного unfreeze-таймера на unmount страницы.
     useEffect(() => () => {
         if (freezeTimerRef.current) clearTimeout(freezeTimerRef.current)
+        if (scene05TimerRef.current) clearTimeout(scene05TimerRef.current)
+        if (scene06FrameRef.current) {
+            cancelAnimationFrame(scene06FrameRef.current)
+        }
     }, [])
 
     // Aspect-ratio изображения ВЗГЛЯД — задаётся при onLoad,
@@ -221,6 +230,21 @@ const SotvorenieZhizni = () => {
         return isHandsOpaqueAt(x, y)
     }, [isHandsOpaqueAt])
 
+    const playScene06Video = useCallback(() => {
+        const video = videoRef.current
+        if (!video) return
+
+        const playPromise = video.play()
+        if (playPromise) {
+            playPromise.catch((error) => {
+                console.warn(
+                    "Не удалось запустить видео сцены 06:",
+                    error,
+                )
+            })
+        }
+    }, [])
+
     // По клику на окно глаз — раскрываем «руки + кнопку».
     // По клику на кнопку (только в state 'idle'):
     //   1) проверяем coverage руками по РЕАЛЬНЫМ event.clientX/Y (не по
@@ -260,8 +284,17 @@ const SotvorenieZhizni = () => {
                 playAudio()
                 cursorRef.current?.setSrc(CursorImages.HAND_CLOSE)
                 cursorRef.current?.stopVideo()
+                playScene06Video()
                 setIsParallaxFrozen(true)
                 setDrag("frozen")
+                scene05TimerRef.current = setTimeout(() => {
+                    setIsScene05Visible(true)
+                    scene06FrameRef.current = requestAnimationFrame(() => {
+                        setIsScene06Visible(true)
+                        scene06FrameRef.current = null
+                    })
+                    scene05TimerRef.current = null
+                }, 500)
                 freezeTimerRef.current = setTimeout(() => {
                     cursorRef.current?.start()
                     if (dragStateRef.current === "frozen") setDrag("dragging")
@@ -269,7 +302,7 @@ const SotvorenieZhizni = () => {
                 }, 1000)
             }
         },
-        [isOpened, isCoveredAtCursor, playAudio, setDrag],
+        [isOpened, isCoveredAtCursor, playAudio, playScene06Video, setDrag],
     )
 
     // Re-assert корректной иконки курсора на любое pointer-событие.
@@ -491,12 +524,25 @@ const SotvorenieZhizni = () => {
                 zoneSettingsRef={cursorZoneSettingsRef}
             />
 
-            <main className={styles.main}>
+            <main
+                className={[
+                    styles.main,
+                    isScene05Visible ? styles.mainScene05 : null,
+                ]
+                    .filter(Boolean)
+                    .join(" ")}
+            >
                 {/* Background — двигается параллаксом самостоятельно. */}
                 <div
                     ref={backgroundRef}
                     id="Background-01_01"
-                    className={`${styles.background} not-allowed z-1`}
+                    className={[
+                        styles.background,
+                        isScene05Visible ? styles.scene05Hidden : null,
+                        "not-allowed z-1",
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
                 />
 
                 {/* EyesWindow — двигается параллаксом весь, вместе с img и Glass.
@@ -505,7 +551,13 @@ const SotvorenieZhizni = () => {
                 <div
                     ref={eyesWindowRef}
                     id="EyesWindow"
-                    className={`${styles.eyesWindow} not-allowed z-2`}
+                    className={[
+                        styles.eyesWindow,
+                        isScene05Visible ? styles.scene05Hidden : null,
+                        "not-allowed z-2",
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
                     style={
                         eyesAspect
                             ? { aspectRatio: String(eyesAspect) }
@@ -530,9 +582,14 @@ const SotvorenieZhizni = () => {
                 {/* Текст — статичен, ПОВЕРХ окна по z-index.
                    Скрывается плавно после клика на EyesWindow. */}
                 <div
-                    className={`${styles.textBlock} not-allowed z-3 ${
-                        isOpened ? styles.textBlockHidden : ""
-                    }`}
+                    className={[
+                        styles.textBlock,
+                        isOpened ? styles.textBlockHidden : null,
+                        isScene05Visible ? styles.scene05Hidden : null,
+                        "not-allowed z-3",
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
                 >
                     <h1 className={styles.title}>
                         Миниатюра «Неприкосновенна»
@@ -581,14 +638,59 @@ const SotvorenieZhizni = () => {
                    делается в handleLeftClickDown через alpha hit-map. */}
                 <img
                     ref={handsRef}
-                    className={`${styles.hands} not-allowed z-7 ${
-                        isOpened ? styles.handsVisible : ""
-                    }`}
+                    className={[
+                        styles.hands,
+                        isOpened ? styles.handsVisible : null,
+                        isScene05Visible ? styles.scene05Hidden : null,
+                        "not-allowed z-7",
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
                     src="/images/РУКИ.png"
                     alt=""
                     draggable={false}
                     aria-hidden="true"
                 />
+
+                <video
+                    ref={videoRef}
+                    className={[
+                        styles.scene06Video,
+                        isScene05Visible ? styles.scene06VideoVisible : null,
+                    ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    muted
+                    playsInline
+                    preload="auto"
+                    aria-hidden="true"
+                >
+                    <source
+                        src="/videos/ЛИЗА ПЛАЧЕТ (22 секунды).webm"
+                        type="video/webm"
+                    />
+                    <source
+                        src="/videos/ЛИЗА ПЛАЧЕТ (22 секунды).mp4"
+                        type="video/mp4"
+                    />
+                </video>
+
+                {isScene05Visible && (
+                    <img
+                        className={[
+                            styles.scene05Image,
+                            isScene06Visible
+                                ? styles.scene05ImageHidden
+                                : null,
+                        ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        src="/images/Mona_Lisa_stolen-1911.jpg"
+                        alt=""
+                        draggable={false}
+                        aria-hidden="true"
+                    />
+                )}
             </main>
         </>
     )
